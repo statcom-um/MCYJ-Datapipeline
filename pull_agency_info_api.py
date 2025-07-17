@@ -131,19 +131,22 @@ def merge_agency_info(agency_csv, output_dir = ".", remove_files=False):
     Merges the agency details into the all agency info dictionary.
     """
     date_str = datetime.now().strftime("%Y-%m-%d")
-    agency_ids = []
+
+    # Build a mapping from agencyId to AgencyName
+    agency_names = {}
     with open(agency_csv, mode='r', encoding='utf-8') as f:
         reader = csv.DictReader(f)
         for row in reader:
             agency_id = row.get('agencyId')
-            if agency_id:
-                agency_ids.append(agency_id)
+            agency_name = row.get('AgencyName')
+            if agency_id and agency_name:
+                agency_names[agency_id] = agency_name
 
     # Merge PDF content details for each agency
 
     combined_rows = []
     header = []
-    for agency_id in agency_ids:
+    for agency_id, agency_name in agency_names.items():
         pdf_csv = os.path.join(output_dir, f"{agency_id}_pdf_content_details.csv")
         if os.path.exists(pdf_csv):
             with open(pdf_csv, mode='r', encoding='utf-8') as f:
@@ -152,9 +155,9 @@ def merge_agency_info(agency_csv, output_dir = ".", remove_files=False):
                 missing_agency_id = 'agency_id' not in header
                 # Only add agency_id if not already present in header
                 if missing_agency_id:
-                    header = ['agency_id'] + header
+                    header = ['agency_id', 'agency_name'] + header
                 for row in reader:
-                    combined_rows.append([agency_id] + row if missing_agency_id else row)
+                    combined_rows.append([agency_id, agency_name] + row if missing_agency_id else row)
         else:
             print(f"Warning: PDF content details CSV not found for agency ID {agency_id}, skipping...")
             continue
@@ -164,13 +167,13 @@ def merge_agency_info(agency_csv, output_dir = ".", remove_files=False):
     with open(combined_csv, mode='w', newline='', encoding='utf-8') as f:
         writer = csv.writer(f, quoting=csv.QUOTE_ALL)
         # Write header: agency_id + original header
-        writer.writerow(['agency_id'] + header)
+        writer.writerow(header)
         writer.writerows(combined_rows)
 
     print(f"Combined PDF content details written to {combined_csv}")
     # If remove files then remove each file
     if remove_files:
-        for agency_id in agency_ids:
+        for agency_id, agency_name in agency_names.items():
             pdf_csv = os.path.join(output_dir, f"{agency_id}_pdf_content_details.csv")
             json_path = os.path.join(output_dir, f"{agency_id}_pdf_content_details.json")
             if os.path.exists(pdf_csv):
