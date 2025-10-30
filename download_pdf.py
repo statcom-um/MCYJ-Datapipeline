@@ -1,11 +1,61 @@
 import requests
 import base64
-from bs4 import BeautifulSoup
 import urllib3
 import os
 import re
 import argparse
 
+def get_content_base_data(document_id):
+    """
+    POST request to fetch content base data for a given ContentDocumentId.
+    """
+    urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
+    # Use same base endpoint as other functions; include the query params
+    base_url = "https://michildwelfarepubliclicensingsearch.michigan.gov/licagencysrch/webruntime/api/apex/execute?language=en-US&asGuest=true&htmlEncode=false"
+
+    payload = {
+        "namespace": "",
+        "classname": "@udd/01p8z0000009E4V",
+        "method": "getContentBaseData",
+        "isContinuation": False,
+        "params": {
+            "contentDocumentId": document_id,
+            "actionName": "download"
+        },
+        "cacheable": False
+    }
+
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+        'Accept': 'application/json, text/plain, */*',
+        'Content-Type': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest',
+        'Origin': 'https://michildwelfarepubliclicensingsearch.michigan.gov',
+        'Referer': 'https://michildwelfarepubliclicensingsearch.michigan.gov/licagencysrch/'
+    }
+
+    try:
+        print(f"POST getContentBaseData for ContentDocumentId={document_id}")
+        response = requests.post(
+            base_url,
+            json=payload,
+            headers=headers,
+            verify=False,
+            timeout=60
+        )
+        response.raise_for_status()
+        return response.json()
+    except Exception as e:
+        print(f"get_document_body failed for {document_id}: {e}")
+        if 'response' in locals():
+            try:
+                print(f"Response content: {response.text}")
+            except Exception:
+                pass
+        return None
+
+# Note: I think we can do the same thing here using get_content_base_data
 def download_michigan_pdf(document_id, document_agency=None, document_name=None, document_date=None, output_dir="./"):
     """
     Download a PDF from Michigan Child Welfare Public Licensing Search
@@ -39,22 +89,8 @@ def download_michigan_pdf(document_id, document_agency=None, document_name=None,
     try:
         # Make the request
         print(f"Fetching PDF from: {url}")
-        response = requests.get(url, headers=headers, verify=False, timeout=30)
-        response.raise_for_status()
-
-        # Parse the HTML
-        soup = BeautifulSoup(response.content, 'html.parser')
-
-        # Find the iframe with the PDF data
-        iframe = soup.find('iframe', src=lambda x: x and x.startswith('data:application/pdf;base64,'))
-
-        if not iframe:
-            print("Error: PDF iframe not found in the response")
-            return None
-
-        # Extract the base64 data
-        data_url = iframe['src']
-        base64_data = data_url.split(',')[1]
+        res = get_content_base_data(documentid=document_id)
+        base64_data = res['returnValue']
 
         # Decode the PDF content
         pdf_content = base64.b64decode(base64_data)
