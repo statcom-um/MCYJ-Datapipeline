@@ -1,6 +1,7 @@
 // Main application logic
 let allAgencies = [];
 let filteredAgencies = [];
+let currentOpenAgencyId = null;
 
 // Load and display data
 async function init() {
@@ -18,6 +19,7 @@ async function init() {
         displayStats();
         displayAgencies(allAgencies);
         setupSearch();
+        handleUrlHash();
         
     } catch (error) {
         console.error('Error loading data:', error);
@@ -78,10 +80,15 @@ function displayAgencies(agencies) {
     
     agenciesEl.innerHTML = agencies.map(agency => {
         return `
-            <div class="agency-card" data-agency-id="${agency.agencyId}">
+            <div class="agency-card" id="agency-${agency.agencyId}" data-agency-id="${agency.agencyId}">
                 <div class="agency-header">
                     <div>
-                        <div class="agency-name">${escapeHtml(agency.AgencyName || 'Unknown Agency')}</div>
+                        <div class="agency-name">
+                            ${escapeHtml(agency.AgencyName || 'Unknown Agency')}
+                            <button class="copy-link-btn" onclick="copyAgencyLink('${agency.agencyId}', event)" title="Copy link to this agency">
+                                🔗
+                            </button>
+                        </div>
                         <div style="color: #666; font-size: 0.9em; margin-top: 4px;">ID: ${escapeHtml(agency.agencyId)}</div>
                     </div>
                 </div>
@@ -105,9 +112,13 @@ function displayAgencies(agencies) {
     // Add click handlers to expand/collapse details
     document.querySelectorAll('.agency-card').forEach(card => {
         card.addEventListener('click', (e) => {
+            // Don't toggle if clicking on the copy link button
+            if (e.target.closest('.copy-link-btn')) {
+                return;
+            }
+            
             const agencyId = card.dataset.agencyId;
-            const details = document.getElementById(`details-${agencyId}`);
-            details.classList.toggle('visible');
+            openAgencyCard(agencyId);
         });
     });
 }
@@ -219,6 +230,9 @@ function showDocumentModal(docData) {
     `;
     
     modal.style.display = 'flex';
+    
+    // Prevent body scroll when modal is open
+    document.body.style.overflow = 'hidden';
 }
 
 function createDocumentModal() {
@@ -242,12 +256,120 @@ function closeDocumentModal() {
     const modal = document.getElementById('documentModal');
     if (modal) {
         modal.style.display = 'none';
+        
+        // Re-enable body scroll when modal is closed
+        document.body.style.overflow = '';
     }
 }
 
 // Make viewDocument available globally
 window.viewDocument = viewDocument;
 window.closeDocumentModal = closeDocumentModal;
+
+function openAgencyCard(agencyId) {
+    // If this card is already open, do nothing
+    if (currentOpenAgencyId === agencyId) {
+        return;
+    }
+    
+    // Close currently open card if different from the one being opened
+    if (currentOpenAgencyId && currentOpenAgencyId !== agencyId) {
+        const currentDetails = document.getElementById(`details-${currentOpenAgencyId}`);
+        if (currentDetails) {
+            currentDetails.classList.remove('visible');
+        }
+    }
+    
+    // Open the selected card
+    const details = document.getElementById(`details-${agencyId}`);
+    if (details) {
+        details.classList.add('visible');
+        currentOpenAgencyId = agencyId;
+        
+        // Update URL hash without triggering scroll
+        history.replaceState(null, null, `#${agencyId}`);
+        
+        // Scroll to the card - position top of card at top of viewport
+        const card = document.getElementById(`agency-${agencyId}`);
+        if (card) {
+            card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    }
+}
+
+function handleUrlHash() {
+    const hash = window.location.hash.slice(1); // Remove the '#'
+    if (hash) {
+        // Check if the agency card exists before trying to open it
+        const card = document.getElementById(`agency-${hash}`);
+        if (card) {
+            openAgencyCard(hash);
+        } else {
+            // If DOM is not ready, wait a bit and try again
+            setTimeout(() => {
+                const retryCard = document.getElementById(`agency-${hash}`);
+                if (retryCard) {
+                    openAgencyCard(hash);
+                }
+            }, 100);
+        }
+    }
+}
+
+function copyAgencyLink(agencyId, event) {
+    if (event) {
+        event.stopPropagation();
+    }
+    
+    const url = `${window.location.origin}${window.location.pathname}#${agencyId}`;
+    
+    // Copy to clipboard
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(url).then(() => {
+            // Show feedback
+            const btn = event.target;
+            const originalText = btn.textContent;
+            btn.textContent = '✓';
+            setTimeout(() => {
+                btn.textContent = originalText;
+            }, 1000);
+        }).catch(err => {
+            console.error('Failed to copy link:', err);
+            alert('Failed to copy link to clipboard');
+        });
+    } else {
+        // Fallback for browsers without Clipboard API
+        // Create a temporary textarea element
+        const textarea = document.createElement('textarea');
+        textarea.value = url;
+        textarea.style.position = 'fixed';
+        textarea.style.opacity = '0';
+        document.body.appendChild(textarea);
+        textarea.select();
+        try {
+            document.execCommand('copy');
+            // Show feedback
+            const btn = event.target;
+            const originalText = btn.textContent;
+            btn.textContent = '✓';
+            setTimeout(() => {
+                btn.textContent = originalText;
+            }, 1000);
+        } catch (err) {
+            console.error('Failed to copy link:', err);
+            alert('Failed to copy link to clipboard');
+        } finally {
+            document.body.removeChild(textarea);
+        }
+    }
+}
+
+// Make functions available globally
+window.copyAgencyLink = copyAgencyLink;
+
+// Listen for hash changes
+window.addEventListener('hashchange', handleUrlHash);
+
 
 function setupSearch() {
     const searchInput = document.getElementById('searchInput');
