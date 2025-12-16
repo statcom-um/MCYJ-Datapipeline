@@ -33,6 +33,7 @@ dist/
 website/public/data/
 website/public/documents/
 website/test_output/
+website/test_documents/
 metadata_output/
 *.egg-info/
 build/
