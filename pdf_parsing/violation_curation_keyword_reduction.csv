@@ -1,5 +1,5 @@
 original_keyword,reduced_keyword,frequency
-policy violation,policy violation,260
+policy violation,,260
 staff-on-youth violence,staff-on-youth violence,177
 physical restraint,physical restraint,141
 physical assault,physical assault,138
@@ -52,7 +52,7 @@ corporal punishment,staff-on-youth violence,18
 failure to report abuse,failure to report,18
 improper restraint,physical restraint,17
 inappropriate discipline,inappropriate discipline,17
-policy compliance error,policy violation,17
+policy compliance error,,17
 serious safety risk,safety risk,17
 unsafe physical environment,unsafe environment,17
 confidentiality breach,confidentiality,16
@@ -72,7 +72,7 @@ documentation failure,documentation error,12
 hospitalization,hospitalization,12
 variable interval checks,supervision failure,12
 youth injury,injury,12
-behavior management violation,policy violation,11
+behavior management violation,,11
 child protection law violation,rights violation,11
 emergency restraint,physical restraint,11
 boundary violation,boundary violation,10
@@ -146,7 +146,7 @@ physical altercation,physical altercation,5
 prohibited technique,physical restraint,5
 psychotropic medication,psychotropic medication,5
 restraint documentation,documentation error,5
-rule violation,policy violation,5
+rule violation,,5
 slapping,physical assault,5
 staff qualifications,staff qualifications,5
 staff-to-resident ratio,staff-to-resident ratio,5
@@ -181,7 +181,7 @@ runaway/AWOL,runaway/AWOL,4
 safety and violence,safety and violence,4
 safety risks,safety risks,4
 sexual assault,sexual abuse,4
-sexual intercourse,sexual intercourse,4
+sexual intercourse,sexual contact,4
 sleeping on duty,staff misconduct,4
 social media contact,social media contact,4
 staff failure to intervene,staff misconduct,4
@@ -216,7 +216,7 @@ improper medication storage,improper medication storage,3
 improper seclusion,improper seclusion,3
 inappropriate content,inappropriate content,3
 incident reporting failure,failure to report,3
-intervention standards violation,policy violation,3
+intervention standards violation,,3
 isolation,isolation,3
 lack of direct supervision,lack of direct supervision,3
 lack of line-of-sight,supervision failure,3
@@ -232,8 +232,8 @@ one-person restraint,physical restraint,3
 oversharing personal information,oversharing personal information,3
 paperwork errors,paperwork errors,3
 physical discipline,physical discipline,3
-policy failure,policy violation,3
-policy non-compliance,policy violation,3
+policy failure,,3
+policy non-compliance,,3
 privacy breach,privacy,3
 program statement violation,program statement violation,3
 prohibited physical intervention,prohibited physical intervention,3
@@ -368,7 +368,7 @@ parenting time,parenting time,2
 physical abuse,abuse,2
 physical confrontation,physical confrontation,2
 physical force,excessive force,2
-policy noncompliance,policy violation,2
+policy noncompliance,,2
 power struggle,power struggle,2
 prohibited discipline,prohibited discipline,2
 prohibited seclusion,prohibited seclusion,2
@@ -386,7 +386,7 @@ security failure,unsafe environment,2
 serious injury,injury,2
 service plan,service plan,2
 service plan implementation failure,service plan implementation failure,2
-sexual activity,sexual activity,2
+sexual activity,sexual contact,2
 sexual exploitation,sexual abuse,2
 shoving,physical assault,2
 special evaluation not initiated,special evaluation not initiated,2
@@ -432,7 +432,7 @@ youth injuries,youth injuries,2
 youth left unsupervised,youth left unsupervised,2
 youth-on-staff violence,youth-on-staff violence,2
 youth-on-youth assault,youth-on-youth violence,2
-youth-on-youth sexual activity,youth-on-youth sexual activity,2
+youth-on-youth sexual activity,youth-on-youth sexual contact,2
 15-minute checks not performed,supervision failure,1
 1:1 supervision,supervision failure,1
 3200 report,3200 report,1
@@ -497,7 +497,7 @@ administrative limbo,administrative limbo,1
 administrative oversight,administrative violation,1
 administrative paperwork delay,paperwork error,1
 administrative paperwork issues,paperwork error,1
-administrative policy violation,policy violation,1
+administrative policy violation,,1
 administrative process,administrative process,1
 administrative process failure,administrative process failure,1
 administrative violations,administrative violation,1
@@ -663,18 +663,18 @@ delayed x-ray,medical care delay,1
 delegated supervision,delegated supervision,1
 demeaning tone,demeaning tone,1
 denial of basic need,denial of basic need,1
-denial of clothing,denial of clothing,1
+denial of clothing,denial of basic need,1
 denial of communication,denial of communication,1
 denial of education,denial of education,1
 denial of entry,denial of entry,1
-denial of family visit,denial of family visit,1
+denial of family visit,visitation denial,1
 denial of outdoor recreation,denial of outdoor recreation,1
-denial of parenting time,denial of parenting time,1
+denial of parenting time,visitation denial,1
 denial of personal possessions,denial of personal possessions,1
 denial of privileges and therapy,denial of privileges and therapy,1
 denial of religious services,denial of religious services,1
 denial of rights,rights violation,1
-denial of schooling,denial of schooling,1
+denial of schooling,denial of education,1
 denial of service,denial of service,1
 dental examination,dental examination,1
 dental exams not completed,dental exams not completed,1
@@ -1193,7 +1193,7 @@ plan review submission,plan review submission,1
 pod breach,pod breach,1
 poison control,poison control,1
 policy compliance errors,policy compliance errors,1
-policy compliance failure,policy violation,1
+policy compliance failure,,1
 policy deficiency,policy deficiency,1
 policy misalignment,policy misalignment,1
 policy missing,policy missing,1
@@ -1250,7 +1250,7 @@ report incomplete,report incomplete,1
 report missing rule parts,report missing rule parts,1
 reporting delay,failure to report,1
 reporting failure,failure to report,1
-resident-on-resident sexual activity,resident-on-resident sexual activity,1
+resident-on-resident sexual activity,youth-on-youth sexual contact,1
 responsible character,responsible character,1
 restraint against wall,physical restraint,1
 restraint and seclusion,physical restraint,1
@@ -1323,11 +1323,11 @@ service plan involvement,service plan involvement,1
 service plan provision,service plan provision,1
 sexual comments,sexual comments,1
 sexual content,sexual abuse,1
-sexual encounter,sexual encounter,1
+sexual encounter,sexual contact,1
 sexual exploitation risk,sexual exploitation risk,1
-sexual harassment,sexual abuse,1
-sexual harassment allegations,sexual harassment allegations,1
-sexual harassment suspicion,sexual harassment suspicion,1
+sexual harassment,sexual harassment,1
+sexual harassment allegations,sexual harassment,1
+sexual harassment suspicion,sexual harassment,1
 sexually implicit text messages,sexually implicit text messages,1
 sexually inappropriate behavior,sexually inappropriate behavior,1
 shoving matches,shoving matches,1
@@ -1607,6 +1607,6 @@ youth took medications not prescribed to him,youth took medications not prescrib
 youth violence,youth violence,1
 youth-on-youth,youth-on-youth,1
 youth-on-youth contact,youth-on-youth contact,1
-youth-on-youth sexual incident,youth-on-youth sexual incident,1
-youth-on-youth sexual misconduct,youth-on-youth sexual misconduct,1
+youth-on-youth sexual incident,youth-on-youth sexual contact,1
+youth-on-youth sexual misconduct,youth-on-youth sexual contact,1
 zoning violation,zoning violation,1
