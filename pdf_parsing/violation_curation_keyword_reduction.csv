@@ -105,7 +105,7 @@ documentation delay,documentation error,7
 failed de-escalation,de-escalation failure,7
 paperwork violation,paperwork violation,7
 policy violations,policy violations,7
-runaways,runaways,7
+runaways,runaway,7
 unsafe restraint technique,physical restraint,7
 administrative paperwork,paperwork error,6
 behavior management policy violation,behavior management policy violation,6
@@ -1281,7 +1281,7 @@ room search procedure failure,room search procedure failure,1
 rules compliance,rules compliance,1
 runaway prevention,runaway prevention,1
 runaway/abduction,runaway/abduction,1
-runaway/awol,runaway/awol,1
+runaway/awol,runaway,1
 runaways/AWOL,runaways/AWOL,1
 safety belts,safety belts,1
 safety check,safety check,1
