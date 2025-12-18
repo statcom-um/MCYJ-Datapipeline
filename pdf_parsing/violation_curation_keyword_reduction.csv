@@ -1,0 +1,1612 @@
+original_keyword,reduced_keyword,frequency
+policy violation,policy violation,260
+staff-on-youth violence,staff-on-youth violence,177
+physical restraint,physical restraint,141
+physical assault,physical assault,138
+excessive force,excessive force,137
+staff misconduct,staff misconduct,135
+unsafe de-escalation,de-escalation failure,134
+supervision failure,supervision failure,130
+repeat violation,repeat violation,91
+inadequate supervision,supervision failure,81
+lack of supervision,supervision failure,66
+documentation error,documentation error,65
+paperwork delay,paperwork error,54
+verbal abuse,verbal abuse,54
+sexual abuse,sexual abuse,44
+understaffing,understaffing,42
+unprofessional boundaries,boundary violation,39
+youth-on-youth violence,youth-on-youth violence,38
+medication error,medication error,35
+denial of services,medical care delay,34
+derogatory language,verbal abuse,34
+administrative violation,administrative violation,33
+safety risk,safety risk,32
+self-harm,self-harm,32
+inappropriate language,verbal abuse,28
+pushing,physical assault,28
+threats,verbal abuse,28
+hitting,physical assault,27
+physical punishment,staff-on-youth violence,27
+policy compliance,policy compliance,27
+unmet treatment needs,medical care delay,27
+administrative failure,administrative violation,26
+contraband,contraband,26
+documentation,documentation error,26
+missed medical care,medical care delay,26
+administrative error,administrative violation,25
+prohibited intervention,staff-on-youth violence,24
+failure to report,failure to report,23
+administrative non-compliance,administrative violation,22
+paperwork,paperwork error,22
+runaway,runaway,22
+seclusion,seclusion,21
+unsafe restraint,physical restraint,21
+AWOL,runaway,20
+late submission,late submission,20
+missing documentation,documentation error,20
+suicidal ideation,self-harm,20
+administrative compliance,administrative compliance,19
+paperwork error,paperwork error,19
+corporal punishment,staff-on-youth violence,18
+failure to report abuse,failure to report,18
+improper restraint,physical restraint,17
+inappropriate discipline,inappropriate discipline,17
+policy compliance error,policy violation,17
+serious safety risk,safety risk,17
+unsafe physical environment,unsafe environment,17
+confidentiality breach,confidentiality,16
+prone restraint,physical restraint,16
+restraint,physical restraint,16
+unsafe environment,unsafe environment,15
+unwarranted restraint,physical restraint,15
+injury,injury,14
+physical intervention,physical intervention,14
+emergency hospitalization,hospitalization,13
+facility-level breakdown,unsafe environment,13
+missing signatures,missing signatures,13
+profanity,verbal abuse,13
+prohibited restraint,physical restraint,13
+corrective action plan,corrective action plan,12
+documentation failure,documentation error,12
+hospitalization,hospitalization,12
+variable interval checks,supervision failure,12
+youth injury,injury,12
+behavior management violation,policy violation,11
+child protection law violation,rights violation,11
+emergency restraint,physical restraint,11
+boundary violation,boundary violation,10
+compliance violation,compliance violation,10
+professional boundaries,boundary violation,10
+punching,physical assault,10
+restraint policy violation,physical restraint,10
+unsupervised youth,supervision failure,10
+youth-on-youth conflict,youth-on-youth violence,10
+administrative,administrative violation,9
+compliance failure,compliance violation,9
+de-escalation failure,de-escalation failure,9
+documentation errors,documentation error,9
+falsified documentation,documentation error,9
+improper restraint technique,physical restraint,9
+late report submission,late submission,9
+missed medication,medication error,9
+safety plan violation,safety risk,9
+staff sleeping on duty,staff misconduct,9
+staff-to-resident ratio violation,understaffing,9
+chokehold,physical restraint,8
+compliance breakdown,compliance violation,8
+restraint violation,physical restraint,8
+unprofessional conduct,staff misconduct,8
+behavior management,behavior management,7
+child protection law,child protection law,7
+choking,choking,7
+confidentiality violation,confidentiality,7
+documentation delay,documentation error,7
+failed de-escalation,de-escalation failure,7
+paperwork violation,paperwork violation,7
+policy violations,policy violations,7
+runaways,runaways,7
+unsafe restraint technique,physical restraint,7
+administrative paperwork,paperwork error,6
+behavior management policy violation,behavior management policy violation,6
+horseplay,horseplay,6
+improper technique,physical restraint,6
+inappropriate relationship,boundary violation,6
+late report,late submission,6
+mandated reporter failure,failure to report,6
+mandated reporting failure,failure to report,6
+missed bed checks,missed bed checks,6
+physical injury,physical injury,6
+physical management,physical management,6
+privacy violation,privacy,6
+record retention,record retention,6
+records retention,records retention,6
+repeat violations,repeat violation,6
+supervision failures,supervision failure,6
+youth-on-youth sexual contact,youth-on-youth sexual contact,6
+administrative rule violation,administrative violation,5
+assault,physical assault,5
+change of placement,change of placement,5
+failure to notify,notification failure,5
+headlock,headlock,5
+improper supervision,improper supervision,5
+inappropriate boundaries,boundary violation,5
+inappropriate physical contact,boundary violation,5
+incident reporting,incident reporting,5
+insufficient staff,understaffing,5
+lack of intervention,lack of intervention,5
+late reporting,late reporting,5
+late service plan,late service plan,5
+mandated reporting,mandated reporting,5
+mechanical restraint,physical restraint,5
+notification failure,notification failure,5
+out of ratio,understaffing,5
+paperwork issue,paperwork issue,5
+physical altercation,physical altercation,5
+prohibited technique,physical restraint,5
+psychotropic medication,psychotropic medication,5
+restraint documentation,documentation error,5
+rule violation,policy violation,5
+slapping,physical assault,5
+staff qualifications,staff qualifications,5
+staff-to-resident ratio,staff-to-resident ratio,5
+wing restriction,wing restriction,5
+yelling,verbal abuse,5
+administrative noncompliance,administrative violation,4
+bear hug,bear hug,4
+de-escalation,de-escalation failure,4
+documentation falsification,documentation error,4
+environmental failure,unsafe environment,4
+failure to intervene,staff misconduct,4
+failure to supervise,supervision failure,4
+favoritism,favoritism,4
+grievance procedure,grievance procedure violation,4
+grievance procedure violation,grievance procedure violation,4
+head injury,injury,4
+humiliation,humiliation,4
+insufficient supervision,insufficient supervision,4
+lack of policy,lack of policy,4
+line of sight violation,supervision failure,4
+mandated reporter violation,mandated reporter violation,4
+medication errors,medication error,4
+medication storage,medication storage,4
+parental rights,parental rights,4
+peer-on-peer discipline,peer-on-peer discipline,4
+physical contact,physical contact,4
+procedural non-compliance,procedural non-compliance,4
+ridicule,ridicule,4
+rights-related,rights violation,4
+runaway risk,runaway risk,4
+runaway/AWOL,runaway/AWOL,4
+safety and violence,safety and violence,4
+safety risks,safety risks,4
+sexual assault,sexual abuse,4
+sexual intercourse,sexual intercourse,4
+sleeping on duty,staff misconduct,4
+social media contact,social media contact,4
+staff failure to intervene,staff misconduct,4
+staffing ratio,staffing ratio,4
+striking,physical assault,4
+suicide attempt,self-harm,4
+threatening language,verbal abuse,4
+unapproved restraint technique,physical restraint,4
+unauthorized access,unauthorized access,4
+unsafe medication storage,unsafe medication storage,4
+untrained staff,untrained staff,4
+use of force,excessive force,4
+administrative issue,administrative violation,3
+airway restriction,physical restraint,3
+behavior management failure,behavior management failure,3
+child safety risk,child safety risk,3
+choke hold,physical restraint,3
+confidentiality,confidentiality,3
+corrective action plan required,corrective action plan required,3
+corrective action required,corrective action required,3
+documentation lapse,documentation error,3
+emergency room,hospitalization,3
+environmental hazard,unsafe environment,3
+escalation,escalation,3
+failed room checks,failed room checks,3
+failure to follow safety plan,safety risk,3
+failure to protect,failure to protect,3
+falsification of records,falsification of records,3
+floor restraint,physical restraint,3
+improper intervention,improper intervention,3
+improper medication storage,improper medication storage,3
+improper seclusion,improper seclusion,3
+inappropriate content,inappropriate content,3
+incident reporting failure,failure to report,3
+intervention standards violation,policy violation,3
+isolation,isolation,3
+lack of direct supervision,lack of direct supervision,3
+lack of line-of-sight,supervision failure,3
+lack of monitoring,lack of monitoring,3
+late notification,late notification,3
+late service plans,late service plans,3
+late submission of records,late submission of records,3
+medical neglect,neglect,3
+medication administration,medication administration,3
+medication administration error,medication error,3
+notification,notification,3
+one-person restraint,physical restraint,3
+oversharing personal information,oversharing personal information,3
+paperwork errors,paperwork errors,3
+physical discipline,physical discipline,3
+policy failure,policy violation,3
+policy non-compliance,policy violation,3
+privacy breach,privacy,3
+program statement violation,program statement violation,3
+prohibited physical intervention,prohibited physical intervention,3
+property damage,property damage,3
+pushing a youth,pushing a youth,3
+record keeping,record keeping,3
+recreational activities,recreational activities,3
+rights-related issue,rights-related issue,3
+safety plan failure,safety risk,3
+sexual contact,sexual contact,3
+staff inexperience,staff inexperience,3
+staff negligence,staff negligence,3
+staff under the influence,staff under the influence,3
+staff-to-youth ratio violation,staff-to-youth ratio violation,3
+supervision breakdown,supervision failure,3
+supervision lapse,supervision failure,3
+unauthorized contact,unauthorized contact,3
+unjustified restraint,physical restraint,3
+unlicensed placement,unlicensed placement,3
+unprofessional behavior,staff misconduct,3
+unsafe supervision,unsafe supervision,3
+unsuitable staff,unsuitable staff,3
+unsupervised,unsupervised,3
+verbal threat,verbal threat,3
+THC,contraband,2
+administrative breakdown,administrative violation,2
+administrative compliance error,administrative violation,2
+administrative delay,administrative delay,2
+administrative procedure,administrative procedure,2
+administrative rule,administrative rule,2
+alcohol,contraband,2
+antagonizing youth,verbal abuse,2
+audit findings,audit findings,2
+background check,background check,2
+background check failure,background check failure,2
+bed checks,bed checks,2
+behavior management plan,behavior management plan,2
+bruises,bruises,2
+case management failure,case management failure,2
+cell phone policy,cell phone policy,2
+child abuse,abuse,2
+code of conduct violation,code of conduct violation,2
+coercion,coercion,2
+communication breakdown,communication breakdown,2
+compliance,compliance,2
+concussion,concussion,2
+contraband access,contraband,2
+contract non-compliance,contract non-compliance,2
+contract violation,contract violation,2
+corrective action plan submission,corrective action plan submission,2
+court order violation,court order violation,2
+declining financial condition,declining financial condition,2
+delayed medical care,medical care delay,2
+delayed reporting,failure to report,2
+denied variance,denied variance,2
+documentation failures,documentation error,2
+documentation violation,documentation error,2
+dragging youth,dragging youth,2
+emergency restraint violation,physical restraint,2
+exploitation,exploitation,2
+facility-level breakdowns,facility-level breakdowns,2
+failed bed checks,failed bed checks,2
+failure to notify parent,notification failure,2
+failure to perform checks,supervision failure,2
+failure to provide care,failure to provide care,2
+failure to report restraint,failure to report,2
+falsified records,falsified records,2
+financial risk,financial risk,2
+form not completed,missing signatures,2
+fracture,fracture,2
+grooming,grooming,2
+hair pulling,physical assault,2
+health and safety risk,health and safety risk,2
+health services,health services,2
+health services policy violation,health services policy violation,2
+health services violation,health services violation,2
+illegal placement,illegal placement,2
+improper de-escalation,de-escalation failure,2
+inaccurate incident report,inaccurate incident report,2
+inadequate assessment,inadequate assessment,2
+inadequate safety plan,inadequate safety plan,2
+inadequate staff training,training violation,2
+inappropriate physical intervention,inappropriate physical intervention,2
+inappropriate placement,placement issue,2
+inappropriate sexual contact,sexual abuse,2
+inappropriate staff boundaries,inappropriate staff boundaries,2
+inappropriate staff conduct,inappropriate staff conduct,2
+inappropriate staff-youth relationship,inappropriate staff-youth relationship,2
+incident report not completed,incident report not completed,2
+incident reporting policy violation,incident reporting policy violation,2
+incomplete documentation,documentation error,2
+incomplete service plan,missing signatures,2
+injury to youth,injury to youth,2
+insufficient staffing,insufficient staffing,2
+kicking,physical assault,2
+lack of consent,lack of consent,2
+lack of direct visual supervision,supervision failure,2
+lack of documentation,documentation error,2
+lack of follow-up,lack of follow-up,2
+lack of protection,lack of protection,2
+lack of recreational activities,lack of recreational activities,2
+lack of staff,lack of staff,2
+lack of visual contact,lack of visual contact,2
+lack of written procedures,lack of written procedures,2
+late documentation,documentation error,2
+late home study,late home study,2
+late incident reporting,late incident reporting,2
+late investigation,late investigation,2
+law enforcement contact,law enforcement contact,2
+least restrictive intervention,least restrictive intervention,2
+licensing compliance,licensing compliance,2
+licensing rule violation,licensing rule violation,2
+licensing violation,licensing violation,2
+line-of-sight violation,line-of-sight violation,2
+loss of consciousness,loss of consciousness,2
+mandated reporter,mandated reporter,2
+mandated reporting violation,mandated reporting violation,2
+medical emergency,medical emergency,2
+medical evaluation,injury,2
+medical monitoring failure,medical care delay,2
+medication access,medication access,2
+medication consent,medication consent,2
+medication dispensing,medication dispensing,2
+missed therapy,missed therapy,2
+non-approved restraint technique,physical restraint,2
+non-compliance,compliance violation,2
+notification delay,notification failure,2
+paperwork failure,paperwork error,2
+paperwork issues,paperwork issues,2
+paperwork non-compliance,paperwork non-compliance,2
+parenting time,parenting time,2
+physical abuse,abuse,2
+physical confrontation,physical confrontation,2
+physical force,excessive force,2
+policy noncompliance,policy violation,2
+power struggle,power struggle,2
+prohibited discipline,prohibited discipline,2
+prohibited seclusion,prohibited seclusion,2
+pulling,pulling,2
+ratio violation,ratio violation,2
+record retention violation,record retention violation,2
+restraint documentation failure,documentation error,2
+restraint reporting failure,failure to report,2
+retaliation,retaliation,2
+rights violation,rights violation,2
+safety plan not followed,safety plan not followed,2
+school enrollment,school enrollment,2
+security breach,security breach,2
+security failure,unsafe environment,2
+serious injury,injury,2
+service plan,service plan,2
+service plan implementation failure,service plan implementation failure,2
+sexual activity,sexual activity,2
+sexual exploitation,sexual abuse,2
+shoving,physical assault,2
+special evaluation not initiated,special evaluation not initiated,2
+staff asleep,staff asleep,2
+staff failed to intervene,staff failed to intervene,2
+staff hitting youth,staff hitting youth,2
+staff incompetence,staff incompetence,2
+staff non-compliance,staff non-compliance,2
+staff ratio,staff ratio,2
+staff threats,staff threats,2
+staff training,staff training,2
+staff-on-youth,staff-on-youth,2
+staff-on-youth incident,staff-on-youth incident,2
+staff-on-youth intervention,staff-on-youth intervention,2
+staff-on-youth physical intervention,staff-on-youth violence,2
+staffing breakdown,staffing breakdown,2
+staffing ratio violation,understaffing,2
+staffing shortage,staffing shortage,2
+suicide watch,suicide watch,2
+supine restraint,physical restraint,2
+technology misuse,technology misuse,2
+therapeutic services,therapeutic services,2
+threatening behavior,verbal abuse,2
+threatening statement,threatening statement,2
+threatening statements,threatening statements,2
+throwing,throwing,2
+timeliness,timeliness,2
+training non-compliance,training violation,2
+treatment plan non-compliance,treatment plan non-compliance,2
+unapproved restraint techniques,physical restraint,2
+unexplained injuries,unexplained injuries,2
+unmet mental health treatment,unmet mental health treatment,2
+unprofessional language,unprofessional language,2
+unsupervised visits,unsupervised visits,2
+vehicle accident,vehicle accident,2
+violation of child protection law,violation of child protection law,2
+violation of safety plan,violation of safety plan,2
+violence,violence,2
+withdrawal symptoms,withdrawal symptoms,2
+wrong medication,medication error,2
+youth death,youth death,2
+youth injuries,youth injuries,2
+youth left unsupervised,youth left unsupervised,2
+youth-on-staff violence,youth-on-staff violence,2
+youth-on-youth assault,youth-on-youth violence,2
+youth-on-youth sexual activity,youth-on-youth sexual activity,2
+15-minute checks not performed,supervision failure,1
+1:1 supervision,supervision failure,1
+3200 report,3200 report,1
+AWOL deterrent,runaway,1
+AWOL reporting,failure to report,1
+AWOL reporting delay,failure to report,1
+AWOL reporting failure,failure to report,1
+AWOLP,runaway,1
+AWOLP notification delay,notification failure,1
+AWOLP reporting delay,notification failure,1
+Aegis hold,physical restraint,1
+COVID-19 protocol failure,COVID-19 protocol failure,1
+CPI deviation,physical restraint,1
+CPI non-compliance,physical restraint,1
+CPI protocol violation,physical restraint,1
+CPI violation,physical restraint,1
+CPR,CPR,1
+CPS history undisclosed,CPS history undisclosed,1
+CWLM access,CWLM access,1
+CWLM access issues,CWLM access issues,1
+Clozaril,Clozaril,1
+Crisis Prevention Institute,physical restraint,1
+Crisis Prevention violation,physical restraint,1
+DHHS-3307,DHHS-3307,1
+DHS-1105,DHS-1105,1
+DHS-30,DHS-30,1
+DHS-69,DHS-69,1
+FAPE noncompliance,compliance violation,1
+HIPAA,confidentiality,1
+HIPAA violation,confidentiality,1
+HIPAA/PHI concern,confidentiality,1
+HVAC issues,unsafe environment,1
+Handle with Care violation,physical restraint,1
+ICPC non-compliance,compliance violation,1
+IEP delay,IEP delay,1
+IEP noncompliance,IEP noncompliance,1
+MACH training,physical restraint,1
+MANDT violation,physical restraint,1
+MAR sheet incomplete,missing signatures,1
+MISACWIS upload,MISACWIS upload,1
+MISACWIS upload failure,late submission,1
+MiSACWIS,MiSACWIS,1
+OnlyFans,OnlyFans,1
+PPE non-compliance,compliance violation,1
+Parent/Agency Agreement,Parent/Agency Agreement,1
+QuickMar documentation,documentation error,1
+Trazodone,Trazodone,1
+Type 1 diabetes,Type 1 diabetes,1
+abuse neglect,neglect,1
+abuse/neglect,neglect,1
+access to substances,contraband,1
+accounting,accounting,1
+active warrant,active warrant,1
+administrative closure misuse,administrative closure misuse,1
+administrative compliance failure,administrative violation,1
+administrative discipline,administrative discipline,1
+administrative documentation,documentation error,1
+administrative errors,administrative violation,1
+administrative failures,administrative violation,1
+administrative issues,administrative violation,1
+administrative limbo,administrative limbo,1
+administrative oversight,administrative violation,1
+administrative paperwork delay,paperwork error,1
+administrative paperwork issues,paperwork error,1
+administrative policy violation,policy violation,1
+administrative process,administrative process,1
+administrative process failure,administrative process failure,1
+administrative violations,administrative violation,1
+admission/care violation,admission/care violation,1
+aggression,aggression,1
+aggressive behavior,aggressive behavior,1
+aggressive intervention,staff-on-youth violence,1
+alcohol on duty,staff misconduct,1
+altercation,youth-on-youth violence,1
+annual training lapse,training violation,1
+annual training non-compliance,training violation,1
+application processing delay,application processing delay,1
+assault on staff,physical assault,1
+assaultive behavior,physical assault,1
+asthma attack,asthma attack,1
+at-risk status,at-risk status,1
+attempted kick,attempted kick,1
+attempted suicide,attempted suicide,1
+back-dating contacts,back-dating contacts,1
+background check process,background check process,1
+barricaded room,barricaded room,1
+basement bedroom,basement bedroom,1
+bearhug,bearhug,1
+bed check documentation,documentation error,1
+bed check failure,supervision failure,1
+bed check logs,bed check logs,1
+bed check violations,bed check violations,1
+bedtime medication,bedtime medication,1
+behavior disruption,behavior disruption,1
+behavior management policy,behavior management policy,1
+behavior support plan violation,behavior support plan violation,1
+behavioral crisis,behavioral crisis,1
+behavioral dysregulation,behavioral dysregulation,1
+belittling youth,belittling youth,1
+billing error,billing error,1
+bites,bites,1
+biting,physical assault,1
+bleeding,bleeding,1
+blood draws not performed,blood draws not performed,1
+bloody nose,bloody nose,1
+borrowed bed agreement,borrowed bed agreement,1
+borrowed home rule,borrowed home rule,1
+boundary crossing,boundary crossing,1
+boundary issues,boundary issues,1
+boundary precautions,boundary precautions,1
+boundary violations,boundary violations,1
+breach of confidentiality,confidentiality,1
+break-in,break-in,1
+breakdown in duty of care,breakdown in duty of care,1
+breakdown of safety plan,breakdown of safety plan,1
+brief check,brief check,1
+broken bone,broken bone,1
+broken door alarm,broken door alarm,1
+broken lock,broken lock,1
+broken windows,broken windows,1
+bruises from staff pulling,bruises from staff pulling,1
+bullying,bullying,1
+care protocol violation,care protocol violation,1
+carpet burns,carpet burns,1
+case entry delay,case entry delay,1
+case file accuracy,case file accuracy,1
+case file compliance,case file compliance,1
+case file update,case file update,1
+case file update failure,case file update failure,1
+case management,case management,1
+case management after jurisdiction ended,case management after jurisdiction ended,1
+case management lapse,case management lapse,1
+case management responsibility confusion,case management responsibility confusion,1
+case planning violations,case planning violations,1
+case record incomplete,case record incomplete,1
+case record not updated,case record not updated,1
+caseload compliance,caseload compliance,1
+caseworker turnover,caseworker turnover,1
+cell phone misuse,cell phone misuse,1
+cell phone use,cell phone use,1
+central registry,central registry,1
+central registry clearance,central registry clearance,1
+change of address,change of address,1
+chaotic environment,chaotic environment,1
+checks not completed,checks not completed,1
+chief administrator misconduct,chief administrator misconduct,1
+chief administrator responsibilities,chief administrator responsibilities,1
+child abuse report,failure to report,1
+child abuse substantiated,abuse,1
+child abuse/neglect,neglect,1
+child maltreatment,child maltreatment,1
+child physical abuse,abuse,1
+chokehold allegation,physical restraint,1
+chronic health care needs,chronic health care needs,1
+client interaction policy,client interaction policy,1
+clinical assessment,clinical assessment,1
+closed fist,closed fist,1
+clothing allowance delay,clothing allowance delay,1
+clothing inventory not submitted,clothing inventory not submitted,1
+clutter and safety hazards,clutter and safety hazards,1
+coaching witness,coaching witness,1
+coaching youth,coaching youth,1
+code of conduct,code of conduct,1
+code of ethics,code of ethics,1
+coercion to lie,coercion to lie,1
+coercive threat to foster parent,coercive threat to foster parent,1
+cognitive impairment,cognitive impairment,1
+cognitively impaired,cognitively impaired,1
+communication,communication,1
+communication barrier,communication barrier,1
+communication failure,communication failure,1
+communication lapse,communication lapse,1
+community outing,community outing,1
+compliance issue,compliance issue,1
+compliance reporting,compliance reporting,1
+compromised investigation,compromised investigation,1
+confidential information,confidentiality,1
+confidential information disclosure,confidentiality,1
+conflict management violation,conflict management violation,1
+consent documentation,documentation error,1
+construction without approval,construction without approval,1
+contaminated water,contaminated water,1
+continuity of care,continuity of care,1
+continuous monitoring,continuous monitoring,1
+contraband (cell phones),contraband,1
+contraband (drugs/alcohol),contraband,1
+contraband (nicotine vapes),contraband,1
+contraband (unauthorized gifts),contraband,1
+contractual staff misuse,contractual staff misuse,1
+contraindicated medication,contraindicated medication,1
+control room,control room,1
+control room security breach,control room security breach,1
+controlled medication,controlled medication,1
+controlled substance,controlled substance,1
+controlled substances,controlled substances,1
+corrective action plan inadequate,corrective action plan inadequate,1
+corrective action plan missing,corrective action plan missing,1
+corrective action plan non-implementation,corrective action plan non-implementation,1
+counseling delayed,counseling delayed,1
+counterproductive strategy,counterproductive strategy,1
+court approval,court approval,1
+court hearing notification violation,court hearing notification violation,1
+court notification failure,notification failure,1
+criminal charges,criminal charges,1
+criminal history,criminal history,1
+criminal history check,criminal history check,1
+criminal history check failure,criminal history check failure,1
+criminal sexual conduct,criminal sexual conduct,1
+crisis mismanagement,crisis mismanagement,1
+critical incident reporting,critical incident reporting,1
+cruel discipline,cruel discipline,1
+cutting,cutting,1
+dangerous environment,dangerous environment,1
+data breach notification,data breach notification,1
+data security,data security,1
+deficient documentation,documentation error,1
+deficit,deficit,1
+delay in care,medical care delay,1
+delay in dispensing medication,medication error,1
+delayed discharge,placement issue,1
+delayed egress doors,unsafe environment,1
+delayed emergency response,medical care delay,1
+delayed hospitalization,medical care delay,1
+delayed notification,notification failure,1
+delayed school enrollment,delayed school enrollment,1
+delayed treatment,medical care delay,1
+delayed x-ray,medical care delay,1
+delegated supervision,delegated supervision,1
+demeaning tone,demeaning tone,1
+denial of basic need,denial of basic need,1
+denial of clothing,denial of clothing,1
+denial of communication,denial of communication,1
+denial of education,denial of education,1
+denial of entry,denial of entry,1
+denial of family visit,denial of family visit,1
+denial of outdoor recreation,denial of outdoor recreation,1
+denial of parenting time,denial of parenting time,1
+denial of personal possessions,denial of personal possessions,1
+denial of privileges and therapy,denial of privileges and therapy,1
+denial of religious services,denial of religious services,1
+denial of rights,rights violation,1
+denial of schooling,denial of schooling,1
+denial of service,denial of service,1
+dental examination,dental examination,1
+dental exams not completed,dental exams not completed,1
+deplorable home conditions,deplorable home conditions,1
+derogatory comments,verbal abuse,1
+dietary needs not met,dietary needs not met,1
+digital penetration,digital penetration,1
+dignity and respect,dignity and respect,1
+diligent search failure,diligent search failure,1
+direct care staff,direct care staff,1
+direct observation violation,direct observation violation,1
+discharge paperwork,discharge paperwork,1
+discharge plan documentation error,documentation error,1
+discharge planning,discharge planning,1
+discharge procedure failure,placement issue,1
+discharge procedures,discharge procedures,1
+discharge summary,discharge summary,1
+discipline rule violation,discipline rule violation,1
+disclosure failure,disclosure failure,1
+discriminatory behavior,discriminatory behavior,1
+discriminatory language,discriminatory language,1
+dispensing violation,dispensing violation,1
+disrespectful behavior,disrespectful behavior,1
+disrobing,disrobing,1
+documentation late,documentation error,1
+documentation missing,documentation error,1
+documentation omission,documentation error,1
+documentation oversight,documentation error,1
+documentation timing,documentation error,1
+documentation workflow,documentation error,1
+donuts,donuts,1
+door holding,door holding,1
+door left ajar,door left ajar,1
+door malfunction,door malfunction,1
+double lock failure,double lock failure,1
+dozing off,dozing off,1
+dragging,dragging,1
+drifting,drifting,1
+drug provision to youth,drug provision to youth,1
+drug use,drug use,1
+drug use at work,drug use at work,1
+drugs/intoxication,drugs/intoxication,1
+due diligence,due diligence,1
+education,education,1
+education program violation,education program violation,1
+educational access,educational access,1
+educational neglect,educational neglect,1
+educational services,educational services,1
+egress violation,egress violation,1
+elbowing,elbowing,1
+electronic media oversight,electronic media oversight,1
+electronic policy,electronic policy,1
+email tone,email tone,1
+emergency care,medical care delay,1
+emergency egress,unsafe environment,1
+emergency hospitalizations,hospitalization,1
+emergency medical care,medical care delay,1
+emergency medical neglect,neglect,1
+emergency medication delay,medication error,1
+emergency response failure,medical care delay,1
+emergency response protocol violation,emergency response protocol violation,1
+emotional instability,emotional instability,1
+employee records,employee records,1
+employee relationship with consumer,employee relationship with consumer,1
+encouraging violence,encouraging violence,1
+environmental breakdown,environmental breakdown,1
+environmental hazards,environmental hazards,1
+environmental or supervision failures,supervision failure,1
+environmental risk,environmental risk,1
+environmental safety,environmental safety,1
+environmental safety failure,unsafe environment,1
+environmental security failure,unsafe environment,1
+environmental supervision failures,supervision failure,1
+escalation of conflict,escalation of conflict,1
+escape,escape,1
+ethics violation,ethics violation,1
+excessive confinement,seclusion,1
+expired fingerprints,expired fingerprints,1
+eyes on checks,eyes on checks,1
+facility condition,facility condition,1
+facility maintenance,facility maintenance,1
+facility maintenance failure,unsafe environment,1
+facility premises,facility premises,1
+facility process breakdown,facility process breakdown,1
+facility safety failure,unsafe environment,1
+failed 15-minute checks,failed 15-minute checks,1
+failed bedroom checks,supervision failure,1
+failed checks,failed checks,1
+failed health screening,failed health screening,1
+failed medication inventory,failed medication inventory,1
+failed policy implementation,failed policy implementation,1
+failed reporting,failed reporting,1
+failed room check,failed room check,1
+failed safety plan,failed safety plan,1
+failed supervision,failed supervision,1
+failed to re-apply,failed to re-apply,1
+failure of supervision,supervision failure,1
+failure to cite violation,failure to report,1
+failure to communicate safety concerns,safety risk,1
+failure to conduct 15-minute checks,supervision failure,1
+failure to conduct home visits,failure to conduct home visits,1
+failure to de-escalate,de-escalation failure,1
+failure to document,documentation error,1
+failure to document incident,documentation error,1
+failure to document restraint,documentation error,1
+failure to enroll in school,failure to enroll in school,1
+failure to facilitate therapy,failure to facilitate therapy,1
+failure to follow 1:1 supervision,supervision failure,1
+failure to follow court order,failure to follow court order,1
+failure to follow suicide protocol,self-harm,1
+failure to implement service plan,failure to implement service plan,1
+failure to monitor weight,failure to monitor weight,1
+failure to provide documentation,failure to provide documentation,1
+failure to provide report,failure to provide report,1
+failure to report abuse allegations,failure to report,1
+failure to report allegation,failure to report,1
+failure to report child abuse,failure to report,1
+failure to report incident,failure to report,1
+failure to report incidents,failure to report,1
+failure to report to licensing,failure to report,1
+failure to retreat,de-escalation failure,1
+failure to update policy,failure to update policy,1
+failure to upload,late submission,1
+failure to upload reports,late submission,1
+false documentation,documentation error,1
+falsified MAR,falsified MAR,1
+falsified information,falsified information,1
+falsifying documentation,documentation error,1
+family team meeting,family team meeting,1
+family team meeting documentation,documentation error,1
+family team meeting not held,family team meeting not held,1
+family therapy,family therapy,1
+faulty door,faulty door,1
+faulty telephone system,faulty telephone system,1
+fear-inducing statements,fear-inducing statements,1
+felony conviction,felony conviction,1
+fence scaling,fence scaling,1
+fentanyl,fentanyl,1
+fictive kin,fictive kin,1
+file retention,file retention,1
+financial exploitation,financial exploitation,1
+financial instability,financial instability,1
+financial support disbursement,financial support disbursement,1
+fire extinguisher accessibility,fire extinguisher accessibility,1
+fire hazard,fire hazard,1
+fire safety,fire safety,1
+firearm,firearm,1
+fixed time seclusion,fixed time seclusion,1
+forearm on throat,forearm on throat,1
+foreign object ingestion,foreign object ingestion,1
+forgery,forgery,1
+foster parent information,foster parent information,1
+foster youth,foster youth,1
+fraud,fraud,1
+funding misunderstanding,funding misunderstanding,1
+gender-specific policy,gender-specific policy,1
+gift giving,gift giving,1
+grabbing,physical assault,1
+group discipline,group discipline,1
+guardianship delay,guardianship delay,1
+gurney,gurney,1
+handle with care violation,handle with care violation,1
+harassment,harassment,1
+harsh tone,harsh tone,1
+hazardous conditions,hazardous conditions,1
+hazardous materials,hazardous materials,1
+head count failure,supervision failure,1
+head pressed to floor,head pressed to floor,1
+health record,health record,1
+health services policies and procedures,health services policies and procedures,1
+health status assessment,health status assessment,1
+high-risk medication,high-risk medication,1
+hiring compliance,hiring compliance,1
+history review failure,history review failure,1
+hitting youth,hitting youth,1
+hitting/striking,hitting/striking,1
+holding door shut,holding door shut,1
+home study deficiency,home study deficiency,1
+household member assessment,household member assessment,1
+human trafficking program,human trafficking program,1
+humiliating treatment,humiliating treatment,1
+hygiene supplies,hygiene supplies,1
+ignored youth placement preference,ignored youth placement preference,1
+illegal behavior,illegal behavior,1
+imminent danger,imminent danger,1
+imminent risk of harm,imminent risk of harm,1
+impaired supervision,impaired supervision,1
+improper car seat use,improper car seat use,1
+improper escort,improper escort,1
+improper medication administration,improper medication administration,1
+improper physical restraint,physical restraint,1
+improper restraint techniques,physical restraint,1
+inability to perform duties,inability to perform duties,1
+inaccurate documentation,documentation error,1
+inaccurate grievance procedure,grievance procedure violation,1
+inaccurate information,inaccurate information,1
+inaccurate records,inaccurate records,1
+inaccurate report,inaccurate report,1
+inadequate bed checks,supervision failure,1
+inadequate de-escalation,de-escalation failure,1
+inadequate dietary support,inadequate dietary support,1
+inadequate home assessment,inadequate home assessment,1
+inadequate line-of-sight,supervision failure,1
+inadequate medical assessment,medical care delay,1
+inadequate orientation,training violation,1
+inadequate programming,inadequate programming,1
+inadequate reunification efforts,inadequate reunification efforts,1
+inadequate security,unsafe environment,1
+inadequate staff monitoring,supervision failure,1
+inadequate staffing,understaffing,1
+inadequate supervision oversight,supervision failure,1
+inappropriate administrative action,inappropriate administrative action,1
+inappropriate comments,verbal abuse,1
+inappropriate communication,inappropriate communication,1
+inappropriate content exposure,inappropriate content exposure,1
+inappropriate de-escalation,de-escalation failure,1
+inappropriate disclosure,inappropriate disclosure,1
+inappropriate grooming,sexual abuse,1
+inappropriate intervention,inappropriate intervention,1
+inappropriate language by staff,verbal abuse,1
+inappropriate physical behavior,boundary violation,1
+inappropriate physical transport,inappropriate physical transport,1
+inappropriate response,inappropriate response,1
+inappropriate restraint,physical restraint,1
+inappropriate restraint techniques,physical restraint,1
+inappropriate seclusion,seclusion,1
+inappropriate sexual activity,sexual abuse,1
+inappropriate sexual comments,sexual abuse,1
+inappropriate sexual touch,sexual abuse,1
+inappropriate staff language,inappropriate staff language,1
+inappropriate staff-youth contact,inappropriate staff-youth contact,1
+inappropriate staff-youth interaction,inappropriate staff-youth interaction,1
+inappropriate tone,inappropriate tone,1
+inappropriate tone/language,inappropriate tone/language,1
+inappropriate touch,inappropriate touch,1
+inappropriate touching,inappropriate touching,1
+incident report,incident report,1
+incident report missing,incident report missing,1
+incident report non-compliance,incident report non-compliance,1
+incident report not written,incident report not written,1
+incident reporting protocols,incident reporting protocols,1
+incomplete case records,incomplete case records,1
+incomplete forms,incomplete forms,1
+incomplete investigation,incomplete investigation,1
+incomplete records,incomplete records,1
+incomplete report,incomplete report,1
+inconsistent documentation,documentation error,1
+incorrect corrective action plan,incorrect corrective action plan,1
+individual therapy,individual therapy,1
+individual therapy not provided,individual therapy not provided,1
+information sharing,information sharing,1
+informed consent,informed consent,1
+ingestion of chemicals,ingestion of chemicals,1
+injury requiring medical treatment,injury requiring medical treatment,1
+insufficient financing,insufficient financing,1
+insufficient staff intervention,insufficient staff intervention,1
+insufficient staff supervision,insufficient staff supervision,1
+insufficient staff-to-resident ratio,insufficient staff-to-resident ratio,1
+insufficient training,insufficient training,1
+insulin rationing,insulin rationing,1
+intake process,intake process,1
+intentional injury,intentional injury,1
+interpreter access,interpreter access,1
+interval checks not performed,interval checks not performed,1
+intervention standards,intervention standards,1
+intimidating comments,intimidation,1
+intimidation,intimidation,1
+investigation interference,investigation interference,1
+investigation obstruction,investigation interference,1
+investigation procedural error,investigation procedural error,1
+investigation procedure,investigation procedure,1
+investigation timeline violation,investigation timeline violation,1
+isolation checks,isolation checks,1
+job description violation,job description violation,1
+keys inaccessible,keys inaccessible,1
+kissing,kissing,1
+kissing prohibited,kissing prohibited,1
+knee against back,knee against back,1
+lack of 1:1 supervision,lack of 1:1 supervision,1
+lack of ability to perform duties,lack of ability to perform duties,1
+lack of alternative meals,lack of alternative meals,1
+lack of approval,lack of approval,1
+lack of assertiveness,lack of assertiveness,1
+lack of background checks,lack of background checks,1
+lack of communication equipment,lack of communication equipment,1
+lack of contact,lack of contact,1
+lack of continuous supervision,lack of continuous supervision,1
+lack of coordination,lack of coordination,1
+lack of court order,lack of court order,1
+lack of employee records,lack of employee records,1
+lack of footwear,lack of footwear,1
+lack of intervention strategies,lack of intervention strategies,1
+lack of least restrictive intervention,lack of least restrictive intervention,1
+lack of line of sight,lack of line of sight,1
+lack of oversight,lack of oversight,1
+lack of parent involvement in planning,lack of parent involvement in planning,1
+lack of policy/procedure,lack of policy/procedure,1
+lack of procedure,lack of procedure,1
+lack of professional boundaries,lack of professional boundaries,1
+lack of professionalism,lack of professionalism,1
+lack of resources,lack of resources,1
+lack of responsible character,lack of responsible character,1
+lack of safety plan,lack of safety plan,1
+lack of staff intervention,lack of staff intervention,1
+lack of staff supervision,lack of staff supervision,1
+lack of staff training,lack of staff training,1
+lack of sufficient staff,lack of sufficient staff,1
+lack of supervision guidelines,lack of supervision guidelines,1
+lack of supervision protocol,lack of supervision protocol,1
+lack of support,lack of support,1
+lack of training,lack of training,1
+lack of verification,lack of verification,1
+lack of vetting,lack of vetting,1
+lack of visitation,lack of visitation,1
+lack of visual inspection,lack of visual inspection,1
+lack of written restraint procedures,lack of written restraint procedures,1
+language barrier,language barrier,1
+larceny,larceny,1
+late case entry,late submission,1
+late case file entry,late case file entry,1
+late case notes,late submission,1
+late child assessment,late child assessment,1
+late court notification,late court notification,1
+late incident report,late incident report,1
+late information provision,late information provision,1
+late paperwork,late paperwork,1
+late records submission,late records submission,1
+late referral,late referral,1
+late school enrollment,late school enrollment,1
+late submission of report,late submission of report,1
+late treatment plan,late treatment plan,1
+laundry detergent ingestion,laundry detergent ingestion,1
+law enforcement notification failure,notification failure,1
+legal non-compliance,legal non-compliance,1
+length of confinement,length of confinement,1
+liabilities,liabilities,1
+license expiration,license expiration,1
+license noncompliance,license noncompliance,1
+licensing breakdown,licensing breakdown,1
+licensing communication,licensing communication,1
+licensing noncompliance,licensing noncompliance,1
+licensing procedure,licensing procedure,1
+licensing recommendation failure,licensing recommendation failure,1
+licensing terms mismatch,licensing terms mismatch,1
+life-threatening,life-threatening,1
+lifesaving medication,lifesaving medication,1
+line of sight,line of sight,1
+line of sight failure,supervision failure,1
+line-of-sight failure,supervision failure,1
+line-of-sight supervision,line-of-sight supervision,1
+locked facility,locked facility,1
+locked in bedrooms,locked in bedrooms,1
+locked in stairwell,locked in stairwell,1
+locked out,locked out,1
+locked room,locked room,1
+marijuana smoking,marijuana smoking,1
+mask policy violation,mask policy violation,1
+mechanical restraints,physical restraint,1
+medical and mental health concerns,medical and mental health concerns,1
+medical care,medical care,1
+medical clearance,medical clearance,1
+medical delay,medical care delay,1
+medical equipment,medical equipment,1
+medical health concerns,medical health concerns,1
+medical information,medical information,1
+medical non-compliance,medical non-compliance,1
+medically fragile,medically fragile,1
+medication access risk,medication access risk,1
+medication administration documentation,documentation error,1
+medication administration policy violation,medication administration policy violation,1
+medication administration record,medication administration record,1
+medication administration record inaccuracies,medication administration record inaccuracies,1
+medication control,medication error,1
+medication delay,medication error,1
+medication dispensing errors,medication error,1
+medication dispensing policy,medication dispensing policy,1
+medication dispensing violation,medication error,1
+medication documentation error,medication error,1
+medication labeling,medication error,1
+medication lapse,medication error,1
+medication left on cart,medication error,1
+medication mishandling,medication error,1
+medication mismanagement,medication error,1
+medication not administered,medication error,1
+medication not dispensed as prescribed,medication error,1
+medication overdose,medication overdose,1
+medication refill failure,medication error,1
+medication room unlocked,medication room unlocked,1
+medication storage violation,medication storage violation,1
+medication withholding,medication withholding,1
+medications not dispensed,medication error,1
+mental health concerns,mental health concerns,1
+mental health crisis,mental health crisis,1
+mental health screening,mental health screening,1
+mental health services,mental health services,1
+mental health treatment,mental health treatment,1
+menu not posted,menu not posted,1
+minor resident,minor resident,1
+misrepresentation,misrepresentation,1
+misrepresentation of information,misrepresentation of information,1
+missed administrative deadline,missed administrative deadline,1
+missed annual evaluation,missed annual evaluation,1
+missed call,missed call,1
+missed checks,missed checks,1
+missed court order,missed court order,1
+missed deadline,missed deadline,1
+missed doses,missed doses,1
+missed face-to-face contacts,missed face-to-face contacts,1
+missed home visit,missed home visit,1
+missed medical assessment,missed medical assessment,1
+missed medications,missed medications,1
+missed room checks,missed room checks,1
+missed sibling visits,missed sibling visits,1
+missed therapy sessions,missed therapy sessions,1
+missed training,missed training,1
+missed visits,missed visits,1
+missing case file documents,missing case file documents,1
+missing dates,missing dates,1
+missing family team meeting,missing family team meeting,1
+missing fire drills,missing fire drills,1
+missing forms,missing forms,1
+missing incident report,missing incident report,1
+missing notification,missing notification,1
+missing paperwork,missing paperwork,1
+missing placement exception,missing placement exception,1
+missing signature,missing signature,1
+missing treatment plan elements,missing treatment plan elements,1
+missing written plan,missing written plan,1
+mixed populations,mixed populations,1
+mocking,mocking,1
+mold,mold,1
+mold in water,mold in water,1
+monthly home visit,monthly home visit,1
+name-calling,verbal abuse,1
+near-fatal,near-fatal,1
+neck contact,neck contact,1
+neck restraint,physical restraint,1
+negative comments in front of youth,negative comments in front of youth,1
+negative language,negative language,1
+no birth plan,no birth plan,1
+no chief administrator,no chief administrator,1
+no imminent danger,no imminent danger,1
+no touch policy violation,no touch policy violation,1
+non-CPI technique,physical restraint,1
+non-compliance with programming rule,non-compliance with programming rule,1
+non-compliance with ratio rule,non-compliance with ratio rule,1
+non-compliance with rule,non-compliance with rule,1
+non-compliance with staffing ratio rule,non-compliance with staffing ratio rule,1
+non-compliant bedroom,non-compliant bedroom,1
+non-compliant checks,non-compliant checks,1
+non-compliant sleeping arrangement,non-compliant sleeping arrangement,1
+non-functional alarm system,non-functional alarm system,1
+non-lifesaving,non-lifesaving,1
+non-physical de-escalation failure,de-escalation failure,1
+non-violent crisis intervention violation,non-violent crisis intervention violation,1
+noncompliance,compliance violation,1
+noncompliance with health procedures,noncompliance with health procedures,1
+nosebleed,nosebleed,1
+notice requirement,notice requirement,1
+notification procedure,notification procedure,1
+nude photos,sexual abuse,1
+nutritional non-compliance,nutritional non-compliance,1
+object thrown at youth,object thrown at youth,1
+obscene language,obscene language,1
+observation checks,observation checks,1
+obstructed view,obstructed view,1
+on-call procedure,on-call procedure,1
+one-to-one supervision failure,supervision failure,1
+oral sex,oral sex,1
+outdoor activities,outdoor activities,1
+outdoor recreation,outdoor recreation,1
+outings,outings,1
+over capacity,over capacity,1
+overdose,overdose,1
+overdose attempt,overdose attempt,1
+overdose risk,overdose risk,1
+overpayment,overpayment,1
+oversharing information,oversharing information,1
+paperwork backlog,paperwork backlog,1
+paperwork compliance,paperwork compliance,1
+paperwork delays,paperwork error,1
+paperwork incomplete,paperwork incomplete,1
+paperwork policy compliance,paperwork policy compliance,1
+paperwork processing error,paperwork processing error,1
+paperwork violations,paperwork violations,1
+paperwork workflow issue,paperwork workflow issue,1
+parent notification delay,notification failure,1
+parenting time cancelled,parenting time cancelled,1
+payment schedule,payment schedule,1
+peer boundaries,peer boundaries,1
+peer boundary safety plan,peer boundary safety plan,1
+peer boundary violation,peer boundary violation,1
+peer physical intervention,peer physical intervention,1
+peer-on-peer restraint,physical restraint,1
+personal device recording,personal device recording,1
+personal hygiene,personal hygiene,1
+personal phone use,personal phone use,1
+personnel record violation,personnel record violation,1
+phone policy,phone policy,1
+physical assault risk,physical assault,1
+physical contact violation,physical contact violation,1
+physical intervention violation,physical intervention violation,1
+physical management violations,physical management violations,1
+physical punishment prohibited,physical punishment prohibited,1
+physical restraint violation,physical restraint,1
+pinned down,pinned down,1
+placement,placement,1
+placement breakdown,placement breakdown,1
+placement compliance,placement compliance,1
+placement crisis,placement crisis,1
+placement error,placement error,1
+placement outline,placement outline,1
+placement safety failure,placement issue,1
+placement specification error,placement specification error,1
+plan review submission,plan review submission,1
+pod breach,pod breach,1
+poison control,poison control,1
+policy compliance errors,policy compliance errors,1
+policy compliance failure,policy violation,1
+policy deficiency,policy deficiency,1
+policy misalignment,policy misalignment,1
+policy missing,policy missing,1
+poor boundaries,poor boundaries,1
+poor judgment,poor judgment,1
+pornography,pornography,1
+position of authority,position of authority,1
+positive drug screen,positive drug screen,1
+prescribed medication not administered,prescribed medication not administered,1
+prescription refill failure,medication error,1
+prine restraint,physical restraint,1
+prior approval,prior approval,1
+privacy,privacy,1
+privacy safeguard,privacy safeguard,1
+privacy safeguard violation,privacy safeguard violation,1
+procedural breakdown,procedural breakdown,1
+procedural noncompliance,procedural noncompliance,1
+process breakdown,process breakdown,1
+professional boundary violation,professional boundary violation,1
+program statement,program statement,1
+program statement non-compliance,program statement non-compliance,1
+programming failure,programming failure,1
+prohibited physical punishment,prohibited physical punishment,1
+prohibited substances,prohibited substances,1
+prolonged restraint,physical restraint,1
+proportionality violation,proportionality violation,1
+psychotropic medications,psychotropic medications,1
+pulled hair,pulled hair,1
+pulling hair,pulling hair,1
+punishment,punishment,1
+purchased contraband,contraband,1
+purchasing for youth,purchasing for youth,1
+push,push,1
+pushing and pulling,pushing and pulling,1
+pushing youth,pushing youth,1
+qualifications,qualifications,1
+rape,rape,1
+ratio,ratio,1
+reckless driving,reckless driving,1
+record management violation,record management violation,1
+recordkeeping,recordkeeping,1
+reevaluation failure,reevaluation failure,1
+reevaluation overdue,reevaluation overdue,1
+registered sex offender,registered sex offender,1
+reimbursement failure,reimbursement failure,1
+relative placement failure,placement issue,1
+religion policy violation,religion policy violation,1
+remodeling plans,remodeling plans,1
+renewal application,renewal application,1
+repeated incidents,repeated incidents,1
+repeated violation,repeat violation,1
+report compliance,report compliance,1
+report incomplete,report incomplete,1
+report missing rule parts,report missing rule parts,1
+reporting delay,failure to report,1
+reporting failure,failure to report,1
+resident-on-resident sexual activity,resident-on-resident sexual activity,1
+responsible character,responsible character,1
+restraint against wall,physical restraint,1
+restraint and seclusion,physical restraint,1
+restraint beyond threat,physical restraint,1
+restraint injuries,restraint injuries,1
+restraint model violation,physical restraint,1
+restraint non-compliance,physical restraint,1
+restraint not proportionate,physical restraint,1
+restraint performed alone,physical restraint,1
+restraint procedure,restraint procedure,1
+restraint protocol violation,physical restraint,1
+restraint reporting,restraint reporting,1
+restraint reporting violation,restraint reporting violation,1
+restraint technique misuse,physical restraint,1
+restraint technique violation,physical restraint,1
+restraint without safety risk,physical restraint,1
+restraint/seclusion policy violation,physical restraint,1
+restriction of airway,restriction of airway,1
+restriction of movement,restriction of movement,1
+restrictive phone access,restrictive phone access,1
+risk assessment,risk assessment,1
+risk assessment failure,risk assessment failure,1
+room check failure,supervision failure,1
+room check non-compliance,room check non-compliance,1
+room checks,room checks,1
+room confinement,room confinement,1
+room search procedure failure,room search procedure failure,1
+rules compliance,rules compliance,1
+runaway prevention,runaway prevention,1
+runaway/abduction,runaway/abduction,1
+runaway/awol,runaway/awol,1
+runaways/AWOL,runaways/AWOL,1
+safety belts,safety belts,1
+safety check,safety check,1
+safety check failure,safety risk,1
+safety hazard,safety risk,1
+safety plan non-compliance,safety plan non-compliance,1
+safety planning failure,safety risk,1
+safety plans violation,safety plans violation,1
+safety protocol violation,safety protocol violation,1
+safety risk during transport,safety risk during transport,1
+safety violation,safety violation,1
+satellite office,satellite office,1
+school absenteeism,school absenteeism,1
+school enrollment delay,school enrollment delay,1
+school enrollment failure,school enrollment failure,1
+scraped elbows,scraped elbows,1
+scraped knees,scraped knees,1
+search policy violation,search policy violation,1
+search procedure failure,search procedure failure,1
+seated hold,physical restraint,1
+seclusion in sensory room,seclusion in sensory room,1
+seclusion logs,seclusion logs,1
+seclusion misuse,seclusion misuse,1
+seclusion monitoring failure,seclusion,1
+seclusion plan violation,seclusion plan violation,1
+seclusion violation,seclusion,1
+secure facility breach,secure facility breach,1
+self-disclosure,self-disclosure,1
+self-harm statements,self-harm statements,1
+self‑harm,self‑harm,1
+separation plan not followed,separation plan not followed,1
+separation plan refusal,separation plan refusal,1
+service denial,service denial,1
+service plan completed late,service plan completed late,1
+service plan compliance,service plan compliance,1
+service plan delay,service plan delay,1
+service plan delivery,service plan delivery,1
+service plan involvement,service plan involvement,1
+service plan provision,service plan provision,1
+sexual comments,sexual comments,1
+sexual content,sexual abuse,1
+sexual encounter,sexual encounter,1
+sexual exploitation risk,sexual exploitation risk,1
+sexual harassment,sexual abuse,1
+sexual harassment allegations,sexual harassment allegations,1
+sexual harassment suspicion,sexual harassment suspicion,1
+sexually implicit text messages,sexually implicit text messages,1
+sexually inappropriate behavior,sexually inappropriate behavior,1
+shoving matches,shoving matches,1
+shower time confinement,shower time confinement,1
+sibling visits not occurring,sibling visits not occurring,1
+side effects,side effects,1
+signature,signature,1
+skin irritations,skin irritations,1
+slammed to ground,physical assault,1
+slamming,physical assault,1
+sleep checks,sleep checks,1
+sleeping on shift,sleeping on shift,1
+sleeping with children,sleeping with children,1
+smoking on premises,smoking on premises,1
+social media communication,social media communication,1
+special education services,special education services,1
+special evaluation,special evaluation,1
+special evaluation completion delay,special evaluation completion delay,1
+special evaluation errors,special evaluation errors,1
+special evaluation failure,special evaluation failure,1
+specialist referrals not followed,specialist referrals not followed,1
+sprain,sprain,1
+staff altercation in presence of youth,staff altercation in presence of youth,1
+staff asleep on duty,staff asleep on duty,1
+staff assisted runaway,staff assisted runaway,1
+staff bias,staff bias,1
+staff communication breakdown,staff communication breakdown,1
+staff competency failure,understaffing,1
+staff family interaction,staff family interaction,1
+staff fear of youth,staff fear of youth,1
+staff hiring,staff hiring,1
+staff injury,staff injury,1
+staff insufficient,staff insufficient,1
+staff left facility unattended,staff left facility unattended,1
+staff left youth unattended,staff left youth unattended,1
+staff not completing checks,staff not completing checks,1
+staff overwhelmed,staff overwhelmed,1
+staff personal device,staff personal device,1
+staff providing drugs to youth,staff providing drugs to youth,1
+staff response to aggression,staff response to aggression,1
+staff responsiveness,staff responsiveness,1
+staff restraint,physical restraint,1
+staff sexual misconduct,staff sexual misconduct,1
+staff shortage,staff shortage,1
+staff sleeping on shift,staff sleeping on shift,1
+staff substantiated,staff substantiated,1
+staff sufficiency,staff sufficiency,1
+staff supervision failure,supervision failure,1
+staff to resident ratio,staff to resident ratio,1
+staff training and policy compliance breakdown,staff training and policy compliance breakdown,1
+staff training hours,staff training hours,1
+staff training overdue,staff training overdue,1
+staff unprepared,staff unprepared,1
+staff unprofessionalism,staff unprofessionalism,1
+staff-client interaction,staff-client interaction,1
+staff-facilitated fight,staff-facilitated fight,1
+staff-instructed violence,staff-instructed violence,1
+staff-on-youth conduct,staff-on-youth conduct,1
+staff-on-youth misconduct,staff-on-youth misconduct,1
+staff-on-youth physical contact,staff-on-youth physical contact,1
+staff-on-youth threat,staff-on-youth threat,1
+staff-on-youth violation,staff-on-youth violation,1
+staff-to-client ratio violation,staff-to-client ratio violation,1
+staff-to-resident ratio non-compliance,staff-to-resident ratio non-compliance,1
+staff-to-youth ratio,staff-to-youth ratio,1
+staff-youth contact after discharge,staff-youth contact after discharge,1
+staff-youth relationship,staff-youth relationship,1
+staff-youth violence,staff-youth violence,1
+staffing assignment,staffing assignment,1
+staffing compliance,staffing compliance,1
+staffing failure,understaffing,1
+staffing insufficiency,staffing insufficiency,1
+staffing issues,staffing issues,1
+staffing sufficiency,understaffing,1
+staffing sufficiency violation,staffing sufficiency violation,1
+striking motion,striking motion,1
+submission failure,late submission,1
+substance abuse referral failure,substance abuse referral failure,1
+substance abuse risk,contraband,1
+sufficiency of staff,sufficiency of staff,1
+sufficient staff violation,sufficient staff violation,1
+suffocation,suffocation,1
+suicidal behavior,suicidal behavior,1
+suicidal youth,suicidal youth,1
+suicide gesture,suicide gesture,1
+suicide precautions,suicide precautions,1
+suicide prevention policy violation,suicide prevention policy violation,1
+suicide prevention training,suicide prevention training,1
+suicide smock misuse,suicide smock misuse,1
+supervised visits,supervised visits,1
+supervision,supervision,1
+supervision policy violation,supervision policy violation,1
+suspected abuse,abuse,1
+swearing,verbal abuse,1
+system circumvention,system circumvention,1
+tackle,tackle,1
+tackled,tackled,1
+theft,theft,1
+therapeutic hold deviation,physical restraint,1
+therapeutic needs,therapeutic needs,1
+therapy,therapy,1
+therapy not provided,therapy not provided,1
+third-party software security failure,third-party software security failure,1
+thorough evaluation failure,thorough evaluation failure,1
+threat,threat,1
+threatened harm,threatened harm,1
+threatening harm,threatening harm,1
+threats of assault,verbal abuse,1
+threats of harm,threats of harm,1
+threats of physical harm,threats of physical harm,1
+threats to youth,threats to youth,1
+throwing object,throwing object,1
+throwing object at youth,throwing object at youth,1
+throwing youth,physical assault,1
+timeline non-compliance,timeline non-compliance,1
+timeline noncompliance,timeline noncompliance,1
+timeline violation,timeline violation,1
+timely notification failure,notification failure,1
+tobacco provision to youth,tobacco provision to youth,1
+toileting protocol,toileting protocol,1
+tracking system implementation,tracking system implementation,1
+training approval,training approval,1
+training curriculum change,training curriculum change,1
+training documentation,documentation error,1
+training lapse,training lapse,1
+training not current,training not current,1
+training requirements,training requirements,1
+transportation safety,transportation safety,1
+transportation safety failure,safety risk,1
+trauma,trauma,1
+trauma assessment delayed,trauma assessment delayed,1
+trauma-informed care,trauma-informed care,1
+trauma-informed care violation,trauma-informed care violation,1
+treatment delay,medical care delay,1
+treatment milieu breach,treatment milieu breach,1
+treatment needs unmet,treatment needs unmet,1
+treatment plan delay,treatment plan delay,1
+tripping,tripping,1
+unapproved behavior management technique,physical restraint,1
+unapproved hold,physical restraint,1
+unapproved outing,unapproved outing,1
+unapproved restraint,physical restraint,1
+unapproved restraint holds,physical restraint,1
+unapproved restraint method,physical restraint,1
+unapproved technique,physical restraint,1
+unapproved techniques,physical restraint,1
+unapproved training,unapproved training,1
+unassisted birth,unassisted birth,1
+unattended medications,unattended medications,1
+unattended youth,unattended youth,1
+unauthorized departure,unauthorized departure,1
+unauthorized electronic devices,unauthorized electronic devices,1
+unauthorized out-of-state visits,unauthorized out-of-state visits,1
+unauthorized phone use,unauthorized phone use,1
+unauthorized placement,unauthorized placement,1
+unauthorized publicity,unauthorized publicity,1
+unauthorized recording,unauthorized recording,1
+unauthorized restraint,physical restraint,1
+unauthorized restraint method,physical restraint,1
+unauthorized restraint technique,physical restraint,1
+unauthorized signing,unauthorized signing,1
+unauthorized transport,unauthorized transport,1
+unauthorized visitation,unauthorized visitation,1
+unauthorized visitors,unauthorized visitors,1
+unauthorized youth access,unauthorized youth access,1
+undocumented restraint,physical restraint,1
+unlocked cart,unlocked cart,1
+unlocked chemical storage,unlocked chemical storage,1
+unlocked doors,unlocked doors,1
+unlocked medication cart,unlocked medication cart,1
+unmet medical care,unmet medical care,1
+unmet therapy needs,unmet therapy needs,1
+unmonitored phone use,unmonitored phone use,1
+unnecessary restraint,physical restraint,1
+unplanned discharge,unplanned discharge,1
+unprescribed medication,unprescribed medication,1
+unprofessional communication,unprofessional communication,1
+unprofessional de-escalation,de-escalation failure,1
+unqualified case manager,unqualified case manager,1
+unqualified staff,unqualified staff,1
+unqualified therapist,unqualified therapist,1
+unrestrained push,unrestrained push,1
+unsafe de‑escalation,unsafe de‑escalation,1
+unsafe discharge,unsafe discharge,1
+unsafe facility,unsafe facility,1
+unsafe hold,physical restraint,1
+unsafe online access,unsafe online access,1
+unsafe physical restraint,physical restraint,1
+unsafe physical restraints,physical restraint,1
+unsafe placement,unsafe placement,1
+unsafe records storage,unsafe records storage,1
+unsafe sleep,unsafe sleep,1
+unsafe staff action,unsafe staff action,1
+unsafe storage,unsafe storage,1
+unsafe technique,physical restraint,1
+unsanitary environment,unsanitary environment,1
+unsecured door,unsecured door,1
+unsecured keys,unsecured keys,1
+unsecured vehicle,unsecured vehicle,1
+unsupervised access,unsupervised access,1
+unsupervised care,unsupervised care,1
+unsupervised contact,unsupervised contact,1
+unsupervised encounter,unsupervised encounter,1
+unsupervised medication,unsupervised medication,1
+unsupervised restraint,physical restraint,1
+unsupervision,unsupervision,1
+untimely case record update,untimely case record update,1
+untimely data entry,untimely data entry,1
+untimely dispensing,untimely dispensing,1
+untimely investigation,untimely investigation,1
+untimely referral,untimely referral,1
+untimely referrals,untimely referrals,1
+untrained restraint,physical restraint,1
+untrained staff intervention,untrained staff intervention,1
+untruthful reporting,untruthful reporting,1
+unupdated medical passport,unupdated medical passport,1
+unusual incident reporting,unusual incident reporting,1
+unwarranted seclusion,unwarranted seclusion,1
+upper torso restraint,physical restraint,1
+urgent care,urgent care,1
+vaccine without authorization,vaccine without authorization,1
+van flipped,van flipped,1
+vape pens,vape pens,1
+vaping,vaping,1
+vaping with youth,vaping with youth,1
+variable interval eye-on checks,variable interval eye-on checks,1
+variance,variance,1
+variance lapse,variance lapse,1
+variance violation,variance violation,1
+vehicle theft,vehicle theft,1
+verbal aggression,verbal abuse,1
+verbal altercation,verbal altercation,1
+verbally abusive,verbally abusive,1
+video footage,video footage,1
+video recording,video recording,1
+video surveillance misuse,video surveillance misuse,1
+violated court order,violated court order,1
+violation of ethics policy,violation of ethics policy,1
+violation of health service policy,violation of health service policy,1
+violation of participant safety policy,violation of participant safety policy,1
+violation of restraint model,physical restraint,1
+violation of restraint rule,violation of restraint rule,1
+violation of safety procedures,violation of safety procedures,1
+violation of time limit,violation of time limit,1
+violation of treatment plan,violation of treatment plan,1
+violation of trust,violation of trust,1
+violent felony,violent felony,1
+visitation,visitation,1
+visitation compliance,visitation compliance,1
+visitation denial,visitation denial,1
+visitation not made up,visitation not made up,1
+visitation plan violation,visitation plan violation,1
+visitation policy violation,visitation policy violation,1
+visitor screening,visitor screening,1
+vulnerable residents,vulnerable residents,1
+wall sits,wall sits,1
+water quality issues,water quality issues,1
+weapon,weapon,1
+weapon storage compliance,weapon storage compliance,1
+weapons,weapons,1
+weapons involved,weapons involved,1
+wheelchair delay,wheelchair delay,1
+windows do not open,windows do not open,1
+withholding payments,withholding payments,1
+withholding stipends,withholding stipends,1
+workforce capacity,understaffing,1
+written resolution,written resolution,1
+yelling at resident,yelling at resident,1
+youth blocking exits,youth blocking exits,1
+youth elopement,youth elopement,1
+youth engagement,youth engagement,1
+youth in unauthorized areas,supervision failure,1
+youth ingestion,youth ingestion,1
+youth left home,youth left home,1
+youth safety,youth safety,1
+youth took medications not prescribed to him,youth took medications not prescribed to him,1
+youth violence,youth violence,1
+youth-on-youth,youth-on-youth,1
+youth-on-youth contact,youth-on-youth contact,1
+youth-on-youth sexual incident,youth-on-youth sexual incident,1
+youth-on-youth sexual misconduct,youth-on-youth sexual misconduct,1
+zoning violation,zoning violation,1
