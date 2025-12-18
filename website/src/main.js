@@ -2,6 +2,10 @@
 import { initDB, storeQuery, getQueriesForDocument, findExistingQuery, getAllQueries, clearAllQueries, deleteQuery } from './indexedDB.js';
 import { getApiKey } from './encryption.js';
 import { queryDeepSeek } from './apiService.js';
+import { Trie } from './trie.js';
+
+// Constants
+const DOM_READY_DELAY = 100; // Delay in ms to ensure DOM is ready for operations
 
 let allAgencies = [];
 let filteredAgencies = [];
@@ -11,125 +15,15 @@ let apiKey = null; // Store decrypted API key
 
 // Filter state
 let filters = {
-    sirOnly: false,
-    keywords: [] // Array of selected keywords
+    sirOnly: true, // Enable SIR-only by default
+    keyword: null, // Single selected keyword
+    agency: null // Single selected agency (agencyId)
 };
 
-// Trie data structure for keyword autocomplete
-class TrieNode {
-    constructor() {
-        this.children = new Map();
-        this.isEndOfWord = false;
-        this.isFullKeyword = false; // Track if this is an actual full keyword vs just a word fragment
-        this.fullKeywords = new Set(); // Store which full keywords contain this word/prefix
-        this.count = 0; // Number of documents with this keyword (only for full keywords)
-    }
-}
-
-class Trie {
-    constructor() {
-        this.root = new TrieNode();
-        this.keywordCounts = new Map(); // Track counts for full keywords
-    }
-
-    insert(word, isFullKeyword = false, fullKeywordPhrase = null) {
-        let node = this.root;
-        word = word.toLowerCase();
-        
-        for (const char of word) {
-            if (!node.children.has(char)) {
-                node.children.set(char, new TrieNode());
-            }
-            node = node.children.get(char);
-            
-            // Track which full keyword this prefix belongs to
-            if (fullKeywordPhrase) {
-                node.fullKeywords.add(fullKeywordPhrase.toLowerCase());
-            }
-        }
-        node.isEndOfWord = true;
-        if (isFullKeyword) {
-            node.isFullKeyword = true;
-            const lowerKey = word.toLowerCase();
-            this.keywordCounts.set(lowerKey, (this.keywordCounts.get(lowerKey) || 0) + 1);
-            node.count = this.keywordCounts.get(lowerKey);
-        }
-        if (fullKeywordPhrase) {
-            node.fullKeywords.add(fullKeywordPhrase.toLowerCase());
-        }
-    }
-
-    search(prefix) {
-        let node = this.root;
-        prefix = prefix.toLowerCase();
-        
-        for (const char of prefix) {
-            if (!node.children.has(char)) {
-                return [];
-            }
-            node = node.children.get(char);
-        }
-        
-        const results = new Map(); // Use map to deduplicate
-        this._collectKeywords(node, prefix, results);
-        return Array.from(results.values()).sort((a, b) => b.count - a.count);
-    }
-
-    _collectKeywords(node, prefix, results, maxResults = 10) {
-        if (results.size >= maxResults) return;
-        
-        // If this is a full keyword, add it
-        if (node.isEndOfWord && node.isFullKeyword) {
-            const lowerPrefix = prefix.toLowerCase();
-            if (!results.has(lowerPrefix)) {
-                results.set(lowerPrefix, { 
-                    keyword: prefix, 
-                    count: this.keywordCounts.get(lowerPrefix) || node.count 
-                });
-            }
-        }
-        
-        // Add all full keywords that contain this word/prefix
-        for (const fullKeyword of node.fullKeywords) {
-            if (!results.has(fullKeyword)) {
-                results.set(fullKeyword, { 
-                    keyword: fullKeyword, 
-                    count: this.keywordCounts.get(fullKeyword) || 1
-                });
-            }
-        }
-        
-        // Continue traversing to find more matches
-        for (const [char, childNode] of node.children) {
-            this._collectKeywords(childNode, prefix + char, results, maxResults);
-        }
-    }
-
-    getAllKeywords() {
-        const results = new Map();
-        this._collectAllFullKeywords(this.root, '', results);
-        return Array.from(results.values()).sort((a, b) => b.count - a.count);
-    }
-    
-    _collectAllFullKeywords(node, prefix, results) {
-        if (node.isEndOfWord && node.isFullKeyword) {
-            const lowerPrefix = prefix.toLowerCase();
-            if (!results.has(lowerPrefix)) {
-                results.set(lowerPrefix, { 
-                    keyword: prefix, 
-                    count: this.keywordCounts.get(lowerPrefix) || node.count 
-                });
-            }
-        }
-        
-        for (const [char, childNode] of node.children) {
-            this._collectAllFullKeywords(childNode, prefix + char, results);
-        }
-    }
-}
-
 let keywordTrie = new Trie();
+let agencyTrie = new Trie();
 let allKeywords = new Set();
+let agencyIdMap = new Map(); // Maps lowercase agency text to original agencyId
 
 // Load and display data
 async function init() {
@@ -148,19 +42,25 @@ async function init() {
         
         // Build keyword trie from all documents
         buildKeywordTrie();
-
-        // Render initial bar chart with top 10 keywords
-        renderKeywordBarChart();
+        
+        // Build agency trie from all agencies
+        buildAgencyTrie();
 
         hideLoading();
         displayStats();
         displayAgencies(allAgencies);
-        setupSearch();
-        setupShaLookup();
         setupFilters();
         setupKeywordFilter();
-        handleUrlHash();
+        setupAgencyFilter();
+        
+        // Apply filters to respect default settings (SIR-only is enabled by default)
+        applyFilters();
+        
+        handleUrlQueryString();
         handleQueryStringDocument();
+        
+        // Set commit hash
+        setCommitHash();
         
     } catch (error) {
         console.error('Error loading data:', error);
@@ -180,28 +80,34 @@ function showError(message) {
 }
 
 function displayStats() {
-    const statsEl = document.getElementById('stats');
+    const statsEl = document.getElementById('statsCount');
     
     // Use filtered agencies for stats
     const agencies = filteredAgencies;
     const totalAgencies = agencies.length;
     const totalReports = agencies.reduce((sum, a) => sum + a.total_reports, 0);
     
-    statsEl.innerHTML = `
-        <div class="stat-card">
-            <div class="stat-number">${totalAgencies}</div>
-            <div class="stat-label">Total Agencies</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-number">${totalReports}</div>
-            <div class="stat-label">Total Reports/Documents</div>
-        </div>
-    `;
+    if (statsEl) {
+        statsEl.textContent = `Showing ${totalAgencies} ${totalAgencies === 1 ? 'agency' : 'agencies'} with ${totalReports} ${totalReports === 1 ? 'document' : 'documents'}`;
+    }
 }
 
 function applyFilters() {
     // Start with all agencies
     let agencies = JSON.parse(JSON.stringify(allAgencies)); // Deep clone
+    
+    // Filter by selected agency first
+    if (filters.agency) {
+        agencies = agencies.filter(agency => agency.agencyId === filters.agency);
+        
+        // Auto-open the single filtered agency card
+        if (agencies.length === 1) {
+            // Use setTimeout to ensure DOM is ready
+            setTimeout(() => {
+                openAgencyCard(agencies[0].agencyId);
+            }, DOM_READY_DELAY);
+        }
+    }
     
     // Apply filters to each agency's documents
     agencies = agencies.map(agency => {
@@ -215,14 +121,12 @@ function applyFilters() {
                 return false;
             }
             
-            // Filter by keywords (OR logic - match ANY keyword)
-            if (filters.keywords && filters.keywords.length > 0) {
+            // Filter by keyword (single selection)
+            if (filters.keyword) {
                 const docKeywords = d.sir_violation_level?.keywords || [];
                 const docKeywordsLower = docKeywords.map(k => k.toLowerCase());
-                const hasAnyKeyword = filters.keywords.some(filterKw => 
-                    docKeywordsLower.includes(filterKw.toLowerCase())
-                );
-                if (!hasAnyKeyword) {
+                const hasKeyword = docKeywordsLower.includes(filters.keyword.toLowerCase());
+                if (!hasKeyword) {
                     return false;
                 }
             }
@@ -283,16 +187,47 @@ function buildKeywordTrie() {
     console.log(`Built keyword trie with ${allKeywords.size} unique keywords`);
 }
 
+function buildAgencyTrie() {
+    allAgencies.forEach(agency => {
+        if (agency.AgencyName && agency.agencyId) {
+            // Insert agency name and ID into the trie
+            // Store agencyId as the lookup value
+            const searchText = `${agency.AgencyName} (${agency.agencyId})`;
+            agencyTrie.insert(searchText, true, searchText);
+            
+            // Map lowercase searchText to original agencyId for case-insensitive lookup
+            agencyIdMap.set(searchText.toLowerCase(), agency.agencyId);
+            
+            // Also insert individual words from agency name for search
+            const words = agency.AgencyName.trim().split(/\s+/);
+            words.forEach(word => {
+                if (word.length > 0) {
+                    agencyTrie.insert(word, false, searchText);
+                }
+            });
+            
+            // Insert agency ID for direct ID search
+            agencyTrie.insert(agency.agencyId, false, searchText);
+        }
+    });
+    console.log(`Built agency trie with ${allAgencies.length} agencies`);
+}
+
 function setupKeywordFilter() {
     const keywordInput = document.getElementById('keywordFilterInput');
     const keywordSuggestions = document.getElementById('keywordSuggestions');
-    const selectedKeywordsContainer = document.getElementById('selectedKeywords');
+    const selectedKeywordContainer = document.getElementById('selectedKeyword');
     
-    if (!keywordInput) return; // Element not added yet
+    if (!keywordInput) return;
     
     // Handle input for autocomplete
     keywordInput.addEventListener('input', (e) => {
         const query = e.target.value.trim();
+        
+        // If a keyword is already selected, hide input and show selected
+        if (filters.keyword) {
+            return;
+        }
         
         if (query.length < 2) {
             keywordSuggestions.style.display = 'none';
@@ -318,7 +253,7 @@ function setupKeywordFilter() {
         keywordSuggestions.querySelectorAll('.keyword-suggestion').forEach(div => {
             div.addEventListener('click', () => {
                 const keyword = div.dataset.keyword;
-                addKeywordFilter(keyword);
+                setKeywordFilter(keyword);
                 keywordInput.value = '';
                 keywordSuggestions.style.display = 'none';
             });
@@ -339,7 +274,7 @@ function setupKeywordFilter() {
             const firstSuggestion = keywordSuggestions.querySelector('.keyword-suggestion');
             if (firstSuggestion) {
                 const keyword = firstSuggestion.dataset.keyword;
-                addKeywordFilter(keyword);
+                setKeywordFilter(keyword);
                 keywordInput.value = '';
                 keywordSuggestions.style.display = 'none';
             }
@@ -347,98 +282,161 @@ function setupKeywordFilter() {
     });
 }
 
-function addKeywordFilter(keyword) {
-    const keywordLower = keyword.toLowerCase();
-    
-    // Check if keyword is already selected
-    if (filters.keywords.includes(keywordLower)) {
-        return;
-    }
-    
-    filters.keywords.push(keywordLower);
-    renderSelectedKeywords();
+function setKeywordFilter(keyword) {
+    filters.keyword = keyword.toLowerCase();
+    renderSelectedKeyword();
     applyFilters();
 }
 
-function removeKeywordFilter(keyword) {
-    filters.keywords = filters.keywords.filter(k => k !== keyword.toLowerCase());
-    renderSelectedKeywords();
+function removeKeywordFilter() {
+    filters.keyword = null;
+    renderSelectedKeyword();
     applyFilters();
 }
 
-function renderSelectedKeywords() {
-    const container = document.getElementById('selectedKeywords');
+function renderSelectedKeyword() {
+    const container = document.getElementById('selectedKeyword');
+    const input = document.getElementById('keywordFilterInput');
 
-    if (!container) return;
+    if (!container || !input) return;
 
-    if (filters.keywords.length === 0) {
-        container.innerHTML = '<div style="color: #666; font-size: 0.9em; font-style: italic;">No keywords selected</div>';
+    if (!filters.keyword) {
+        container.innerHTML = '<div style="color: #666; font-size: 0.9em; font-style: italic;">No keyword selected</div>';
+        input.style.display = 'block';
     } else {
-        container.innerHTML = filters.keywords.map(keyword => `
+        container.innerHTML = `
             <span class="selected-keyword-badge">
-                ${escapeHtml(keyword)}
-                <button class="remove-keyword-btn" onclick="window.removeKeywordFilter('${escapeHtml(keyword)}')" title="Remove keyword">✕</button>
+                ${escapeHtml(filters.keyword)}
+                <button class="remove-keyword-btn" onclick="window.removeKeywordFilter()" title="Remove keyword">✕</button>
             </span>
-        `).join('');
+        `;
+        input.style.display = 'none';
     }
+}
 
-    // Update the bar chart to reflect selected keywords
-    renderKeywordBarChart();
+function setupAgencyFilter() {
+    const agencyInput = document.getElementById('agencyFilterInput');
+    const agencySuggestions = document.getElementById('agencySuggestions');
+    const selectedAgencyContainer = document.getElementById('selectedAgency');
+    
+    if (!agencyInput) return;
+    
+    // Handle input for autocomplete
+    agencyInput.addEventListener('input', (e) => {
+        const query = e.target.value.trim();
+        
+        // If an agency is already selected, hide input and show selected
+        if (filters.agency) {
+            return;
+        }
+        
+        if (query.length < 2) {
+            agencySuggestions.style.display = 'none';
+            return;
+        }
+        
+        const suggestions = agencyTrie.search(query);
+        
+        if (suggestions.length === 0) {
+            agencySuggestions.style.display = 'none';
+            return;
+        }
+        
+        agencySuggestions.innerHTML = suggestions.map(s => {
+            // Get the original agencyId from the map (case-sensitive)
+            const agencyId = agencyIdMap.get(s.keyword.toLowerCase()) || '';
+            return `
+                <div class="agency-suggestion" data-agency-text="${escapeHtml(s.keyword)}" data-agency-id="${escapeHtml(agencyId)}">
+                    <span>${escapeHtml(s.keyword)}</span>
+                </div>
+            `;
+        }).join('');
+        agencySuggestions.style.display = 'block';
+        
+        // Add click handlers to suggestions
+        agencySuggestions.querySelectorAll('.agency-suggestion').forEach(div => {
+            div.addEventListener('click', () => {
+                const agencyText = div.dataset.agencyText;
+                const agencyId = div.dataset.agencyId;
+                setAgencyFilter(agencyText, agencyId);
+                agencyInput.value = '';
+                agencySuggestions.style.display = 'none';
+            });
+        });
+    });
+    
+    // Hide suggestions when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('#agencyFilterInput') && !e.target.closest('#agencySuggestions')) {
+            agencySuggestions.style.display = 'none';
+        }
+    });
+    
+    // Allow pressing Enter to add the first suggestion
+    agencyInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            const firstSuggestion = agencySuggestions.querySelector('.agency-suggestion');
+            if (firstSuggestion) {
+                const agencyText = firstSuggestion.dataset.agencyText;
+                const agencyId = firstSuggestion.dataset.agencyId;
+                setAgencyFilter(agencyText, agencyId);
+                agencyInput.value = '';
+                agencySuggestions.style.display = 'none';
+            }
+        }
+    });
+}
+
+function setAgencyFilter(agencyText, agencyId, skipUrlUpdate = false) {
+    filters.agency = agencyId;
+    renderSelectedAgency(agencyText);
+    
+    // Update URL query string unless we're restoring from URL
+    if (!skipUrlUpdate) {
+        const url = new URL(window.location);
+        url.searchParams.set('agency', agencyId);
+        window.history.pushState({}, '', url);
+    }
+    
+    applyFilters();
+}
+
+function removeAgencyFilter() {
+    filters.agency = null;
+    renderSelectedAgency(null);
+    
+    // Remove agency from URL query string
+    const url = new URL(window.location);
+    url.searchParams.delete('agency');
+    window.history.pushState({}, '', url);
+    
+    applyFilters();
+}
+
+function renderSelectedAgency(agencyText) {
+    const container = document.getElementById('selectedAgency');
+    const input = document.getElementById('agencyFilterInput');
+
+    if (!container || !input) return;
+
+    if (!filters.agency) {
+        container.innerHTML = '<div style="color: #666; font-size: 0.9em; font-style: italic;">No agency selected</div>';
+        input.style.display = 'block';
+    } else {
+        container.innerHTML = `
+            <span class="selected-keyword-badge">
+                ${escapeHtml(agencyText || filters.agency)}
+                <button class="remove-keyword-btn" onclick="window.removeAgencyFilter()" title="Remove agency">✕</button>
+            </span>
+        `;
+        input.style.display = 'none';
+    }
 }
 
 // Export functions to window for inline onclick handlers
 window.removeKeywordFilter = removeKeywordFilter;
-
-/**
- * Render the keyword bar chart
- * When no keywords are selected: show top 10 keywords
- * When keywords are selected: show those keywords
- */
-function renderKeywordBarChart() {
-    const container = document.getElementById('barChartContainer');
-    const titleEl = document.querySelector('.bar-chart-title');
-
-    if (!container) return;
-
-    let keywordsToShow = [];
-
-    if (filters.keywords.length > 0) {
-        // Show selected keywords with their counts
-        titleEl.textContent = 'Selected Keywords by Document Count';
-        keywordsToShow = filters.keywords.map(keyword => {
-            const count = keywordTrie.keywordCounts.get(keyword.toLowerCase()) || 0;
-            return { keyword, count };
-        }).sort((a, b) => b.count - a.count);
-    } else {
-        // Show top 10 keywords
-        titleEl.textContent = 'Top 10 Keywords by Document Count';
-        keywordsToShow = keywordTrie.getAllKeywords().slice(0, 10);
-    }
-
-    if (keywordsToShow.length === 0) {
-        container.innerHTML = '<div style="color: #666; font-size: 0.9em; font-style: italic;">No keyword data available</div>';
-        return;
-    }
-
-    // Find max count for scaling
-    const maxCount = Math.max(...keywordsToShow.map(k => k.count));
-
-    // Build bar chart HTML
-    const barsHtml = keywordsToShow.map(item => {
-        const percentage = maxCount > 0 ? (item.count / maxCount) * 100 : 0;
-        return `
-            <div class="bar-chart-row">
-                <div class="bar-chart-label">${escapeHtml(item.keyword)}</div>
-                <div class="bar-chart-bar-container">
-                    <div class="bar-chart-bar" style="width: ${percentage}%"></div>
-                </div>
-                <div class="bar-chart-count">${item.count}</div>
-            </div>
-        `;
-    }).join('');
-
-    container.innerHTML = barsHtml;
-}
+window.removeAgencyFilter = removeAgencyFilter;
 
 function displayAgencies(agencies) {
     const agenciesEl = document.getElementById('agencies');
@@ -570,9 +568,9 @@ function renderDocuments(documents) {
                 ` : ''}
                 ${d.sha256 ? `
                     <div style="margin-top: 8px;">
-                        <button class="view-document-btn" onclick="viewDocument('${d.sha256}', event)">
+                        <a href="/document.html?sha=${d.sha256}" target="_blank" class="view-document-btn" style="text-decoration: none; display: inline-block;">
                             📄 View Full Document
-                        </button>
+                        </a>
                         <div id="query-count-${d.sha256}" style="margin-top: 8px; font-size: 0.85em; color: #666; font-style: italic;">
                             <span class="query-count-placeholder" data-sha="${d.sha256}">Loading query history...</span>
                         </div>
@@ -721,16 +719,9 @@ function showDocumentModal(docData, docMetadata) {
                 ` : ''}
             ` : ''}
             <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-                <strong style="flex-shrink: 0;">SHA256:</strong>
-                <span style="overflow-x: auto; white-space: nowrap; font-family: monospace; font-size: 0.9em; flex: 1; min-width: 0;">${escapeHtml(docData.sha256)}</span>
-                <div style="display: flex; gap: 8px; flex-shrink: 0;">
-                    <button class="copy-link-btn" onclick="copySHA('${docData.sha256}', event)" title="Copy SHA256">
-                        📋
-                    </button>
-                    <button class="copy-link-btn" onclick="copyDocumentLink('${docData.sha256}', event)" title="Copy link to this document">
-                        🔗
-                    </button>
-                </div>
+                <button class="copy-link-btn" onclick="copyDocumentLink('${docData.sha256}', event)" title="Copy link to this document" style="padding: 8px 16px; background: #3498db; color: white; opacity: 1; font-size: 0.9em;">
+                    🔗 Copy URL to this document
+                </button>
             </div>
             <div><strong>Date Processed:</strong> ${escapeHtml(docData.dateprocessed)}</div>
             <div><strong>Total Pages:</strong> ${totalPages}</div>
@@ -916,9 +907,6 @@ function openAgencyCard(agencyId) {
         details.classList.add('visible');
         currentOpenAgencyId = agencyId;
         
-        // Update URL hash without triggering scroll
-        history.replaceState(null, null, `#${agencyId}`);
-        
         // Scroll to the card - position top of card at top of viewport
         const card = document.getElementById(`agency-${agencyId}`);
         if (card) {
@@ -927,21 +915,17 @@ function openAgencyCard(agencyId) {
     }
 }
 
-function handleUrlHash() {
-    const hash = window.location.hash.slice(1); // Remove the '#'
-    if (hash) {
-        // Check if the agency card exists before trying to open it
-        const card = document.getElementById(`agency-${hash}`);
-        if (card) {
-            openAgencyCard(hash);
-        } else {
-            // If DOM is not ready, wait a bit and try again
-            setTimeout(() => {
-                const retryCard = document.getElementById(`agency-${hash}`);
-                if (retryCard) {
-                    openAgencyCard(hash);
-                }
-            }, 100);
+function handleUrlQueryString() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const agencyId = urlParams.get('agency');
+    
+    if (agencyId) {
+        // Find the agency
+        const agency = allAgencies.find(a => a.agencyId === agencyId);
+        if (agency) {
+            // Set the agency filter using the same function, but skip URL update to avoid circular loop
+            const searchText = `${agency.AgencyName} (${agency.agencyId})`;
+            setAgencyFilter(searchText, agencyId, true);
         }
     }
 }
@@ -955,31 +939,8 @@ async function handleQueryStringDocument() {
         return;
     }
     
-    try {
-        // Find the agency that contains this document
-        let foundAgency = null;
-        
-        for (const agency of allAgencies) {
-            if (agency.violations && Array.isArray(agency.violations)) {
-                const violation = agency.violations.find(v => v.sha256 === sha);
-                if (violation) {
-                    foundAgency = agency;
-                    break;
-                }
-            }
-        }
-        
-        // If we found the agency, open it and scroll to it
-        if (foundAgency) {
-            openAgencyCard(foundAgency.agencyId);
-        }
-        
-        // Open the document modal (this will handle errors if document doesn't exist)
-        await viewDocument(sha);
-    } catch (error) {
-        console.error('Error handling query string document:', error);
-        showError(`Failed to load document with SHA: ${sha}. ${error.message}`);
-    }
+    // Redirect to document viewer page
+    window.location.href = `/document.html?sha=${sha}`;
 }
 
 function copyAgencyLink(agencyId, event) {
@@ -987,7 +948,7 @@ function copyAgencyLink(agencyId, event) {
         event.stopPropagation();
     }
     
-    const url = `${window.location.origin}${window.location.pathname}#${agencyId}`;
+    const url = `${window.location.origin}${window.location.pathname}?agency=${agencyId}`;
     
     // Copy to clipboard
     if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -1035,7 +996,7 @@ function copyDocumentLink(sha256, event) {
         event.stopPropagation();
     }
     
-    const url = `${window.location.origin}${window.location.pathname}?sha=${sha256}`;
+    const url = `${window.location.origin}/document.html?sha=${sha256}`;
     
     // Helper function to show feedback on button
     const showCopyFeedback = (btn) => {
@@ -1074,111 +1035,9 @@ function copyDocumentLink(sha256, event) {
     }
 }
 
-function copySHA(sha256, event) {
-    if (event) {
-        event.stopPropagation();
-    }
-    
-    // Helper function to show feedback on button
-    const showCopyFeedback = (btn) => {
-        const originalText = btn.textContent;
-        btn.textContent = '✓';
-        setTimeout(() => {
-            btn.textContent = originalText;
-        }, 1500);
-    };
-    
-    // Copy to clipboard
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(sha256).then(() => {
-            showCopyFeedback(event.target);
-        }).catch(err => {
-            console.error('Failed to copy SHA:', err);
-            alert('Failed to copy SHA to clipboard');
-        });
-    } else {
-        // Fallback for browsers without Clipboard API
-        const textarea = document.createElement('textarea');
-        textarea.value = sha256;
-        textarea.style.position = 'fixed';
-        textarea.style.opacity = '0';
-        document.body.appendChild(textarea);
-        textarea.select();
-        try {
-            document.execCommand('copy');
-            showCopyFeedback(event.target);
-        } catch (err) {
-            console.error('Failed to copy SHA:', err);
-            alert('Failed to copy SHA to clipboard');
-        } finally {
-            document.body.removeChild(textarea);
-        }
-    }
-}
-
 // Make functions available globally
 window.copyAgencyLink = copyAgencyLink;
 window.copyDocumentLink = copyDocumentLink;
-window.copySHA = copySHA;
-
-// Listen for hash changes
-window.addEventListener('hashchange', handleUrlHash);
-
-
-function setupSearch() {
-    const searchInput = document.getElementById('searchInput');
-    
-    searchInput.addEventListener('input', (e) => {
-        const searchTerm = e.target.value.toLowerCase().trim();
-        
-        // Apply filters first, then search
-        applyFilters();
-        
-        if (searchTerm) {
-            filteredAgencies = filteredAgencies.filter(agency => {
-                return (
-                    agency.AgencyName?.toLowerCase().includes(searchTerm) ||
-                    agency.agencyId?.toLowerCase().includes(searchTerm)
-                );
-            });
-        }
-        
-        displayStats();
-        displayAgencies(filteredAgencies);
-    });
-}
-
-function setupShaLookup() {
-    const shaInput = document.getElementById('shaLookupInput');
-    const shaBtn = document.getElementById('shaLookupBtn');
-    
-    const performLookup = () => {
-        const sha = shaInput.value.trim();
-        if (sha) {
-            // Update URL with SHA query parameter
-            const newUrl = `${window.location.pathname}?sha=${encodeURIComponent(sha)}`;
-            window.location.href = newUrl;
-        }
-    };
-    
-    shaBtn.addEventListener('click', performLookup);
-    
-    shaInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-            performLookup();
-        }
-    });
-}
-
-function checkShaQueryParam() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const sha = urlParams.get('sha');
-    
-    if (sha) {
-        // Automatically view the document for this SHA
-        viewDocument(sha, null);
-    }
-}
 
 function escapeHtml(text) {
     if (!text) return '';
@@ -1685,6 +1544,19 @@ async function confirmClearAllQueries() {
     } catch (error) {
         console.error('Error clearing all queries:', error);
         alert(`Failed to clear queries: ${error.message}`);
+    }
+}
+
+/**
+ * Set the commit hash at the bottom of the page
+ */
+function setCommitHash() {
+    const commitHashEl = document.getElementById('commitHash');
+    if (commitHashEl) {
+        // The commit hash will be injected during build
+        // For now, we'll use a placeholder that can be replaced during deployment
+        const commitHash = '__COMMIT_HASH__';
+        commitHashEl.textContent = `Version: ${commitHash}`;
     }
 }
 

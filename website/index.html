@@ -621,7 +621,7 @@
             color: #666;
         }
         
-        .keyword-suggestion {
+        .keyword-suggestion, .agency-suggestion {
             padding: 10px 15px;
             cursor: pointer;
             display: flex;
@@ -631,11 +631,11 @@
             border-bottom: 1px solid #f0f0f0;
         }
         
-        .keyword-suggestion:last-child {
+        .keyword-suggestion:last-child, .agency-suggestion:last-child {
             border-bottom: none;
         }
         
-        .keyword-suggestion:hover {
+        .keyword-suggestion:hover, .agency-suggestion:hover {
             background: #f8f9fa;
         }
         
@@ -793,37 +793,57 @@
     </header>
     
     <div class="container">
-        <div class="search-filter" style="margin-bottom: 10px;">
-            <input 
-                type="text" 
-                id="shaLookupInput" 
-                placeholder="Enter SHA256 to view document (e.g., 6e5b899cf078b4bf0829e4dce8113aaac61edfa5bc0958efa725ae8607008f68)..."
-                style="margin-bottom: 5px;"
-            />
-            <button id="shaLookupBtn" style="width: 100%; padding: 12px; background: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; margin-top: 5px;">
-                🔍 View Document by SHA
-            </button>
-        </div>
-        
-        <div id="stats" class="stats"></div>
-        
         <div class="search-filter" style="margin-bottom: 20px;">
             <h3 style="margin-bottom: 12px; color: #2c3e50; font-size: 1.1em;">Filters</h3>
             <div style="display: grid; gap: 15px;">
-                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                    <input type="checkbox" id="filterSirOnly" style="cursor: pointer;">
-                    <span>Special Investigation Reports Only</span>
-                </label>
+                <div>
+                    <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #2c3e50;">
+                        🏢 Filter by Agency
+                    </label>
+                    <div style="position: relative;">
+                        <input 
+                            type="text" 
+                            id="agencyFilterInput" 
+                            placeholder="Type to search agencies..."
+                            style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;"
+                        />
+                        <div id="agencySuggestions" style="
+                            display: none;
+                            position: absolute;
+                            top: 100%;
+                            left: 0;
+                            right: 0;
+                            background: white;
+                            border: 1px solid #ddd;
+                            border-top: none;
+                            border-radius: 0 0 4px 4px;
+                            max-height: 200px;
+                            overflow-y: auto;
+                            z-index: 100;
+                            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+                        "></div>
+                    </div>
+                    <div id="selectedAgency" style="margin-top: 10px; display: flex; flex-wrap: wrap; gap: 6px; min-height: 28px;">
+                        <div style="color: #666; font-size: 0.9em; font-style: italic;">No agency selected</div>
+                    </div>
+                </div>
+                
+                <div style="border-top: 1px solid #ddd; padding-top: 15px;">
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                        <input type="checkbox" id="filterSirOnly" style="cursor: pointer;" checked>
+                        <span>Special Investigation Reports Only</span>
+                    </label>
+                </div>
                 
                 <div style="border-top: 1px solid #ddd; padding-top: 15px;">
                     <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #2c3e50;">
-                        🏷️ Filter by Keywords
+                        🏷️ Filter by Keyword
                     </label>
                     <div style="position: relative;">
                         <input 
                             type="text" 
                             id="keywordFilterInput" 
-                            placeholder="Type to search keywords (e.g., 'supervision', 'assault')..."
+                            placeholder="Type to search keywords..."
                             style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;"
                         />
                         <div id="keywordSuggestions" style="
@@ -842,25 +862,21 @@
                             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
                         "></div>
                     </div>
-                    <div id="selectedKeywords" style="margin-top: 10px; display: flex; flex-wrap: wrap; gap: 6px; min-height: 28px;">
-                        <div style="color: #666; font-size: 0.9em; font-style: italic;">No keywords selected</div>
+                    <div id="selectedKeyword" style="margin-top: 10px; display: flex; flex-wrap: wrap; gap: 6px; min-height: 28px;">
+                        <div style="color: #666; font-size: 0.9em; font-style: italic;">No keyword selected</div>
                     </div>
-
-                    <!-- Keyword Bar Chart -->
-                    <div id="keywordBarChart" class="keyword-bar-chart">
-                        <div class="bar-chart-title">Top Keywords by Document Count</div>
-                        <div id="barChartContainer" class="bar-chart-container"></div>
+                    <div style="margin-top: 10px; text-align: center;">
+                        <a href="/keywords.html" style="color: #3498db; text-decoration: none; font-size: 0.9em;">
+                            📊 View All Keywords
+                        </a>
                     </div>
                 </div>
+                
+                <!-- Stats Count -->
+                <div id="statsCount" style="border-top: 1px solid #ddd; padding-top: 15px; text-align: center; color: #666; font-size: 0.9em;">
+                    Loading...
+                </div>
             </div>
-        </div>
-        
-        <div class="search-filter">
-            <input 
-                type="text" 
-                id="searchInput" 
-                placeholder="Search agencies by name or ID..."
-            />
         </div>
         
         <div id="loading" class="loading">Loading data...</div>
@@ -893,6 +909,11 @@
                 <!-- Query list will be populated here -->
             </div>
         </div>
+    </div>
+    
+    <!-- Commit Hash Footer -->
+    <div id="commitHash" style="text-align: center; padding: 20px; color: #999; font-size: 0.8em; font-family: monospace;">
+        Loading version...
     </div>
     
     <script type="module" src="/src/main.js"></script>
