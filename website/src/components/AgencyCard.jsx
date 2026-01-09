@@ -32,18 +32,25 @@ export function AgencyCard({ agency, isOpen = false, onToggle, onCopyDocumentLin
     };
 
     const handleCardClick = (e) => {
-        // Don't toggle if clicking on buttons
-        if (e.target.closest('.copy-link-btn') || e.target.closest('.view-document-btn')) {
+        // Don't toggle if clicking on buttons or if card is already open
+        if (e.target.closest('.copy-link-btn') || e.target.closest('.view-document-btn') || isOpen) {
             return;
         }
         onToggle?.(agency.agencyId);
     };
 
+    // Dynamic styles: when open, remove pointer cursor and hover effects
+    const cardStyle = isOpen ? {
+        cursor: 'default',
+        transform: 'none'
+    } : {};
+
     return (
         <div 
-            className="agency-card" 
+            className={`agency-card ${isOpen ? 'agency-card-open' : ''}`}
             id={`agency-${agency.agencyId}`}
             onClick={handleCardClick}
+            style={cardStyle}
         >
             <div className="agency-header">
                 <div>

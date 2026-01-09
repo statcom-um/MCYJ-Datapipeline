@@ -117,6 +117,16 @@ h1 {
     box-shadow: 0 4px 8px rgba(0,0,0,0.15);
 }
 
+/* When agency card is open, disable pointer cursor and hover effects */
+.agency-card-open {
+    cursor: default;
+}
+
+.agency-card-open:hover {
+    transform: none;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
 .agency-header {
     display: flex;
     justify-content: space-between;

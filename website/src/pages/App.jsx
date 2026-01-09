@@ -335,7 +335,11 @@ export function App() {
     };
 
     const handleToggleAgency = (agencyId) => {
-        setOpenAgencyId(prev => prev === agencyId ? null : agencyId);
+        // Only open a new agency card, don't close an already open one by clicking it
+        // Cards are closed only by opening a different card or changing filters
+        if (openAgencyId !== agencyId) {
+            setOpenAgencyId(agencyId);
+        }
     };
 
     const handleCopyDocumentLink = (sha256, event) => {
