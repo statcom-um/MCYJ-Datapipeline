@@ -125,7 +125,39 @@ def load_document_info_csv(csv_path, sir_summaries=None, sir_violation_levels=No
     return documents_by_agency, agency_names
 
 
-def generate_json_files(document_csv, output_dir, sir_summaries_csv=None, sir_violation_levels_csv=None, keyword_reduction_csv=None):
+def load_facility_information_csv(csv_path):
+    """Load facility information CSV and create a lookup by agencyId."""
+    facilities_by_agency = {}
+    
+    if not os.path.exists(csv_path):
+        print(f"Warning: Facility information file not found: {csv_path}")
+        return facilities_by_agency
+    
+    with open(csv_path, 'r', encoding='utf-8') as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            agency_id = row.get('agencyId', '').strip()
+            if not agency_id:
+                continue
+            
+            facilities_by_agency[agency_id] = {
+                'LicenseNumber': row.get('LicenseNumber', ''),
+                'Address': row.get('Address', ''),
+                'AgencyType': row.get('AgencyType', ''),
+                'City': row.get('City', ''),
+                'County': row.get('County', ''),
+                'LicenseEffectiveDate': row.get('LicenseEffectiveDate', ''),
+                'LicenseeGroupOrganizationName': row.get('LicenseeGroupOrganizationName', ''),
+                'LicenseExpirationDate': row.get('LicenseExpirationDate', ''),
+                'LicenseStatus': row.get('LicenseStatus', ''),
+                'Phone': row.get('Phone', ''),
+                'ZipCode': row.get('ZipCode', '')
+            }
+    
+    return facilities_by_agency
+
+
+def generate_json_files(document_csv, output_dir, sir_summaries_csv=None, sir_violation_levels_csv=None, keyword_reduction_csv=None, facility_info_csv=None):
     """Generate JSON files for the website."""
     
     # Create output directory
@@ -151,6 +183,13 @@ def generate_json_files(document_csv, output_dir, sir_summaries_csv=None, sir_vi
         sir_violation_levels = load_sir_violation_levels_csv(sir_violation_levels_csv, keyword_map)
         print(f"Loaded {len(sir_violation_levels)} SIR violation levels")
     
+    # Load facility information if provided
+    facility_info = {}
+    if facility_info_csv:
+        print("Loading facility information data...")
+        facility_info = load_facility_information_csv(facility_info_csv)
+        print(f"Loaded {len(facility_info)} facility records")
+    
     # Load document info data
     print("Loading document info data...")
     documents_by_agency, agency_names = load_document_info_csv(document_csv, sir_summaries, sir_violation_levels)
@@ -169,6 +208,10 @@ def generate_json_files(document_csv, output_dir, sir_summaries_csv=None, sir_vi
             'documents': documents,
             'total_reports': len(documents)
         }
+        
+        # Add facility information if available
+        if agency_id in facility_info:
+            agency_info['facility'] = facility_info[agency_id]
         
         agency_data.append(agency_info)
     
@@ -189,12 +232,33 @@ def generate_json_files(document_csv, output_dir, sir_summaries_csv=None, sir_vi
             'AgencyName': agency['AgencyName'],
             'total_reports': agency['total_reports']
         }
+        # Include facility info in summary as well
+        if 'facility' in agency:
+            summary['facility'] = agency['facility']
         summary_data.append(summary)
     
     summary_file = os.path.join(output_dir, 'agencies_summary.json')
     with open(summary_file, 'w', encoding='utf-8') as f:
         json.dump(summary_data, f, indent=2)
     print(f"Wrote summary to {summary_file}")
+    
+    # Write facility information summary file for facilities page
+    if facility_info:
+        facility_data = []
+        for agency_id, fac in facility_info.items():
+            facility_entry = {
+                'agencyId': agency_id,
+                'AgencyName': fac.get('LicenseeGroupOrganizationName', '') or agency_names.get(agency_id, 'Unknown Agency'),
+                **fac
+            }
+            facility_data.append(facility_entry)
+        
+        facility_data.sort(key=lambda x: x.get('AgencyName', ''))
+        
+        facility_file = os.path.join(output_dir, 'facilities_data.json')
+        with open(facility_file, 'w', encoding='utf-8') as f:
+            json.dump(facility_data, f, indent=2)
+        print(f"Wrote facility data to {facility_file}")
     
     print(f"\nProcessed {len(agency_data)} agencies")
     print(f"Total reports: {sum(a['total_reports'] for a in agency_data)}")
@@ -222,6 +286,10 @@ def main():
         help="Path to keyword reduction CSV file (optional)"
     )
     parser.add_argument(
+        "--facility-info-csv",
+        help="Path to facility information CSV file (optional)"
+    )
+    parser.add_argument(
         "--output-dir",
         default="public/data",
         help="Output directory for JSON files"
@@ -239,7 +307,8 @@ def main():
         args.output_dir,
         args.sir_summaries_csv,
         args.sir_violation_levels_csv,
-        args.keyword_reduction_csv
+        args.keyword_reduction_csv,
+        args.facility_info_csv
     )
 
 
