@@ -61,12 +61,12 @@ export function AutocompleteInput({
     };
 
     const defaultRenderSuggestion = (suggestion) => (
-        <div className="keyword-suggestion" key={suggestion.keyword || suggestion}>
+        <>
             <span>{suggestion.keyword || suggestion}</span>
             {suggestion.count !== undefined && (
                 <span style={{ color: '#666', fontSize: '0.85em' }}>({suggestion.count})</span>
             )}
-        </div>
+        </>
     );
 
     return (
