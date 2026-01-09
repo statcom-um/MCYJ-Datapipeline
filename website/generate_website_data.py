@@ -126,22 +126,26 @@ def load_document_info_csv(csv_path, sir_summaries=None, sir_violation_levels=No
 
 
 def load_facility_information_csv(csv_path):
-    """Load facility information CSV and create a lookup by agencyId."""
-    facilities_by_agency = {}
+    """Load facility information CSV and create a lookup by LicenseNumber.
+    
+    The LicenseNumber field in facility_information.csv matches the agency_id
+    field in document_info.csv, so we key by LicenseNumber for proper joining.
+    """
+    facilities_by_license = {}
     
     if not os.path.exists(csv_path):
         print(f"Warning: Facility information file not found: {csv_path}")
-        return facilities_by_agency
+        return facilities_by_license
     
     with open(csv_path, 'r', encoding='utf-8') as f:
         reader = csv.DictReader(f)
         for row in reader:
-            agency_id = row.get('agencyId', '').strip()
-            if not agency_id:
+            license_number = row.get('LicenseNumber', '').strip()
+            if not license_number:
                 continue
             
-            facilities_by_agency[agency_id] = {
-                'LicenseNumber': row.get('LicenseNumber', ''),
+            facilities_by_license[license_number] = {
+                'LicenseNumber': license_number,
                 'Address': row.get('Address', ''),
                 'AgencyType': row.get('AgencyType', ''),
                 'City': row.get('City', ''),
@@ -154,7 +158,7 @@ def load_facility_information_csv(csv_path):
                 'ZipCode': row.get('ZipCode', '')
             }
     
-    return facilities_by_agency
+    return facilities_by_license
 
 
 def generate_json_files(document_csv, output_dir, sir_summaries_csv=None, sir_violation_levels_csv=None, keyword_reduction_csv=None, facility_info_csv=None):
@@ -243,12 +247,13 @@ def generate_json_files(document_csv, output_dir, sir_summaries_csv=None, sir_vi
     print(f"Wrote summary to {summary_file}")
     
     # Write facility information summary file for facilities page
+    # Note: facility_info is keyed by LicenseNumber which matches agency_id in documents
     if facility_info:
         facility_data = []
-        for agency_id, fac in facility_info.items():
+        for license_number, fac in facility_info.items():
             facility_entry = {
-                'agencyId': agency_id,
-                'AgencyName': fac.get('LicenseeGroupOrganizationName', '') or agency_names.get(agency_id, 'Unknown Agency'),
+                'agencyId': license_number,  # Use LicenseNumber as agencyId for consistency
+                'AgencyName': fac.get('LicenseeGroupOrganizationName', '') or agency_names.get(license_number, 'Unknown Agency'),
                 **fac
             }
             facility_data.append(facility_entry)
