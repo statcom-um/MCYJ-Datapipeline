@@ -108,6 +108,72 @@ export function FilterPanel({
                     </div>
                 </div>
 
+                {/* Date Range and Severity Filters */}
+                <div style={{ borderTop: '1px solid #ddd', paddingTop: '15px' }}>
+                    <label style={{ display: 'block', marginBottom: '8px', fontWeight: 600, color: '#2c3e50' }}>
+                        📅 Filter by Time Period
+                    </label>
+                    <div style={{ display: 'grid', gap: '10px' }}>
+                        <div>
+                            <label htmlFor="filterLastNMonths" style={{ display: 'block', marginBottom: '4px', fontSize: '0.9em', color: '#666' }}>
+                                Show reports from last:
+                            </label>
+                            <select
+                                id="filterLastNMonths"
+                                value={filters.lastNMonths || ''}
+                                onChange={(e) => onFilterChange('lastNMonths', e.target.value ? parseInt(e.target.value, 10) : null)}
+                                style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px', fontSize: '14px' }}
+                            >
+                                <option value="">All time</option>
+                                <option value="1">1 month</option>
+                                <option value="3">3 months</option>
+                                <option value="6">6 months</option>
+                                <option value="12">12 months</option>
+                                <option value="24">24 months</option>
+                                <option value="36">36 months</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Severity Level Filter - Only shown when SIR Only is checked */}
+                {filters.sirOnly && (
+                    <div style={{ borderTop: '1px solid #ddd', paddingTop: '15px' }}>
+                        <label style={{ display: 'block', marginBottom: '8px', fontWeight: 600, color: '#2c3e50' }}>
+                            ⚠️ Filter by Violation Severity
+                        </label>
+                        <p style={{ color: '#666', fontSize: '0.85em', marginBottom: '8px', fontStyle: 'italic' }}>
+                            Select one or more severity levels (shows reports matching ANY selected level)
+                        </p>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px 20px' }}>
+                            {['low', 'moderate', 'severe'].map(level => (
+                                <label key={level} style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}>
+                                    <input
+                                        type="checkbox"
+                                        checked={filters.severityLevels.includes(level)}
+                                        onChange={(e) => {
+                                            const newLevels = e.target.checked
+                                                ? [...filters.severityLevels, level]
+                                                : filters.severityLevels.filter(l => l !== level);
+                                            onFilterChange('severityLevels', newLevels);
+                                        }}
+                                        style={{ cursor: 'pointer' }}
+                                    />
+                                    <span style={{
+                                        color: level === 'low' ? '#f39c12' : level === 'moderate' ? '#e67e22' : '#e74c3c',
+                                        fontWeight: 500
+                                    }}>
+                                        {level.charAt(0).toUpperCase() + level.slice(1)}
+                                    </span>
+                                </label>
+                            ))}
+                        </div>
+                        <p style={{ color: '#666', fontSize: '0.8em', marginTop: '8px' }}>
+                            Note: Severity levels are only available for Special Investigation Reports with substantiated violations.
+                        </p>
+                    </div>
+                )}
+
                 {/* Facility Attribute Filters */}
                 <div style={{ borderTop: '1px solid #ddd', paddingTop: '15px' }}>
                     <label style={{ display: 'block', marginBottom: '8px', fontWeight: 600, color: '#2c3e50' }}>
