@@ -10,12 +10,56 @@ import argparse
 import csv
 import json
 import os
+import re
 import sys
 from collections import defaultdict
+from datetime import datetime
 from pathlib import Path
 from typing import Dict, Optional
 
 from keyword_reduction import load_keyword_reduction_map, apply_keyword_reduction
+
+
+def parse_document_date(date_str: str) -> Optional[str]:
+    """Parse a date string from various formats and return ISO format (YYYY-MM-DD).
+    
+    Handles formats like:
+    - MM/DD/YYYY or M/DD/YYYY (e.g., "04/28/2022", "5/14/2021")
+    - "Month DD, YYYY" (e.g., "February 21, 2023")
+    
+    Returns None if parsing fails.
+    """
+    if not date_str:
+        return None
+    
+    date_str = date_str.strip()
+    
+    # Try MM/DD/YYYY or M/DD/YYYY format
+    slash_match = re.match(r'^(\d{1,2})/(\d{1,2})/(\d{4})$', date_str)
+    if slash_match:
+        month, day, year = slash_match.groups()
+        try:
+            date_obj = datetime(int(year), int(month), int(day))
+            return date_obj.strftime('%Y-%m-%d')
+        except ValueError:
+            pass
+    
+    # Try "Month DD, YYYY" format
+    try:
+        date_obj = datetime.strptime(date_str, '%B %d, %Y')
+        return date_obj.strftime('%Y-%m-%d')
+    except ValueError:
+        pass
+    
+    # Try other common formats as fallback
+    for fmt in ['%b %d, %Y', '%Y-%m-%d']:
+        try:
+            date_obj = datetime.strptime(date_str, fmt)
+            return date_obj.strftime('%Y-%m-%d')
+        except ValueError:
+            continue
+    
+    return None
 
 
 def load_sir_summaries_csv(csv_path):
@@ -83,6 +127,7 @@ def load_document_info_csv(csv_path, sir_summaries=None, sir_violation_levels=No
     """Load document info CSV and group by agency."""
     documents_by_agency = defaultdict(list)
     agency_names = {}  # Map agency_id to agency_name
+    unparseable_dates = 0
     
     if sir_summaries is None:
         sir_summaries = {}
@@ -103,8 +148,14 @@ def load_document_info_csv(csv_path, sir_summaries=None, sir_violation_levels=No
                 agency_names[agency_id] = agency_name
             
             sha256 = row.get('sha256', '')
+            raw_date = row.get('date', '')
+            date_iso = parse_document_date(raw_date)
+            if raw_date and not date_iso:
+                unparseable_dates += 1
+            
             document = {
-                'date': row.get('date', ''),
+                'date': raw_date,
+                'date_iso': date_iso,
                 'agency_name': agency_name,
                 'document_title': row.get('document_title', ''),
                 'is_special_investigation': row.get('is_special_investigation', 'False').lower() in ('true', '1', 'yes'),
@@ -121,6 +172,9 @@ def load_document_info_csv(csv_path, sir_summaries=None, sir_violation_levels=No
                 document['sir_violation_level'] = sir_violation_levels[sha256]
             
             documents_by_agency[agency_id].append(document)
+    
+    if unparseable_dates > 0:
+        print(f"Warning: Could not parse {unparseable_dates} document date(s)")
     
     return documents_by_agency, agency_names
 

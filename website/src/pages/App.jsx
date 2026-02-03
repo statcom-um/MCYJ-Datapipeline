@@ -26,7 +26,9 @@ export function App() {
         activeLicenseOnly: true,
         licenseStatus: null,
         agencyType: null,
-        county: null
+        county: null,
+        lastNMonths: null,
+        severityLevels: []
     });
     
     // Unique values for dropdowns
@@ -153,6 +155,8 @@ export function App() {
         const licenseStatusParam = urlParams.get('licensestatus');
         const agencyTypeParam = urlParams.get('agencytype');
         const countyParam = urlParams.get('county');
+        const lastNMonthsParam = urlParams.get('months');
+        const severityParam = urlParams.get('severity');
         
         const newFilters = { ...filters };
         
@@ -178,6 +182,20 @@ export function App() {
             newFilters.county = countyParam;
         }
         
+        if (lastNMonthsParam) {
+            const months = parseInt(lastNMonthsParam, 10);
+            if (!isNaN(months) && months > 0) {
+                newFilters.lastNMonths = months;
+            }
+        }
+        
+        if (severityParam) {
+            const levels = severityParam.split(',').map(s => s.trim().toLowerCase()).filter(s => ['low', 'moderate', 'severe'].includes(s));
+            if (levels.length > 0) {
+                newFilters.severityLevels = levels;
+            }
+        }
+        
         if (keywordsParam) {
             const keywords = keywordsParam.split(',').map(k => k.trim()).filter(k => k.length > 0);
             newFilters.keywords = keywords;
@@ -191,6 +209,14 @@ export function App() {
     const applyFilters = useCallback(() => {
         let agencies = JSON.parse(JSON.stringify(allAgencies));
         let selectedAgencyIdForAutoOpen = null;
+        
+        // Calculate cutoff date for lastNMonths filter
+        let cutoffDate = null;
+        if (filters.lastNMonths) {
+            const now = new Date();
+            cutoffDate = new Date(now);
+            cutoffDate.setMonth(cutoffDate.getMonth() - filters.lastNMonths);
+        }
         
         // Filter by selected agency
         if (filters.agency) {
@@ -242,6 +268,22 @@ export function App() {
             let filteredDocuments = agency.documents.filter(d => {
                 if (filters.sirOnly && !d.is_special_investigation) {
                     return false;
+                }
+                
+                // Filter by last N months using date_iso field
+                if (cutoffDate && d.date_iso) {
+                    const docDate = new Date(d.date_iso);
+                    if (docDate < cutoffDate) {
+                        return false;
+                    }
+                }
+                
+                // Filter by severity levels (only applies when sirOnly is true)
+                if (filters.severityLevels.length > 0 && filters.sirOnly) {
+                    const docLevel = d.sir_violation_level?.level?.toLowerCase();
+                    if (!docLevel || !filters.severityLevels.includes(docLevel)) {
+                        return false;
+                    }
                 }
                 
                 if (filters.keywords.length > 0) {
@@ -397,6 +439,20 @@ export function App() {
             url.searchParams.set('county', newFilters.county);
         } else {
             url.searchParams.delete('county');
+        }
+        
+        // Update lastNMonths filter
+        if (newFilters.lastNMonths) {
+            url.searchParams.set('months', newFilters.lastNMonths.toString());
+        } else {
+            url.searchParams.delete('months');
+        }
+        
+        // Update severity levels filter
+        if (newFilters.severityLevels && newFilters.severityLevels.length > 0) {
+            url.searchParams.set('severity', newFilters.severityLevels.join(','));
+        } else {
+            url.searchParams.delete('severity');
         }
         
         window.history.pushState({}, '', url);
