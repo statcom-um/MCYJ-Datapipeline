@@ -38,6 +38,11 @@ jobs:
         env:
           OPENROUTER_KEY: ${{ secrets.OPENROUTER_KEY }}
 
+      - name: Run update_staffing_summaries.py
+        run: python3 pdf_parsing/update_staffing_summaries.py
+        env:
+          OPENROUTER_KEY: ${{ secrets.OPENROUTER_KEY }}
+
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v8
         with:
@@ -49,5 +54,6 @@ jobs:
             It updates:
             - `pdf_parsing/sir_summaries.csv` with AI-generated summaries for new SIRs
             - `pdf_parsing/sir_violation_levels.csv` with AI-classified severity levels
+            - `pdf_parsing/staffing_summaries.csv` with AI-classified staffing problem assessments
           branch: llm-updates
           delete-branch: true

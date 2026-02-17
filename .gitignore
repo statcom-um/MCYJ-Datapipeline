@@ -47,3 +47,4 @@ website/demo-manager.html
 # Log files
 pdf_parsing/update_sir_summaries.log
 pdf_parsing/update_violation_levels.log
+pdf_parsing/update_staffing_summaries.log
