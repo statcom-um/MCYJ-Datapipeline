@@ -174,6 +174,35 @@ export function FilterPanel({
                     </div>
                 )}
 
+                {/* Staffing Confidence Filter - Only shown when SIR Only is checked */}
+                {filters.sirOnly && (
+                    <div style={{ borderTop: '1px solid #ddd', paddingTop: '15px' }}>
+                        <label style={{ display: 'block', marginBottom: '8px', fontWeight: 600, color: '#2c3e50' }}>
+                            👥 Filter by Staffing Violation Confidence
+                        </label>
+                        <p style={{ color: '#666', fontSize: '0.85em', marginBottom: '8px', fontStyle: 'italic' }}>
+                            Filter reports by confidence that a staffing violation was involved
+                        </p>
+                        <select
+                            id="filterStaffingConfidence"
+                            value={filters.staffingConfidence || ''}
+                            onChange={(e) => onFilterChange('staffingConfidence', e.target.value || null)}
+                            style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px', fontSize: '14px' }}
+                        >
+                            <option value="">All (no staffing filter)</option>
+                            <option value="yes_high">Believed Yes — High Confidence</option>
+                            <option value="yes_medium">Believed Yes — Medium Confidence</option>
+                            <option value="yes_low">Believed Yes — Low Confidence</option>
+                            <option value="no_low">Believed No — Low Confidence</option>
+                            <option value="no_medium">Believed No — Medium Confidence</option>
+                            <option value="no_high">Believed No — High Confidence</option>
+                        </select>
+                        <p style={{ color: '#666', fontSize: '0.8em', marginTop: '8px' }}>
+                            Note: Staffing analysis is AI-generated and may contain errors.
+                        </p>
+                    </div>
+                )}
+
                 {/* Facility Attribute Filters */}
                 <div style={{ borderTop: '1px solid #ddd', paddingTop: '15px' }}>
                     <label style={{ display: 'block', marginBottom: '8px', fontWeight: 600, color: '#2c3e50' }}>

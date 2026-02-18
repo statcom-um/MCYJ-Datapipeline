@@ -14,6 +14,7 @@ export function DocumentItem({ document: doc, baseUrl, onCopyLink }) {
     const isSir = doc.is_special_investigation;
     const hasSummary = doc.sir_summary && doc.sir_summary.summary;
     const hasViolationLevel = doc.sir_violation_level && doc.sir_violation_level.level;
+    const hasStaffingSummary = doc.staffing_summary != null;
 
     // Get violation level styling
     const violationLevelBadge = hasViolationLevel ? (
@@ -72,6 +73,35 @@ export function DocumentItem({ document: doc, baseUrl, onCopyLink }) {
                         <div style={{ marginTop: '8px' }}>
                             <KeywordBadgeList 
                                 keywords={doc.sir_violation_level.keywords} 
+                                maxDisplay={5}
+                                small
+                            />
+                        </div>
+                    )}
+                </div>
+            )}
+
+            {hasStaffingSummary && (
+                <div style={{
+                    marginTop: '10px',
+                    padding: '10px',
+                    background: doc.staffing_summary.staffing_problem ? '#fdeaea' : '#eafde6',
+                    borderLeft: `3px solid ${doc.staffing_summary.staffing_problem ? '#e74c3c' : '#27ae60'}`,
+                    borderRadius: '4px'
+                }}>
+                    <div style={{ fontWeight: 600, fontSize: '0.9em', marginBottom: '6px', color: doc.staffing_summary.staffing_problem ? '#e74c3c' : '#27ae60' }}>
+                        👥 Staffing Analysis (AI-generated)
+                        {doc.staffing_summary.staffing_problem
+                            ? <span> ⚠️ Staffing Problem</span>
+                            : <span> ✓ No Staffing Problem</span>}
+                        <span style={{ fontWeight: 'normal', color: '#666', marginLeft: '6px' }}>
+                            ({doc.staffing_summary.confidence} confidence)
+                        </span>
+                    </div>
+                    {doc.staffing_summary.evidence_keywords_found?.length > 0 && (
+                        <div style={{ marginTop: '6px' }}>
+                            <KeywordBadgeList 
+                                keywords={doc.staffing_summary.evidence_keywords_found} 
                                 maxDisplay={5}
                                 small
                             />

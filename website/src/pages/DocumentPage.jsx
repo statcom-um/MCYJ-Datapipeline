@@ -175,6 +175,70 @@ export function DocumentPage() {
         );
     };
 
+    const renderStaffingSummary = () => {
+        if (!documentData?.staffing_summary) return null;
+
+        const staffing = documentData.staffing_summary;
+        const isStaffingProblem = staffing.staffing_problem;
+        const confidence = staffing.confidence;
+
+        let confidenceColor = '#95a5a6';
+        if (confidence === 'high') confidenceColor = isStaffingProblem ? '#e74c3c' : '#27ae60';
+        else if (confidence === 'medium') confidenceColor = '#e67e22';
+        else if (confidence === 'low') confidenceColor = '#f39c12';
+
+        const reasonLabel = staffing.primary_reason
+            ? staffing.primary_reason.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+            : '';
+
+        return (
+            <div className="sir-summary" style={{ borderLeftColor: isStaffingProblem ? '#e74c3c' : '#27ae60' }}>
+                <h3>
+                    👥 Staffing Violation Analysis (AI-generated)
+                    <span style={{
+                        color: isStaffingProblem ? '#e74c3c' : '#27ae60',
+                        marginLeft: '8px',
+                        fontSize: '0.9em'
+                    }}>
+                        {isStaffingProblem ? '⚠️ Staffing Problem Identified' : '✓ No Staffing Problem'}
+                    </span>
+                    <span style={{
+                        color: confidenceColor,
+                        marginLeft: '8px',
+                        fontSize: '0.85em',
+                        fontWeight: 'normal'
+                    }}>
+                        ({confidence} confidence)
+                    </span>
+                </h3>
+                {reasonLabel && (
+                    <div style={{ marginBottom: '10px' }}>
+                        <strong style={{ color: '#2c3e50' }}>Primary Reason:</strong>{' '}
+                        <span>{reasonLabel}</span>
+                    </div>
+                )}
+                {staffing.evidence_keywords_found?.length > 0 && (
+                    <div style={{ paddingTop: '10px', borderTop: '1px solid #ecf0f1', marginBottom: '10px' }}>
+                        <strong style={{ color: '#2c3e50' }}>Evidence Keywords:</strong>
+                        <div style={{ marginTop: '8px' }}>
+                            <KeywordBadgeList 
+                                keywords={staffing.evidence_keywords_found}
+                                maxDisplay={null}
+                                small
+                            />
+                        </div>
+                    </div>
+                )}
+                {staffing.evidence_explanation && (
+                    <div style={{ paddingTop: '10px', borderTop: '1px solid #ecf0f1' }}>
+                        <strong style={{ color: '#2c3e50' }}>Justification:</strong>
+                        <div style={{ marginTop: '8px' }}>{staffing.evidence_explanation}</div>
+                    </div>
+                )}
+            </div>
+        );
+    };
+
     if (loading) {
         return (
             <>
@@ -261,6 +325,7 @@ export function DocumentPage() {
                         </div>
                         
                         {renderSirSummary()}
+                        {renderStaffingSummary()}
                         
                         <div className="document-pages">
                             {documentData.pages?.map((page, index) => (
