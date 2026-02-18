@@ -87,6 +87,44 @@ def load_sir_violation_levels(sir_violation_levels_csv: str, keyword_map: Option
     return levels_by_sha
 
 
+def load_staffing_summaries(staffing_summaries_csv: str) -> Dict[str, Dict]:
+    """Load staffing summaries CSV and create a lookup by SHA256."""
+    staffing_by_sha = {}
+
+    if not staffing_summaries_csv or not Path(staffing_summaries_csv).exists():
+        logger.warning(f"Staffing summaries CSV not found: {staffing_summaries_csv}")
+        return staffing_by_sha
+
+    with open(staffing_summaries_csv, 'r', encoding='utf-8') as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            sha256 = row.get('sha256', '').strip()
+            if not sha256:
+                continue
+
+            # Parse evidence_keywords_found from JSON string
+            keywords_str = row.get('evidence_keywords_found', '')
+            keywords = []
+            if keywords_str:
+                try:
+                    keywords = json.loads(keywords_str)
+                except (json.JSONDecodeError, ValueError):
+                    logger.warning(f"Failed to parse staffing keywords for {sha256}")
+                    keywords = []
+
+            staffing_by_sha[sha256] = {
+                'staffing_problem': row.get('staffing_problem', '').strip().lower() == 'true',
+                'confidence': row.get('confidence', ''),
+                'primary_reason': row.get('primary_reason', ''),
+                'evidence_staffing_cited': row.get('evidence_staffing_cited', '').strip().lower() == 'true',
+                'evidence_keywords_found': keywords,
+                'evidence_explanation': row.get('evidence_explanation', '')
+            }
+
+    logger.info(f"Loaded {len(staffing_by_sha)} staffing summaries")
+    return staffing_by_sha
+
+
 def load_document_metadata(document_csv: str) -> Dict[str, Dict]:
     """Load document CSV and create a lookup by SHA256."""
     metadata_by_sha = {}
@@ -114,7 +152,7 @@ def load_document_metadata(document_csv: str) -> Dict[str, Dict]:
     return metadata_by_sha
 
 
-def export_parquet_to_json(parquet_dir: str, output_dir: str, document_csv: Optional[str] = None, sir_summaries_csv: Optional[str] = None, sir_violation_levels_csv: Optional[str] = None, keyword_reduction_csv: Optional[str] = None) -> None:
+def export_parquet_to_json(parquet_dir: str, output_dir: str, document_csv: Optional[str] = None, sir_summaries_csv: Optional[str] = None, sir_violation_levels_csv: Optional[str] = None, keyword_reduction_csv: Optional[str] = None, staffing_summaries_csv: Optional[str] = None) -> None:
     """Export each parquet row to a separate JSON file."""
     parquet_path = Path(parquet_dir)
     output_path = Path(output_dir)
@@ -140,6 +178,9 @@ def export_parquet_to_json(parquet_dir: str, output_dir: str, document_csv: Opti
     
     # Load SIR violation levels if provided (with keyword reduction)
     sir_violation_levels = load_sir_violation_levels(sir_violation_levels_csv, keyword_map) if sir_violation_levels_csv else {}
+    
+    # Load staffing summaries if provided
+    staffing_summaries = load_staffing_summaries(staffing_summaries_csv) if staffing_summaries_csv else {}
     
     # Find all parquet files
     parquet_files = list(parquet_path.glob("*.parquet"))
@@ -220,6 +261,10 @@ def export_parquet_to_json(parquet_dir: str, output_dir: str, document_csv: Opti
                         'keywords': level_data.get('keywords', [])
                     }
                 
+                # Add staffing summary if available
+                if sha256 in staffing_summaries:
+                    document['staffing_summary'] = staffing_summaries[sha256]
+                
                 # Write to individual JSON file
                 output_file = output_path / f"{sha256}.json"
                 with open(output_file, 'w', encoding='utf-8') as f:
@@ -276,6 +321,11 @@ def main():
         help="Path to keyword reduction CSV file (default: ../pdf_parsing/violation_curation_keyword_reduction.csv)"
     )
     parser.add_argument(
+        "--staffing-summaries-csv",
+        default=str(script_dir / "../pdf_parsing/staffing_summaries.csv"),
+        help="Path to staffing summaries CSV file (default: ../pdf_parsing/staffing_summaries.csv)"
+    )
+    parser.add_argument(
         "--verbose",
         action="store_true",
         help="Enable verbose debug output"
@@ -289,7 +339,7 @@ def main():
         format='%(asctime)s - %(levelname)s - %(message)s'
     )
     
-    export_parquet_to_json(args.parquet_dir, args.output_dir, args.document_csv, args.sir_summaries_csv, args.sir_violation_levels_csv, args.keyword_reduction_csv)
+    export_parquet_to_json(args.parquet_dir, args.output_dir, args.document_csv, args.sir_summaries_csv, args.sir_violation_levels_csv, args.keyword_reduction_csv, args.staffing_summaries_csv)
 
 
 if __name__ == "__main__":

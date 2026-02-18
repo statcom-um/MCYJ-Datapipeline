@@ -123,7 +123,43 @@ def load_sir_violation_levels_csv(csv_path, keyword_map: Optional[Dict[str, str]
     return levels_by_sha
 
 
-def load_document_info_csv(csv_path, sir_summaries=None, sir_violation_levels=None):
+def load_staffing_summaries_csv(csv_path):
+    """Load staffing summaries CSV and create a lookup by SHA256."""
+    staffing_by_sha = {}
+
+    if not os.path.exists(csv_path):
+        print(f"Warning: Staffing summaries file not found: {csv_path}")
+        return staffing_by_sha
+
+    with open(csv_path, 'r', encoding='utf-8') as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            sha256 = row.get('sha256', '').strip()
+            if not sha256:
+                continue
+
+            # Parse evidence_keywords_found from JSON string
+            keywords_str = row.get('evidence_keywords_found', '')
+            keywords = []
+            if keywords_str:
+                try:
+                    keywords = json.loads(keywords_str)
+                except (json.JSONDecodeError, ValueError):
+                    keywords = []
+
+            staffing_by_sha[sha256] = {
+                'staffing_problem': row.get('staffing_problem', '').strip().lower() == 'true',
+                'confidence': row.get('confidence', ''),
+                'primary_reason': row.get('primary_reason', ''),
+                'evidence_staffing_cited': row.get('evidence_staffing_cited', '').strip().lower() == 'true',
+                'evidence_keywords_found': keywords,
+                'evidence_explanation': row.get('evidence_explanation', '')
+            }
+
+    return staffing_by_sha
+
+
+def load_document_info_csv(csv_path, sir_summaries=None, sir_violation_levels=None, staffing_summaries=None):
     """Load document info CSV and group by agency."""
     documents_by_agency = defaultdict(list)
     agency_names = {}  # Map agency_id to agency_name
@@ -133,6 +169,8 @@ def load_document_info_csv(csv_path, sir_summaries=None, sir_violation_levels=No
         sir_summaries = {}
     if sir_violation_levels is None:
         sir_violation_levels = {}
+    if staffing_summaries is None:
+        staffing_summaries = {}
     
     with open(csv_path, 'r', encoding='utf-8') as f:
         reader = csv.DictReader(f)
@@ -170,6 +208,10 @@ def load_document_info_csv(csv_path, sir_summaries=None, sir_violation_levels=No
             # Add SIR violation level if available
             if sha256 in sir_violation_levels:
                 document['sir_violation_level'] = sir_violation_levels[sha256]
+            
+            # Add staffing summary if available
+            if sha256 in staffing_summaries:
+                document['staffing_summary'] = staffing_summaries[sha256]
             
             documents_by_agency[agency_id].append(document)
     
@@ -215,7 +257,7 @@ def load_facility_information_csv(csv_path):
     return facilities_by_license
 
 
-def generate_json_files(document_csv, output_dir, sir_summaries_csv=None, sir_violation_levels_csv=None, keyword_reduction_csv=None, facility_info_csv=None):
+def generate_json_files(document_csv, output_dir, sir_summaries_csv=None, sir_violation_levels_csv=None, keyword_reduction_csv=None, facility_info_csv=None, staffing_summaries_csv=None):
     """Generate JSON files for the website."""
     
     # Create output directory
@@ -248,9 +290,16 @@ def generate_json_files(document_csv, output_dir, sir_summaries_csv=None, sir_vi
         facility_info = load_facility_information_csv(facility_info_csv)
         print(f"Loaded {len(facility_info)} facility records")
     
+    # Load staffing summaries if provided
+    staffing_summaries = {}
+    if staffing_summaries_csv:
+        print("Loading staffing summaries data...")
+        staffing_summaries = load_staffing_summaries_csv(staffing_summaries_csv)
+        print(f"Loaded {len(staffing_summaries)} staffing summaries")
+    
     # Load document info data
     print("Loading document info data...")
-    documents_by_agency, agency_names = load_document_info_csv(document_csv, sir_summaries, sir_violation_levels)
+    documents_by_agency, agency_names = load_document_info_csv(document_csv, sir_summaries, sir_violation_levels, staffing_summaries)
     
     # Build agency list from document data
     print("Building agency list from documents...")
@@ -349,6 +398,10 @@ def main():
         help="Path to facility information CSV file (optional)"
     )
     parser.add_argument(
+        "--staffing-summaries-csv",
+        help="Path to staffing summaries CSV file (optional)"
+    )
+    parser.add_argument(
         "--output-dir",
         default="public/data",
         help="Output directory for JSON files"
@@ -367,7 +420,8 @@ def main():
         args.sir_summaries_csv,
         args.sir_violation_levels_csv,
         args.keyword_reduction_csv,
-        args.facility_info_csv
+        args.facility_info_csv,
+        args.staffing_summaries_csv
     )
 
 
