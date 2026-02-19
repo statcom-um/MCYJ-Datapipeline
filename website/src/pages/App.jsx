@@ -28,7 +28,8 @@ export function App() {
         agencyType: null,
         county: null,
         lastNMonths: null,
-        severityLevels: []
+        severityLevels: [],
+        staffingConfidence: null
     });
     
     // Unique values for dropdowns
@@ -157,6 +158,7 @@ export function App() {
         const countyParam = urlParams.get('county');
         const lastNMonthsParam = urlParams.get('months');
         const severityParam = urlParams.get('severity');
+        const staffingParam = urlParams.get('staffing');
         
         const newFilters = { ...filters };
         
@@ -193,6 +195,13 @@ export function App() {
             const levels = severityParam.split(',').map(s => s.trim().toLowerCase()).filter(s => ['low', 'moderate', 'severe'].includes(s));
             if (levels.length > 0) {
                 newFilters.severityLevels = levels;
+            }
+        }
+        
+        if (staffingParam) {
+            const validValues = ['yes_high', 'yes_medium', 'yes_low', 'no_low', 'no_medium', 'no_high'];
+            if (validValues.includes(staffingParam)) {
+                newFilters.staffingConfidence = staffingParam;
             }
         }
         
@@ -284,6 +293,16 @@ export function App() {
                     if (!docLevel || !filters.severityLevels.includes(docLevel)) {
                         return false;
                     }
+                }
+                
+                // Filter by staffing confidence
+                if (filters.staffingConfidence && filters.sirOnly) {
+                    const staffing = d.staffing_summary;
+                    if (!staffing) return false;
+                    const [expectedProblem, expectedConfidence] = filters.staffingConfidence.split('_');
+                    const isYes = expectedProblem === 'yes';
+                    if (staffing.staffing_problem !== isYes) return false;
+                    if (staffing.confidence !== expectedConfidence) return false;
                 }
                 
                 if (filters.keywords.length > 0) {
@@ -453,6 +472,13 @@ export function App() {
             url.searchParams.set('severity', newFilters.severityLevels.join(','));
         } else {
             url.searchParams.delete('severity');
+        }
+        
+        // Update staffing confidence filter
+        if (newFilters.staffingConfidence) {
+            url.searchParams.set('staffing', newFilters.staffingConfidence);
+        } else {
+            url.searchParams.delete('staffing');
         }
         
         window.history.pushState({}, '', url);

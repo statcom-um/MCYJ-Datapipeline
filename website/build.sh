@@ -18,6 +18,7 @@ python3 generate_website_data.py \
   --sir-violation-levels-csv ../pdf_parsing/sir_violation_levels.csv \
   --keyword-reduction-csv ../pdf_parsing/violation_curation_keyword_reduction.csv \
   --facility-info-csv ../facility_information/facility_information.csv \
+  --staffing-summaries-csv ../pdf_parsing/staffing_summaries.csv \
   --output-dir public/data
 
 echo ""
@@ -28,7 +29,8 @@ python3 export_parquet_to_json.py \
   --document-csv ../pdf_parsing/document_info.csv \
   --sir-summaries-csv ../pdf_parsing/sir_summaries.csv \
   --sir-violation-levels-csv ../pdf_parsing/sir_violation_levels.csv \
-  --keyword-reduction-csv ../pdf_parsing/violation_curation_keyword_reduction.csv
+  --keyword-reduction-csv ../pdf_parsing/violation_curation_keyword_reduction.csv \
+  --staffing-summaries-csv ../pdf_parsing/staffing_summaries.csv
 
 echo ""
 echo "==> Step 3: Building website with Vite..."
