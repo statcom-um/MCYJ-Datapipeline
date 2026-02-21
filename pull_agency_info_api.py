@@ -126,67 +126,28 @@ def get_content_details_method(record_id):
             print(f"Response content: {response.text}")
         return None
 
-def merge_agency_info(agency_csv, output_dir = ".", remove_files=False):
-    """
-    Merges the agency details into the all agency info dictionary.
-    """
+def write_combined_pdf_content_details(combined_rows, output_dir="."):
+    """Write combined PDF content details rows to dated CSV."""
     date_str = datetime.now().strftime("%Y-%m-%d")
-
-    # Build a mapping from agencyId to AgencyName
-    agency_names = {}
-    with open(agency_csv, mode='r', encoding='utf-8') as f:
-        reader = csv.DictReader(f)
-        for row in reader:
-            agency_id = row.get('agencyId')
-            agency_name = row.get('AgencyName')
-            if agency_id and agency_name:
-                agency_names[agency_id] = agency_name
-
-    # Merge PDF content details for each agency
-
-    combined_rows = []
-    header = []
-    for agency_id, agency_name in agency_names.items():
-        pdf_csv = os.path.join(output_dir, f"{agency_id}_pdf_content_details.csv")
-        if os.path.exists(pdf_csv):
-            with open(pdf_csv, mode='r', encoding='utf-8') as f:
-                reader = csv.reader(f)
-                header = next(reader)
-                header = ['agency_name'] + header
-                for row in reader:
-                    combined_rows.append([agency_name] + row)
-        else:
-            print(f"Warning: PDF content details CSV not found for agency ID {agency_id}, skipping...")
-            continue
-
-    # Write out the combined CSV
     combined_csv = os.path.join(output_dir, f"{date_str}_combined_pdf_content_details.csv")
+    fieldnames = ['agency_name', 'agency_id', 'FileExtension', 'CreatedDate', 'Title', 'ContentBodyId', 'Id', 'ContentDocumentId']
+
     with open(combined_csv, mode='w', newline='', encoding='utf-8') as f:
-        writer = csv.writer(f, quoting=csv.QUOTE_ALL)
-        # Write header: agency_id + original header
-        writer.writerow(header)
-        writer.writerows(combined_rows)
+        writer = csv.DictWriter(f, fieldnames=fieldnames, quoting=csv.QUOTE_ALL)
+        writer.writeheader()
+        for row in combined_rows:
+            writer.writerow({col: row.get(col, "") for col in fieldnames})
 
     print(f"Combined PDF content details written to {combined_csv}")
-    # If remove files then remove each file
-    if remove_files:
-        for agency_id, agency_name in agency_names.items():
-            pdf_csv = os.path.join(output_dir, f"{agency_id}_pdf_content_details.csv")
-            json_path = os.path.join(output_dir, f"{agency_id}_pdf_content_details.json")
-            if os.path.exists(pdf_csv):
-                os.remove(pdf_csv)
-                print(f"Removed file: {pdf_csv}")
-            if os.path.exists(json_path):
-                os.remove(json_path)
-                print(f"Removed file: {json_path}")
     return combined_csv
 
 # Test the functions
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Download Child Welfare Licensing agency PDFs from Michigan's public licensing search.")
     parser.add_argument("--output-dir", dest="output_dir", help="Directory to save the CSV and JSON files", default="./")
-    parser.add_argument("--overwrite", dest="overwrite", help="Overwrite existing files", default=True)
-    parser.add_argument("--remove-files", dest="remove_files", help="Remove individual agency files after merging", default=True)
+    parser.add_argument("--save-individual-files", dest="save_individual_files", help="Save per-agency *_pdf_content_details.csv/json files while processing", default=False, action='store_true')
+    parser.add_argument("--overwrite-individual-files", dest="overwrite_individual_files", help="Overwrite individual per-agency files when --save-individual-files is set", default=False, action='store_true')
+    parser.add_argument("--remove-files", dest="remove_files", help="Remove individual agency files after merging (only applies when --save-individual-files is set)", default=False, action='store_true')
     parser.add_argument("--verbose", dest="verbose", help="Enable verbose output", default=False, action='store_true')
     args = parser.parse_args()
     output_dir = args.output_dir
@@ -241,42 +202,67 @@ if __name__ == "__main__":
     print(f"Agency info written to {agency_csv_file}")
 
     keep_cols = ['FileExtension', 'CreatedDate', 'Title', 'ContentBodyId', 'Id', 'ContentDocumentId']
+    agency_names = {}
+    combined_rows = []
+    individual_file_paths = []
 
     # Run for each agency id
     for agency in agency_list:
         record_id = agency.get('agencyId')
+        agency_name = agency.get('AgencyName', '')
+        if record_id:
+            agency_names[record_id] = agency_name
         csv_file = os.path.join(output_dir, f"{record_id}_pdf_content_details.csv")
         if not record_id:
             print(f"Skipping agency ID {record_id} as it is empty.")
             continue
-        if args.overwrite and os.path.exists(csv_file):
-            print(f"File {csv_file} already exists and overwrite is enabled, skipping agency ID {record_id}.")
-            continue
+        if args.save_individual_files and (not args.overwrite_individual_files) and os.path.exists(csv_file):
+            print(f"File {csv_file} already exists and overwrite is disabled, skipping individual file write for agency ID {record_id}.")
 
         print(f"Processing agency ID: {record_id}")
         pdf_results = get_content_details_method(record_id)
 
         if pdf_results:
             print(f"PDF Content Details for {record_id}:")
-            # print(json.dumps(pdf_results, indent=2))
-            # Save full JSON response to file
-            json_file = os.path.join(output_dir, f"{record_id}_pdf_content_details.json")
-            with open(json_file, "w", encoding="utf-8") as jf:
-                json.dump(pdf_results, jf, indent=2, ensure_ascii=False)
-            print(f"Full JSON results written to {json_file}")
+            records = pdf_results.get('returnValue', {}).get('contentVersionRes', [])
 
-            # Write top-level keys/values to CSV
-            csv_file = os.path.join(output_dir, f"{record_id}_pdf_content_details.csv")
-            with open(csv_file, mode='w', newline='', encoding='utf-8') as f:
-                writer = csv.writer(f, quoting=csv.QUOTE_ALL)
-                # Write the header
-                writer.writerow(['agency_id'] + keep_cols)
-                for p in pdf_results.get('returnValue', {}).get('contentVersionRes', []):
-                    row_data = [record_id] + [p.get(k, "") for k in keep_cols]
-                    writer.writerow(row_data)
+            for p in records:
+                combined_rows.append({
+                    'agency_name': agency_name,
+                    'agency_id': record_id,
+                    'FileExtension': p.get('FileExtension', ""),
+                    'CreatedDate': p.get('CreatedDate', ""),
+                    'Title': p.get('Title', ""),
+                    'ContentBodyId': p.get('ContentBodyId', ""),
+                    'Id': p.get('Id', ""),
+                    'ContentDocumentId': p.get('ContentDocumentId', ""),
+                })
 
-            print(f"Top-level JSON results written to {csv_file}")
+            if args.save_individual_files:
+                json_file = os.path.join(output_dir, f"{record_id}_pdf_content_details.json")
+                with open(json_file, "w", encoding="utf-8") as jf:
+                    json.dump(pdf_results, jf, indent=2, ensure_ascii=False)
+                print(f"Full JSON results written to {json_file}")
+
+                csv_file = os.path.join(output_dir, f"{record_id}_pdf_content_details.csv")
+                with open(csv_file, mode='w', newline='', encoding='utf-8') as f:
+                    writer = csv.writer(f, quoting=csv.QUOTE_ALL)
+                    writer.writerow(['agency_id'] + keep_cols)
+                    for p in records:
+                        row_data = [record_id] + [p.get(k, "") for k in keep_cols]
+                        writer.writerow(row_data)
+                print(f"Top-level JSON results written to {csv_file}")
+                individual_file_paths.append((csv_file, json_file))
         else:
             print(f"Failed to retrieve PDF content details for agency ID: {record_id}")
 
-    merge_agency_info(agency_csv_file, output_dir, remove_files=args.remove_files)
+    write_combined_pdf_content_details(combined_rows, output_dir)
+
+    if args.remove_files and args.save_individual_files:
+        for csv_path, json_path in individual_file_paths:
+            if os.path.exists(csv_path):
+                os.remove(csv_path)
+                print(f"Removed file: {csv_path}")
+            if os.path.exists(json_path):
+                os.remove(json_path)
+                print(f"Removed file: {json_path}")

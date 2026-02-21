@@ -35,6 +35,9 @@ website/public/documents/
 website/test_output/
 website/test_documents/
 metadata_output/
+!metadata_output/
+metadata_output/*
+!metadata_output/downloaded_files_database.csv
 *.egg-info/
 build/
 dist/
@@ -48,3 +51,6 @@ website/demo-manager.html
 pdf_parsing/update_sir_summaries.log
 pdf_parsing/update_violation_levels.log
 pdf_parsing/update_staffing_summaries.log
+Download/
+Downloads/
+metadata_output/

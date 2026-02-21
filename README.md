@@ -1,13 +1,71 @@
 # MCYJ Parsing Script
 
+## Single-command pipeline
+
+Run the full metadata + download pipeline in one script:
+
+```bash
+python run_full_pipeline.py --metadata-output-dir metadata_output --download-dir Downloads
+```
+
+This script discovers and downloads incrementally: it checks each API file and downloads immediately when a new `ContentDocumentId` is found.
+By default, it writes:
+- persistent download database: `metadata_output/downloaded_files_database.csv`
+- run-only metadata (new downloads only): `metadata_output/latest_downloaded_metadata.csv`
+
+Important preflight behavior:
+- It first checks existing metadata rows for missing `sha256` and backfills those before any new downloads.
+
+To process only 5 **new** downloads:
+
+```bash
+python run_full_pipeline.py --metadata-output-dir metadata_output --download-dir Downloads --limit 5
+```
+
+Re-run behavior:
+- The pipeline always reads the persistent download database first (if available).
+- If a `ContentDocumentId` already has a `sha256` in the database, it is skipped.
+- If the file exists locally but `sha256` is missing, SHA is backfilled and it is skipped.
+- A download only occurs when the `ContentDocumentId` has no corresponding SHA-backed database record.
+
+When 5 qualifying new files are found, `metadata_output/latest_downloaded_metadata.csv` will have 5 rows with `ContentDocumentId` and `sha256`.
+
+You can override the database path with:
+
+```bash
+python run_full_pipeline.py --download-db-csv metadata_output/my_download_db.csv
+```
+
+### GitHub Actions workflow
+
+You can run the same pipeline from GitHub:
+
+1. Go to **Actions** → **Run Download Pipeline**
+2. Click **Run workflow**
+3. Set `limit` (for example `5`)
+
+The workflow will:
+- run `run_full_pipeline.py` with your limit
+- upload artifacts:
+  - `metadata_output/latest_downloaded_metadata.csv`
+  - `metadata_output/downloaded_files_database.csv`
+- optionally create a PR updating `metadata_output/downloaded_files_database.csv`
+
+This lets you test exactly the same behavior from GitHub, including the "download only new ContentDocumentId values" logic.
+
 ## 1. Get all the available documents from the Michigan Welfare public search API
 
 ```bash
-python pull_agency_info_api.py --output-dir metadata_output --overwrite=False --verbose
+python pull_agency_info_api.py --output-dir metadata_output --verbose
 ```
 
 This will output the agency info and correpsonding documents to the `metadata_output` directory.
-The default behavior will output all available documents in both json and csv formats.
+The default behavior keeps per-agency `*_pdf_content_details.csv/json` in memory and only writes the dated combined CSV.
+If you want to also save per-agency files as you go:
+
+```bash
+python pull_agency_info_api.py --output-dir metadata_output --save-individual-files
+```
 
 ### 1. Output
 ```bash
@@ -46,6 +104,14 @@ generated_filename,agency_name,agency_id,FileExtension,CreatedDate,Title,Content
 python download_all_pdfs.py --csv metadata_output/missing_files.csv --output-dir Downloads
 ```
 
+This step now also writes `Downloads/facility_information_metadata.csv` with:
+- `ContentDocumentId` (API document id)
+- local downloaded filename/path
+- `sha256` checksum
+- download status and timestamp
+
+Before skipping an existing file, the downloader checks this metadata file and only skips when the API `ContentDocumentId` matches the metadata record.
+
 ### 3. Output
 
 ```bash
@@ -59,7 +125,18 @@ $ ls downloads/ | head
 
 ## 4. Check duplicates and update file metadata
 
-check the md5sums
+SHA256 hashes are tracked in `Downloads/facility_information_metadata.csv`.
+
+To backfill metadata for already-downloaded historical files:
+
+```bash
+python backfill_download_metadata.py \
+  --pdf-dir Downloads \
+  --metadata-csv Downloads/facility_information_metadata.csv \
+  --source-csv metadata_output/$(date +"%Y-%m-%d")_combined_pdf_content_details.csv
+```
+
+This will compute `sha256` for all PDFs, infer `ContentDocumentId` from filename suffix when possible, and merge details from the source CSV.
 
 ## 5. Extract text from PDFs and extract basic document info
 
