@@ -179,16 +179,25 @@ def parse_new_downloads_to_parquet(new_rows: List[Dict[str, str]], parquet_dir: 
 
     with tempfile.TemporaryDirectory(prefix="mcyj_new_downloads_") as staging_dir:
         staged_count = 0
+        filename_to_metadata = {}
+
         for row in new_rows:
             file_path = (row.get("downloaded_path") or "").strip()
             if not file_path or not os.path.exists(file_path):
                 continue
 
-            target_path = os.path.join(staging_dir, os.path.basename(file_path))
+            basename = os.path.basename(file_path)
+            target_path = os.path.join(staging_dir, basename)
             try:
                 os.symlink(file_path, target_path)
             except OSError:
                 shutil.copy2(file_path, target_path)
+
+            # Build metadata mapping for this file
+            filename_to_metadata[basename] = {
+                'ContentDocumentId': row.get('ContentDocumentId', ''),
+                'sha256': row.get('sha256', '')
+            }
             staged_count += 1
 
         if staged_count == 0:
@@ -196,7 +205,7 @@ def parse_new_downloads_to_parquet(new_rows: List[Dict[str, str]], parquet_dir: 
             return
 
         print(f"Running PDF parsing on {staged_count} newly downloaded files...")
-        process_pdf_directory(staging_dir, parquet_dir, limit=None)
+        process_pdf_directory(staging_dir, parquet_dir, limit=None, filename_to_metadata=filename_to_metadata)
 
 
 def main() -> None:

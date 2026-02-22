@@ -4,6 +4,7 @@ Extract text from PDF files using pdfplumber and save to compressed Parquet file
 
 Each PDF is hashed using SHA256, and the output contains:
 - sha256: SHA256 hash of the PDF file
+- ContentDocumentId: Salesforce Content Document ID (if available)
 - text: List of strings, one per page
 - dateprocessed: ISO 8601 timestamp when the PDF was processed
 
@@ -117,13 +118,20 @@ def format_time(seconds: float) -> str:
         return f"{hours:.1f}h"
 
 
-def process_directory(pdf_dir: str, parquet_dir: str, limit: int = None) -> None:
+def process_directory(
+    pdf_dir: str,
+    parquet_dir: str,
+    limit: int = None,
+    filename_to_metadata: dict = None
+) -> None:
     """Process all PDFs in directory and save results to timestamped Parquet file.
 
     Args:
         pdf_dir: Directory containing PDF files
         parquet_dir: Output directory for Parquet files
         limit: Maximum number of PDFs to process (excludes already-processed/skipped files)
+        filename_to_metadata: Optional dict mapping PDF basename to metadata dict
+                             (e.g., {'file.pdf': {'ContentDocumentId': '...', 'sha256': '...'}})
     """
     pdf_dir_path = Path(pdf_dir)
 
@@ -202,9 +210,14 @@ def process_directory(pdf_dir: str, parquet_dir: str, limit: int = None) -> None
             logger.info(f"[{idx}/{len(pdf_files)}] Processing: {pdf_path.name}")
             pages_text = extract_text_from_pdf(str(pdf_path))
 
+            # Get metadata if available
+            metadata = (filename_to_metadata or {}).get(pdf_path.name, {})
+            content_document_id = metadata.get('ContentDocumentId', '')
+
             # Create record with timestamp
             record = {
                 "sha256": pdf_hash,
+                "ContentDocumentId": content_document_id,
                 "text": pages_text,  # List of strings, one per page
                 "dateprocessed": datetime.now().isoformat()
             }
@@ -304,8 +317,15 @@ def spot_check(pdf_dir: str, parquet_dir: str, num_checks: int) -> None:
             existing_record = records[pdf_hash]
             existing_text = existing_record["text"]
 
+            # Convert to list if needed (in case it's a numpy array or pandas object)
+            if not isinstance(existing_text, list):
+                existing_text = list(existing_text)
+
             # Compare
-            if pages_text == existing_text:
+            texts_match = (len(pages_text) == len(existing_text) and
+                          all(p1 == p2 for p1, p2 in zip(pages_text, existing_text)))
+
+            if texts_match:
                 logger.info(f"  ✓ PASS - {len(pages_text)} pages match")
                 passed += 1
             else:
