@@ -174,7 +174,6 @@ def main() -> None:
 
         row["generated_filename"] = row.get("generated_filename") or filename
         row["downloaded_filename"] = filename
-        row["downloaded_path"] = full_path
         row["sha256"] = compute_sha256(full_path)
         row["downloaded_at_utc"] = row.get("downloaded_at_utc") or datetime.now(timezone.utc).isoformat()
         row["download_status"] = "backfilled"
@@ -203,7 +202,6 @@ def main() -> None:
     extra_fields = [
         "generated_filename",
         "downloaded_filename",
-        "downloaded_path",
         "sha256",
         "downloaded_at_utc",
         "download_status",

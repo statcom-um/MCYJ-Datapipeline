@@ -18,7 +18,7 @@ for parquet_file in parquet_files:
     df = pd.read_parquet(parquet_file)
     total_records += len(df)
     print(f"{parquet_file.name}: {len(df)} rows")
-    
+
     # Check structure of first file
     if parquet_file == parquet_files[0]:
         print(f"  Columns: {list(df.columns)}")
@@ -41,7 +41,7 @@ if csv_path.exists():
     db = pd.read_csv(csv_path)
     print(f"\nDownloaded files database: {len(db)} rows")
     print(f"Columns: {list(db.columns)}")
-    
+
     # Check for required columns
     required = ['ContentDocumentId', 'sha256']
     for col in required:
@@ -49,7 +49,7 @@ if csv_path.exists():
             print(f"  ✓ {col}: {db[col].notna().sum()} non-null values")
         else:
             print(f"  ✗ {col}: MISSING")
-    
+
     if len(db) > 0:
         row = db.iloc[0]
         print(f"\n  Sample record:")

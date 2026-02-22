@@ -110,7 +110,6 @@ def process_csv(
 
         extra_fields = [
             'downloaded_filename',
-            'downloaded_path',
             'sha256',
             'downloaded_at_utc',
             'download_status',
@@ -148,7 +147,7 @@ def process_csv(
                 metadata_row = existing_by_filename.get(gen_filename)
 
             target_path = os.path.join(output_dir, gen_filename) if gen_filename else None
-            existing_path = (metadata_row or {}).get('downloaded_path', '').strip()
+            # Check if already downloaded via filename
             if existing_path and not os.path.isabs(existing_path):
                 existing_path = os.path.join(output_dir, existing_path)
 
@@ -170,7 +169,6 @@ def process_csv(
                 updated_row.update(row)
                 updated_row.update({
                     'downloaded_filename': os.path.basename(local_file_path),
-                    'downloaded_path': local_file_path,
                     'sha256': existing_sha,
                     'download_status': 'skipped_id_match',
                     'id_match_checked': 'true',
@@ -209,7 +207,6 @@ def process_csv(
                     merged_row.update(row)
                     merged_row.update({
                         'downloaded_filename': os.path.basename(out_path),
-                        'downloaded_path': out_path,
                         'sha256': sha256,
                         'downloaded_at_utc': datetime.now(timezone.utc).isoformat(),
                         'download_status': 'downloaded',

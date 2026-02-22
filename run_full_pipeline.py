@@ -62,16 +62,10 @@ def compute_sha256(file_path: str, chunk_size: int = 1024 * 1024) -> str:
 
 
 def resolve_local_file_path(row: Dict[str, str], download_dir: str) -> Optional[str]:
-    downloaded_path = (row.get("downloaded_path") or "").strip()
     downloaded_filename = (row.get("downloaded_filename") or "").strip()
     generated_filename = (row.get("generated_filename") or "").strip()
 
     candidates = []
-    if downloaded_path:
-        if os.path.isabs(downloaded_path):
-            candidates.append(downloaded_path)
-        else:
-            candidates.append(os.path.join(download_dir, downloaded_path))
     if downloaded_filename:
         candidates.append(os.path.join(download_dir, downloaded_filename))
     if generated_filename:
@@ -103,7 +97,6 @@ def preflight_backfill_missing_sha(
         if not local_path:
             continue
 
-        row["downloaded_path"] = local_path
         row["downloaded_filename"] = os.path.basename(local_path)
         row["generated_filename"] = row.get("generated_filename") or os.path.basename(local_path)
         row["sha256"] = compute_sha256(local_path)
@@ -139,7 +132,6 @@ def build_row(record: Dict[str, str], agency_name: str, agency_id: str, out_path
         "Id": record.get("Id", ""),
         "ContentDocumentId": record.get("ContentDocumentId", ""),
         "downloaded_filename": os.path.basename(out_path),
-        "downloaded_path": out_path,
         "sha256": sha256,
         "downloaded_at_utc": datetime.now(timezone.utc).isoformat(),
         "download_status": "downloaded",
@@ -153,7 +145,7 @@ def write_csv_rows(csv_path: str, rows: List[Dict[str, str]]) -> None:
     fieldnames: List[str] = []
     default_fields = [
         "generated_filename", "agency_name", "agency_id", "FileExtension", "CreatedDate", "Title",
-        "ContentBodyId", "Id", "ContentDocumentId", "downloaded_filename", "downloaded_path", "sha256",
+        "ContentBodyId", "Id", "ContentDocumentId", "downloaded_filename", "sha256",
         "downloaded_at_utc", "download_status", "id_match_checked",
     ]
     for row in rows:
@@ -182,19 +174,22 @@ def parse_new_downloads_to_parquet(new_rows: List[Dict[str, str]], parquet_dir: 
         filename_to_metadata = {}
 
         for row in new_rows:
-            file_path = (row.get("downloaded_path") or "").strip()
-            if not file_path or not os.path.exists(file_path):
+            filename = (row.get("downloaded_filename") or "").strip()
+            if not filename:
                 continue
 
-            basename = os.path.basename(file_path)
-            target_path = os.path.join(staging_dir, basename)
+            file_path = os.path.join(download_dir, filename)
+            if not os.path.exists(file_path):
+                continue
+
+            target_path = os.path.join(staging_dir, filename)
             try:
                 os.symlink(file_path, target_path)
             except OSError:
                 shutil.copy2(file_path, target_path)
 
             # Build metadata mapping for this file
-            filename_to_metadata[basename] = {
+            filename_to_metadata[filename] = {
                 'ContentDocumentId': row.get('ContentDocumentId', ''),
                 'sha256': row.get('sha256', '')
             }
@@ -206,6 +201,7 @@ def parse_new_downloads_to_parquet(new_rows: List[Dict[str, str]], parquet_dir: 
 
         print(f"Running PDF parsing on {staged_count} newly downloaded files...")
         process_pdf_directory(staging_dir, parquet_dir, limit=None, filename_to_metadata=filename_to_metadata)
+
 
 
 def main() -> None:
@@ -375,7 +371,6 @@ def main() -> None:
 
                 local_path = resolve_local_file_path(existing, download_dir)
                 if local_path:
-                    existing["downloaded_path"] = local_path
                     existing["downloaded_filename"] = os.path.basename(local_path)
                     existing["generated_filename"] = existing.get("generated_filename") or os.path.basename(local_path)
                     existing["sha256"] = compute_sha256(local_path)
