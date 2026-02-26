@@ -158,9 +158,52 @@ def build_row(record: Dict[str, str], agency_name: str, agency_id: str, out_path
         "downloaded_filename": os.path.basename(out_path),
         "sha256": sha256,
         "downloaded_at_utc": datetime.now(timezone.utc).isoformat(),
+        "last_seen_in_api_utc": datetime.now(timezone.utc).isoformat(),
+        "unavailable_marked_at_utc": "",
         "download_status": "downloaded",
         "id_match_checked": "true",
     }
+
+
+def update_existing_row_from_api(
+    row: Dict[str, str],
+    record: Dict[str, str],
+    agency_name: str,
+    agency_id: str,
+) -> None:
+    row["agency_name"] = agency_name or row.get("agency_name", "")
+    row["agency_id"] = agency_id or row.get("agency_id", "")
+
+    for key in ["FileExtension", "CreatedDate", "Title", "ContentBodyId", "Id", "ContentDocumentId"]:
+        new_value = (record.get(key) or "").strip()
+        if new_value:
+            row[key] = new_value
+
+    row["last_seen_in_api_utc"] = datetime.now(timezone.utc).isoformat()
+    row["id_match_checked"] = "true"
+
+    if (row.get("download_status") or "").strip().lower() == "unavailable":
+        row["download_status"] = "available_existing"
+    row["unavailable_marked_at_utc"] = ""
+
+
+def mark_unavailable_documents(
+    metadata_by_id: Dict[str, Dict[str, str]],
+    api_content_document_ids: set,
+) -> int:
+    marked_count = 0
+    marked_at = datetime.now(timezone.utc).isoformat()
+    for content_document_id, row in metadata_by_id.items():
+        if not content_document_id or content_document_id in api_content_document_ids:
+            continue
+
+        previous_status = (row.get("download_status") or "").strip().lower()
+        row["download_status"] = "unavailable"
+        row["unavailable_marked_at_utc"] = marked_at
+        if previous_status != "unavailable":
+            marked_count += 1
+
+    return marked_count
 
 
 def write_csv_rows(csv_path: str, rows: List[Dict[str, str]]) -> None:
@@ -170,7 +213,8 @@ def write_csv_rows(csv_path: str, rows: List[Dict[str, str]]) -> None:
     default_fields = [
         "generated_filename", "agency_name", "agency_id", "FileExtension", "CreatedDate", "Title",
         "ContentBodyId", "Id", "ContentDocumentId", "downloaded_filename", "sha256",
-        "downloaded_at_utc", "download_status", "id_match_checked",
+        "downloaded_at_utc", "last_seen_in_api_utc", "unavailable_marked_at_utc",
+        "download_status", "id_match_checked",
     ]
     for row in rows:
         for key in row.keys():
@@ -441,9 +485,13 @@ def main() -> None:
 
     new_rows: List[Dict[str, str]] = []
     attempted_new = 0
+    api_content_document_ids = set()
+    failed_agency_count = 0
+    stopped_due_to_limit = False
 
     for agency in agency_list:
         if args.limit is not None and len(new_rows) >= args.limit:
+            stopped_due_to_limit = True
             break
 
         agency_id = (agency.get("agencyId") or "").strip()
@@ -453,21 +501,31 @@ def main() -> None:
 
         pdf_results = get_content_details_method(agency_id)
         if not pdf_results:
+            failed_agency_count += 1
             continue
 
         records = pdf_results.get("returnValue", {}).get("contentVersionRes", [])
+        if not isinstance(records, list):
+            failed_agency_count += 1
+            continue
+
         for record in records:
             if args.limit is not None and len(new_rows) >= args.limit:
+                stopped_due_to_limit = True
                 break
 
             content_document_id = (record.get("ContentDocumentId") or "").strip()
             if not content_document_id:
                 continue
 
+            api_content_document_ids.add(content_document_id)
+
             existing = metadata_by_id.get(content_document_id)
             if existing:
+                update_existing_row_from_api(existing, record, agency_name, agency_id)
                 existing_sha = (existing.get("sha256") or "").strip()
                 if existing_sha:
+                    metadata_by_id[content_document_id] = existing
                     continue
 
                 local_path = resolve_local_file_path(existing, download_dir)
@@ -507,6 +565,18 @@ def main() -> None:
             if args.sleep_seconds and args.sleep_seconds > 0:
                 import time
                 time.sleep(args.sleep_seconds)
+
+    if failed_agency_count == 0 and not stopped_due_to_limit:
+        unavailable_marked = mark_unavailable_documents(metadata_by_id, api_content_document_ids)
+        print(
+            "Download database availability sync complete "
+            f"(seen_in_api={len(api_content_document_ids)}, marked_unavailable={unavailable_marked})."
+        )
+    else:
+        print(
+            "Skipped unavailable marking because API snapshot was incomplete "
+            f"(failed_agencies={failed_agency_count}, stopped_due_to_limit={stopped_due_to_limit})."
+        )
 
     # Write cumulative metadata
     cumulative_rows = list(metadata_by_id.values())

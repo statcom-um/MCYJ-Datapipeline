@@ -4,10 +4,10 @@ on:
   workflow_dispatch:
     inputs:
       limit:
-        description: 'Number of NEW documents to download'
-        required: true
-        default: '5'
-        type: number
+        description: 'Optional max number of NEW documents to download (leave blank for no limit)'
+        required: false
+        default: ''
+        type: string
       sleep_seconds:
         description: 'Optional seconds to sleep between downloads'
         required: false
@@ -46,10 +46,15 @@ jobs:
 
       - name: Run incremental download pipeline
         run: |
+          LIMIT_ARG=""
+          if [ -n "${{ inputs.limit }}" ]; then
+            LIMIT_ARG="--limit ${{ inputs.limit }}"
+          fi
+
           python3 ingestion/run_full_pipeline.py \
             --metadata-output-dir metadata_output \
             --download-dir Downloads \
-            --limit "${{ inputs.limit }}" \
+            ${LIMIT_ARG} \
             --sleep "${{ inputs.sleep_seconds }}"
 
       - name: Show run output summary
