@@ -4,11 +4,7 @@
 
 set -e  # Exit on error
 
-echo "==> Step 0: Installing Python dependencies with pip..."
-# Install dependencies from pyproject.toml
-cd ..
-pip install -e .
-cd website
+echo "==> Step 0: Python dependencies already installed in venv..."
 
 echo ""
 echo "==> Step 1: Generating JSON data for website..."

@@ -17,13 +17,18 @@ import csv
 import hashlib
 import os
 import shutil
+import sys
 import tempfile
 from datetime import datetime, timezone
 from typing import Dict, List, Optional
 
-from download_pdf import download_michigan_pdf
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if PROJECT_ROOT not in sys.path:
+    sys.path.insert(0, PROJECT_ROOT)
+
+from ingestion.download_pdf import download_michigan_pdf
 from pdf_parsing.extract_pdf_text import process_directory as process_pdf_directory
-from pull_agency_info_api import get_all_agency_info, get_content_details_method
+from ingestion.pull_agency_info_api import get_all_agency_info, get_content_details_method
 
 
 DEFAULT_METADATA_OUTPUT_DIR = "metadata_output"
@@ -362,7 +367,7 @@ def main() -> None:
     )
     args = parser.parse_args()
 
-    root_dir = os.path.dirname(os.path.abspath(__file__))
+    root_dir = PROJECT_ROOT
     metadata_output_dir = os.path.join(root_dir, args.metadata_output_dir)
     download_dir = os.path.join(root_dir, args.download_dir)
     parquet_dir = os.path.join(root_dir, args.parquet_dir)

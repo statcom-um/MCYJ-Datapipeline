@@ -159,13 +159,6 @@ if __name__ == "__main__":
 
     all_agency_info = get_all_agency_info()
     print(json.dumps(all_agency_info, indent=2))
-    date_str = datetime.now().strftime("%Y-%m-%d")
-    agency_file = os.path.join(output_dir, f"{date_str}_all_agency_info.json")
-
-    with open(agency_file, "w", encoding="utf-8") as f:
-        json.dump(all_agency_info, f, indent=2, ensure_ascii=False)
-
-    print("All agency information saved to all_agency_info.json")
 
     # Extract the list from all_agency_info
     agency_list = (
@@ -173,33 +166,6 @@ if __name__ == "__main__":
         .get('objectData', {})
         .get('responseResult', [])
     )
-
-    # Define the columns to keep
-    keep_cols = [
-        "Address",
-        "agencyId",
-        "AgencyName",
-        "AgencyType",
-        "City",
-        "County",
-        "LicenseEffectiveDate",
-        "LicenseeGroupOrganizationName",
-        "LicenseExpirationDate",
-        "LicenseNumber",
-        "LicenseStatus",
-        "Phone",
-        "ZipCode"
-    ]
-
-    # Update CSV filename to include date
-    agency_csv_file = os.path.join(output_dir, f"{date_str}_agency_info.csv")
-    with open(agency_csv_file, mode='w', newline='', encoding='utf-8') as f:
-        writer = csv.DictWriter(f, fieldnames=keep_cols, quoting=csv.QUOTE_ALL)
-        writer.writeheader()
-        for agency in agency_list:
-            row = {col: agency.get(col, "") for col in keep_cols}
-            writer.writerow(row)
-    print(f"Agency info written to {agency_csv_file}")
 
     keep_cols = ['FileExtension', 'CreatedDate', 'Title', 'ContentBodyId', 'Id', 'ContentDocumentId']
     agency_names = {}

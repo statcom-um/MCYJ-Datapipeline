@@ -46,7 +46,7 @@ jobs:
 
       - name: Run incremental download pipeline
         run: |
-          python3 run_full_pipeline.py \
+          python3 ingestion/run_full_pipeline.py \
             --metadata-output-dir metadata_output \
             --download-dir Downloads \
             --limit "${{ inputs.limit }}" \
@@ -72,7 +72,6 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
           git add metadata_output/downloaded_files_database.csv \
-                  metadata_output/latest_downloaded_metadata.csv \
                   pdf_parsing/parquet_files/*.parquet || true
 
           if git diff --cached --quiet; then

@@ -5,7 +5,7 @@
 Run the full metadata + download pipeline in one script:
 
 ```bash
-python run_full_pipeline.py --metadata-output-dir metadata_output --download-dir Downloads
+python ingestion/run_full_pipeline.py --metadata-output-dir metadata_output --download-dir Downloads
 ```
 
 This script discovers and downloads incrementally: it checks each API file and downloads immediately when a new `ContentDocumentId` is found.
@@ -20,7 +20,7 @@ Important preflight behavior:
 To process only 5 **new** downloads:
 
 ```bash
-python run_full_pipeline.py --metadata-output-dir metadata_output --download-dir Downloads --limit 5
+python ingestion/run_full_pipeline.py --metadata-output-dir metadata_output --download-dir Downloads --limit 5
 ```
 
 Re-run behavior:
@@ -34,7 +34,7 @@ When 5 qualifying new files are found, `metadata_output/latest_downloaded_metada
 You can override the database path with:
 
 ```bash
-python run_full_pipeline.py --download-db-csv metadata_output/my_download_db.csv
+python ingestion/run_full_pipeline.py --download-db-csv metadata_output/my_download_db.csv
 ```
 
 ### GitHub Actions workflow
@@ -46,7 +46,7 @@ You can run the same pipeline from GitHub:
 3. Set `limit` (for example `5`)
 
 The workflow will:
-- run `run_full_pipeline.py` with your limit
+- run `ingestion/run_full_pipeline.py` with your limit
 - commit pipeline outputs directly to the triggering branch:
   - `metadata_output/downloaded_files_database.csv`
   - `metadata_output/latest_downloaded_metadata.csv`
@@ -57,13 +57,13 @@ This lets you test exactly the same behavior from GitHub, including the "downloa
 To skip parsing (download-only mode), add:
 
 ```bash
-python run_full_pipeline.py --skip-pdf-parsing
+python ingestion/run_full_pipeline.py --skip-pdf-parsing
 ```
 
 ## 1. Get all the available documents from the Michigan Welfare public search API
 
 ```bash
-python pull_agency_info_api.py --output-dir metadata_output --verbose
+python ingestion/pull_agency_info_api.py --output-dir metadata_output --verbose
 ```
 
 This will output the agency info and correpsonding documents to the `metadata_output` directory.
@@ -71,14 +71,12 @@ The default behavior keeps per-agency `*_pdf_content_details.csv/json` in memory
 If you want to also save per-agency files as you go:
 
 ```bash
-python pull_agency_info_api.py --output-dir metadata_output --save-individual-files
+python ingestion/pull_agency_info_api.py --output-dir metadata_output --save-individual-files
 ```
 
 ### 1. Output
 ```bash
 ls metadata_output
-#> 2025-10-30_agency_info.csv
-#> 2025-10-30_all_agency_info.json
 #> 2025-10-30_combined_pdf_content_details.csv
 ```
 
@@ -91,8 +89,6 @@ python get_download_list.py --download-folder Downloads --available-files "metad
 ### 2. Output
 ```bash
 ls metadata_output
-#> 2025-10-30_agency_info.csv
-#> 2025-10-30_all_agency_info.json
 #> 2025-10-30_combined_pdf_content_details.csv
 #> extra_files.txt
 #> missing_files.csv

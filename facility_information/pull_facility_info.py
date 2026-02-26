@@ -96,7 +96,7 @@ def main():
 
     # Track which license numbers are in the API response
     api_license_numbers = set()
-    
+
     # Merge data: update existing_data with API data (append-only logic)
     # If license number is in CSV but not in API, mark as "Unknown"
     # If license number is in API, use API version
@@ -107,14 +107,14 @@ def main():
             # Create row with only the columns we want
             row = {col: agency.get(col, "") for col in keep_cols}
             existing_data[license_number] = row
-    
+
     # Update license status to "Unknown" for agencies not in API response
     missing_count = 0
     for license_number in existing_data:
         if license_number not in api_license_numbers:
             existing_data[license_number]['LicenseStatus'] = 'Unknown'
             missing_count += 1
-    
+
     if missing_count > 0:
         print(f"Updated {missing_count} agencies to 'Unknown' status (not found in API)")
     else:
