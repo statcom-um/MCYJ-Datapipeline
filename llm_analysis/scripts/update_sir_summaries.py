@@ -85,13 +85,13 @@ def main():
     )
     parser.add_argument(
         '--doc-info',
-        default='../ingestion/data/document_info.csv',
-        help='Path to document_info.csv file (default: ../ingestion/data/document_info.csv)'
+        default='../../ingestion/data/document_info.csv',
+        help='Path to document_info.csv file (default: ../../ingestion/data/document_info.csv)'
     )
     parser.add_argument(
         '--parquet-dir',
-        default='../ingestion/data/parquet_files',
-        help='Directory containing parquet files (default: ../ingestion/data/parquet_files)'
+        default='../../ingestion/data/parquet_files',
+        help='Directory containing parquet files (default: ../../ingestion/data/parquet_files)'
     )
     parser.add_argument(
         '--output', '-o',
