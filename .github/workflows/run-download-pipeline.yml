@@ -11,7 +11,7 @@ on:
       sleep_seconds:
         description: 'Optional seconds to sleep between downloads'
         required: false
-        default: '0'
+        default: '0.5'
         type: string
 
 permissions:

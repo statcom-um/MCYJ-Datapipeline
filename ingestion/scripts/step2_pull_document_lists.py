@@ -19,6 +19,7 @@ Behaviour:
 
 import argparse
 import os
+import time
 from datetime import datetime, timezone
 
 import pandas as pd
@@ -107,7 +108,7 @@ def _make_new_row(cdid: str, agency_name: str, agency_id: str,
     return row
 
 
-def run(download_db_csv: str) -> None:
+def run(download_db_csv: str, sleep_seconds: float = 0.0) -> None:
     """Fetch document lists for all agencies and update the download database."""
     db = _load_db(download_db_csv)
 
@@ -138,6 +139,9 @@ def run(download_db_csv: str) -> None:
         agency_name = (agency.get("AgencyName") or "").strip()
         if not agency_id:
             continue
+
+        if sleep_seconds > 0:
+            time.sleep(sleep_seconds)
 
         pdf_results = get_agency_document_list(agency_id)
         if not pdf_results:
@@ -227,8 +231,15 @@ def main() -> None:
         default=DEFAULT_DOWNLOAD_DB_CSV,
         help=f"Path to downloaded_files_database.csv (default: {DEFAULT_DOWNLOAD_DB_CSV})",
     )
+    parser.add_argument(
+        "--sleep",
+        dest="sleep_seconds",
+        type=float,
+        default=0.5,
+        help="Seconds to sleep between agency API calls (default: 0.5)",
+    )
     args = parser.parse_args()
-    run(args.download_db_csv)
+    run(args.download_db_csv, sleep_seconds=args.sleep_seconds)
 
 
 if __name__ == "__main__":

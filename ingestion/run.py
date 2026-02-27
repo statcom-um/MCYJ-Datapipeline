@@ -12,7 +12,7 @@ def main():
         "--limit", type=int, default=None, help="Max number of new PDFs to process"
     )
     parser.add_argument(
-        "--sleep", type=float, default=0.0, help="Seconds to sleep between API calls"
+        "--sleep", type=float, default=0.5, help="Seconds to sleep between API calls"
     )
     parser.add_argument(
         "--save-pdfs",
@@ -30,7 +30,8 @@ def main():
 
     # Step 2: Fetch per-agency document lists → downloaded_files_database.csv
     subprocess.run(
-        [sys.executable, "ingestion/scripts/step2_pull_document_lists.py"],
+        [sys.executable, "ingestion/scripts/step2_pull_document_lists.py",
+         "--sleep", str(args.sleep)],
         check=True,
     )
 

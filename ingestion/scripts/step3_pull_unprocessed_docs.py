@@ -58,8 +58,18 @@ def run(
     if save_pdfs_dir:
         os.makedirs(save_pdfs_dir, exist_ok=True)
 
+    # Load existing SHA256 hashes from all parquet files so we can skip duplicates
+    existing_hashes: set[str] = set()
+    for pq_file in Path(parquet_dir).glob("*.parquet"):
+        try:
+            existing_hashes.update(pd.read_parquet(pq_file, columns=["sha256"])["sha256"].tolist())
+        except Exception:
+            pass
+    print(f"Loaded {len(existing_hashes)} existing hashes from parquet files")
+
     # Collect parquet records for this batch
     records: list[dict] = []
+    skipped_duplicate = 0
 
     for i, idx in enumerate(pending_indices, 1):
         row = db.loc[idx]
@@ -99,22 +109,26 @@ def run(
         db.at[idx, "downloaded_at_utc"] = now_utc
         db.at[idx, "download_status"] = "downloaded"
 
-        # Collect parquet record
-        records.append({
-            "sha256": sha,
-            "ContentDocumentId": content_document_id,
-            "text": pages_text,
-            "dateprocessed": datetime.now().isoformat(),
-        })
-
-        print(f"  [{i}/{len(pending_indices)}] Processed {content_document_id} ({len(pages_text)} pages)")
+        # Only add to parquet if this sha256 isn't already in existing files
+        if sha in existing_hashes:
+            skipped_duplicate += 1
+            print(f"  [{i}/{len(pending_indices)}] Processed {content_document_id} ({len(pages_text)} pages) — sha256 already in parquet, skipped")
+        else:
+            records.append({
+                "sha256": sha,
+                "ContentDocumentId": content_document_id,
+                "text": pages_text,
+                "dateprocessed": datetime.now().isoformat(),
+            })
+            existing_hashes.add(sha)
+            print(f"  [{i}/{len(pending_indices)}] Processed {content_document_id} ({len(pages_text)} pages)")
 
         if sleep_seconds > 0 and i < len(pending_indices):
             time.sleep(sleep_seconds)
 
     # Save updated DB
     db.to_csv(download_db_csv, index=False, lineterminator="\r\n")
-    print(f"Download database updated: {download_db_csv} ({len(records)} new)")
+    print(f"Download database updated: {download_db_csv} ({len(records)} new, {skipped_duplicate} duplicate sha256 skipped)")
 
     # Write parquet batch
     if records:
