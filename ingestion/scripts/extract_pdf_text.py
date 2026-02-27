@@ -16,8 +16,6 @@ Parquet files use compression (zstd) for efficient storage and are named
 with timestamps: YYYYMMDD_HHMMSS_pdf_text.parquet
 """
 import argparse
-import hashlib
-import json
 import logging
 import os
 import random
@@ -25,27 +23,14 @@ import sys
 import time
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, Set
 
 import pandas as pd
 import pdfplumber
 
+from pipeline_utils import compute_sha256
+
 # Set up logger
 logger = logging.getLogger(__name__)
-
-
-def calculate_sha256(file_path: str) -> str:
-    """Calculate SHA256 hash of a file with broad Python-version compatibility."""
-    with open(file_path, "rb") as f:
-        if hasattr(hashlib, "file_digest"):
-            digest = hashlib.file_digest(f, "sha256")
-            return digest.hexdigest()
-
-        # Fallback for Python versions without hashlib.file_digest (e.g., 3.9)
-        hasher = hashlib.sha256()
-        for chunk in iter(lambda: f.read(1024 * 1024), b""):
-            hasher.update(chunk)
-        return hasher.hexdigest()
 
 
 def load_processed_ids(parquet_dir: str) -> Set[str]:
@@ -159,7 +144,7 @@ def process_directory(
     new_files_count = 0
     for pdf_path in pdf_files:
         try:
-            pdf_hash = calculate_sha256(str(pdf_path))
+            pdf_hash = compute_sha256(str(pdf_path))
             if pdf_hash not in processed_ids:
                 new_files_count += 1
         except Exception:
@@ -193,7 +178,7 @@ def process_directory(
     for idx, pdf_path in enumerate(sorted(pdf_files), 1):
         try:
             # Calculate SHA256 hash
-            pdf_hash = calculate_sha256(str(pdf_path))
+            pdf_hash = compute_sha256(str(pdf_path))
 
             # Skip if already processed
             if pdf_hash in processed_ids:
@@ -287,7 +272,7 @@ def spot_check(pdf_dir: str, parquet_dir: str, num_checks: int) -> None:
     pdf_files_with_records = []
     for pdf_path in pdf_files:
         try:
-            pdf_hash = calculate_sha256(str(pdf_path))
+            pdf_hash = compute_sha256(str(pdf_path))
             if pdf_hash in records:
                 pdf_files_with_records.append((pdf_path, pdf_hash))
         except Exception:
