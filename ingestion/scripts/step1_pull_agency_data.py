@@ -75,10 +75,18 @@ def run(facility_info_csv: str) -> None:
 
     merged = merged.reset_index()
 
-    # Mark facilities not in API as Unknown
-    unknown_mask = ~merged["LicenseNumber"].isin(api_license_numbers)
-    unknown_count = unknown_mask.sum()
-    merged.loc[unknown_mask, "LicenseStatus"] = "Unknown"
+    # Mark facilities not in API as Unknown; track transitions
+    not_in_api = ~merged["LicenseNumber"].isin(api_license_numbers)
+    newly_unknown = not_in_api & (merged["LicenseStatus"] != "Unknown")
+    still_unknown = not_in_api & (merged["LicenseStatus"] == "Unknown")
+    # Facilities previously Unknown that reappeared in API
+    relicensed = merged["LicenseNumber"].isin(api_license_numbers) & (
+        merged["LicenseNumber"].isin(
+            existing.loc[existing["LicenseStatus"] == "Unknown", "LicenseNumber"]
+        )
+    ) if len(existing) > 0 else pd.Series(False, index=merged.index)
+
+    merged.loc[not_in_api, "LicenseStatus"] = "Unknown"
 
     # Sort and save
     merged = merged.sort_values("LicenseNumber").reset_index(drop=True)
@@ -91,7 +99,9 @@ def run(facility_info_csv: str) -> None:
     appended = len(api_license_numbers - set(existing["LicenseNumber"].unique())) if len(existing) > 0 else len(api_license_numbers)
     print(
         f"Facility information updated "
-        f"(total={len(merged)}, appended={appended}, marked_unknown={unknown_count}): "
+        f"(total={len(merged)}, appended={appended}, "
+        f"marked_unknown={newly_unknown.sum()}, still_unknown={still_unknown.sum()}, "
+        f"marked_relicensed={relicensed.sum()}): "
         f"{facility_info_csv}"
     )
 
