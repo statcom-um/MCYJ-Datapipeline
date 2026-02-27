@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """
-Update staffing_summaries.csv with AI-generated staffing problem classifications for SIRs.
+Update sir_violation_levels.csv with AI-generated violation severity levels for SIRs.
 
 This script:
 1. Reads sir_summaries.csv to identify SIRs where violations were substantiated
-2. Compares against existing rows in llm_analysis/staffing_summaries.csv
+2. Compares against existing levels in llm_analysis/sir_violation_levels.csv
 3. Queries up to N missing SIRs using OpenRouter API
-4. Appends new results to llm_analysis/staffing_summaries.csv
+4. Appends new results to llm_analysis/sir_violation_levels.csv
 """
 
 import argparse
@@ -15,6 +15,7 @@ import csv
 import json
 import logging
 import os
+import re
 import sys
 import time
 from pathlib import Path
@@ -32,7 +33,7 @@ logger = logging.getLogger(__name__)
 
 # Add file handler for detailed logging
 script_dir = Path(__file__).parent
-log_file = script_dir / 'update_staffing_summaries.log'
+log_file = script_dir / 'update_violation_levels.log'
 file_handler = logging.FileHandler(log_file, mode='a')
 file_handler.setLevel(logging.DEBUG)
 file_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
@@ -40,7 +41,27 @@ logger.addHandler(file_handler)
 
 # OpenRouter API configuration
 OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions'
-MODEL = 'deepseek/deepseek-v3.2'
+MODEL = 'deepseek/deepseek-v3.2'  # DeepSeek v3.2
+
+# Query template for violation level classification
+# Document comes first with a common prefix to enable prompt caching
+QUERY_TEMPLATE = """Consider the following document.
+
+{document_text}
+
+Based on the categorization instructions below, please analyze this Special Investigation Report and determine the severity level of the actual violations that were substantiated (ignore any unsubstantiated allegations).
+
+Categorization Instructions:
+{theming_instructions}
+
+Please respond with a JSON object containing exactly three fields:
+
+1. "level": Either "low", "moderate", or "severe" based on the categorization instructions above
+2. "justification": A brief explanation of why you chose this level, referencing the specific violations found and how they align with the categorization criteria
+3. "keywords": A list of keywords pertinent to the reasons why this document is labelled with this violation level (e.g., ["physical assault", "inadequate supervision"], ["medication error"], ["paperwork delay", "documentation"])
+
+Return ONLY the JSON object, no other text. Format:
+{{"level": "...", "justification": "...", "keywords": [...]}}"""
 
 
 def get_api_key() -> str:
@@ -56,18 +77,18 @@ def get_api_key() -> str:
 
 def load_theming_instructions(theming_path: str) -> str:
     """
-    Load the staffing_theming.txt file with instructions for classifying staffing problems.
-
+    Load the sir_theming.txt file with instructions for categorizing violations.
+    
     Args:
-        theming_path: Path to staffing_theming.txt file
-
+        theming_path: Path to sir_theming.txt file
+    
     Returns:
         Content of the theming instructions file
     """
     theming_file = Path(theming_path)
     if not theming_file.exists():
         raise FileNotFoundError(f"Theming instructions file not found: {theming_path}")
-
+    
     with open(theming_file, 'r', encoding='utf-8') as f:
         return f.read()
 
@@ -75,48 +96,48 @@ def load_theming_instructions(theming_path: str) -> str:
 def get_sirs_with_violations(summaries_csv: str) -> List[str]:
     """
     Get SHA256 hashes for SIRs where violations were substantiated.
-
+    
     Args:
         summaries_csv: Path to sir_summaries.csv file
-
+    
     Returns:
         List of SHA256 hashes for documents with violations
     """
     summaries_path = Path(summaries_csv)
     if not summaries_path.exists():
         raise FileNotFoundError(f"Summaries CSV not found: {summaries_csv}")
-
+    
     df = pd.read_csv(summaries_csv)
-
+    
     # Filter for SIRs where violation was substantiated
     violations = df[df['violation'] == 'y']
-
+    
     logger.info(f"Found {len(violations)} SIRs with substantiated violations")
-
+    
     return [str(row['sha256']) for _, row in violations.iterrows()]
 
 
-def get_existing_staffing_shas(staffing_path: str) -> Set[str]:
+def get_existing_level_shas(levels_path: str) -> Set[str]:
     """
-    Get SHA256 hashes that already have staffing summaries.
-
+    Get SHA256 hashes that already have violation levels.
+    
     Args:
-        staffing_path: Path to staffing_summaries.csv
-
+        levels_path: Path to sir_violation_levels.csv
+    
     Returns:
-        Set of SHA256 hashes that already have staffing summaries
+        Set of SHA256 hashes that already have levels
     """
-    if not Path(staffing_path).exists():
-        logger.info(f"No existing {staffing_path}, will create new file")
+    if not Path(levels_path).exists():
+        logger.info(f"No existing {levels_path}, will create new file")
         return set()
-
+    
     try:
-        df = pd.read_csv(staffing_path)
+        df = pd.read_csv(levels_path)
         existing_shas = set(df['sha256'].unique())
-        logger.info(f"Found {len(existing_shas)} existing staffing summaries")
+        logger.info(f"Found {len(existing_shas)} existing violation levels")
         return existing_shas
     except Exception as e:
-        logger.error(f"Error reading {staffing_path}: {e}")
+        logger.error(f"Error reading {levels_path}: {e}")
         return set()
 
 
@@ -124,15 +145,15 @@ def load_document_from_parquet(sha256: str, parquet_dir: str) -> Optional[Dict]:
     """Load a document from parquet files by SHA256 hash."""
     parquet_path = Path(parquet_dir)
     parquet_files = list(parquet_path.glob("*.parquet"))
-
+    
     for parquet_file in parquet_files:
         try:
             df = pd.read_parquet(parquet_file)
             matches = df[df['sha256'] == sha256]
-
+            
             if not matches.empty:
                 row = matches.iloc[0]
-
+                
                 # Parse text
                 text_data = row['text']
                 if isinstance(text_data, str):
@@ -143,9 +164,9 @@ def load_document_from_parquet(sha256: str, parquet_dir: str) -> Optional[Dict]:
                         text_pages = []
                 else:
                     text_pages = list(text_data) if text_data is not None else []
-
+                
                 full_text = '\n\n'.join(text_pages)
-
+                
                 return {
                     'sha256': row['sha256'],
                     'text_pages': text_pages,
@@ -154,75 +175,93 @@ def load_document_from_parquet(sha256: str, parquet_dir: str) -> Optional[Dict]:
         except Exception as e:
             logger.debug(f"Error reading {parquet_file.name}: {e}")
             continue
-
+    
     return None
 
 
-def build_prompt(theming_instructions: str, document_text: str) -> str:
+def normalize_violation_level(level: str) -> str:
     """
-    Build the prompt by replacing the placeholder in the theming instructions.
-
+    Normalize a violation level string to one of: 'low', 'moderate', 'severe', or empty.
+    
     Args:
-        theming_instructions: Content from staffing_theming.txt
-        document_text: Full document text (all pages concatenated)
-
+        level: Raw level string from LLM response
+    
     Returns:
-        Complete prompt string with document text inserted
+        Normalized level string
     """
-    return theming_instructions.replace('[[ report here ]]', document_text)
+    level = level.lower()
+    if level in ['low', 'moderate', 'severe']:
+        return level
+    
+    # Try to normalize variations
+    if 'low' in level:
+        return 'low'
+    elif 'moderate' in level or 'medium' in level:
+        return 'moderate'
+    elif 'severe' in level or 'high' in level:
+        return 'severe'
+    
+    return ''
 
 
-def query_openrouter(api_key: str, prompt: str) -> Dict:
+def query_openrouter(api_key: str, theming_instructions: str, document_text: str) -> Dict:
     """
-    Query OpenRouter API with the constructed prompt.
-
+    Query OpenRouter API with the document and theming instructions.
+    
     Args:
         api_key: OpenRouter API key
-        prompt: Full prompt with document text inserted
-
+        theming_instructions: Content from sir_theming.txt
+        document_text: Full document text (all pages concatenated)
+    
     Returns:
-        Dict with parsed staffing fields, token usage, and duration
-
+        Dict with level, justification, keywords, response, tokens, and duration
+        
     Raises:
         Exception: If API request fails or JSON response cannot be parsed
     """
     start_time = time.time()
-
+    
+    # Construct the query using the template
+    full_prompt = QUERY_TEMPLATE.format(
+        theming_instructions=theming_instructions,
+        document_text=document_text
+    )
+    
     headers = {
         'Authorization': f'Bearer {api_key}',
         'Content-Type': 'application/json',
         'HTTP-Referer': 'https://github.com/jacksonloper/MCYJ-Datapipeline',
-        'X-Title': 'MCYJ Datapipeline Staffing Summaries'
+        'X-Title': 'MCYJ Datapipeline SIR Violation Level Updates'
     }
-
+    
     payload = {
         'model': MODEL,
         'messages': [
             {
                 'role': 'user',
-                'content': prompt
+                'content': full_prompt
             }
         ],
         'usage': {
             'include': True
         }
     }
-
+    
     response = requests.post(
         OPENROUTER_API_URL,
         headers=headers,
         json=payload,
         timeout=180  # 3 minute timeout
     )
-
+    
     end_time = time.time()
     duration_ms = int((end_time - start_time) * 1000)
-
+    
     if not response.ok:
         error_msg = f"API request failed: {response.status_code} {response.text}"
         logger.error(error_msg)
         raise Exception(error_msg)
-
+    
     data = response.json()
 
     # Extract completion ID
@@ -238,44 +277,79 @@ def query_openrouter(api_key: str, prompt: str) -> Dict:
     # Extract cached tokens information
     prompt_tokens_details = usage.get('prompt_tokens_details', {})
     cached_tokens = prompt_tokens_details.get('cached_tokens', 0) if prompt_tokens_details else 0
-
+    
     # Parse JSON response
-    parsed = _parse_json_response(ai_response)
-
-    # Extract and validate fields
-    staffing_problem = parsed.get('staffing_problem', False)
-    confidence = parsed.get('confidence', '')
-    primary_reason = parsed.get('primary_reason', '')
-    evidence = parsed.get('evidence', {})
-
-    if not isinstance(evidence, dict):
-        evidence = {}
-
-    staffing_cited = evidence.get('staffing_cited', False)
-    keywords_found = evidence.get('keywords_found', [])
-    evidence_quotes = evidence.get('evidence_quotes', [])
-    explanation = evidence.get('explanation', '')
-
-    # Ensure lists
-    if not isinstance(keywords_found, list):
-        keywords_found = [str(keywords_found)] if keywords_found else []
-    if not isinstance(evidence_quotes, list):
-        evidence_quotes = [str(evidence_quotes)] if evidence_quotes else []
-
-    # Validate confidence
-    if confidence not in ('high', 'medium', 'low'):
-        logger.warning(f"Unexpected confidence value: {confidence}")
-
+    level = ''
+    justification = ''
+    keywords = []
+    
+    try:
+        # Try to parse the response as JSON directly first
+        parsed = json.loads(ai_response)
+        level = parsed.get('level', '')
+        justification = parsed.get('justification', '')
+        keywords = parsed.get('keywords', [])
+    except json.JSONDecodeError:
+        # If direct parsing fails, try to extract JSON from the response (in case there's extra text)
+        # Find the first { and attempt to parse from there, trying progressively longer substrings
+        start_idx = ai_response.find('{')
+        if start_idx != -1:
+            # Try to find a valid JSON object by looking for matching braces
+            brace_count = 0
+            for i in range(start_idx, len(ai_response)):
+                if ai_response[i] == '{':
+                    brace_count += 1
+                elif ai_response[i] == '}':
+                    brace_count -= 1
+                    if brace_count == 0:
+                        # Found matching closing brace
+                        json_str = ai_response[start_idx:i+1]
+                        try:
+                            parsed = json.loads(json_str)
+                            level = parsed.get('level', '')
+                            justification = parsed.get('justification', '')
+                            keywords = parsed.get('keywords', [])
+                            break
+                        except json.JSONDecodeError:
+                            continue
+            else:
+                logger.error("No valid JSON object found in response")
+                raise Exception("No valid JSON object found in response")
+        else:
+            logger.error("No JSON object found in response")
+            raise Exception("No JSON object found in response")
+    
+    # Validate and normalize parsed values (applies to both parsing paths)
+    try:
+        # Ensure keywords is a list and handle None/empty cases properly
+        if keywords is None:
+            keywords = []
+        elif not isinstance(keywords, list):
+            logger.warning(f"Keywords is not a list, converting: {keywords}")
+            # Convert to string and wrap in list
+            keywords = [str(keywords)] if keywords else []
+        
+        # Normalize level to low, moderate, or severe
+        normalized_level = normalize_violation_level(level)
+        if normalized_level != level.lower():
+            logger.warning(f"Normalized level '{level}' to '{normalized_level}'")
+        level = normalized_level
+        
+        # Raise error if level is empty (parsing failed)
+        if not level:
+            raise ValueError(f"Could not extract valid level from response: {ai_response[:200]}")
+    except (json.JSONDecodeError, AttributeError, KeyError, ValueError) as e:
+        # If JSON parsing or validation fails, raise exception to skip this result
+        logger.error(f"Failed to parse/validate JSON response: {e}")
+        logger.error(f"Raw response: {ai_response}")
+        raise Exception(f"JSON parsing/validation failed: {e}")
+    
     return {
         'completion_id': completion_id,
-        'staffing_problem': staffing_problem,
-        'confidence': confidence,
-        'primary_reason': primary_reason,
-        'evidence_staffing_cited': staffing_cited,
-        'evidence_keywords_found': keywords_found,
-        'evidence_quotes': evidence_quotes,
-        'evidence_explanation': explanation,
-        'response': ai_response,
+        'level': level,
+        'justification': justification,
+        'keywords': keywords,
+        'response': ai_response,  # Keep raw response for debugging
         'input_tokens': input_tokens,
         'output_tokens': output_tokens,
         'cached_tokens': cached_tokens,
@@ -283,72 +357,32 @@ def query_openrouter(api_key: str, prompt: str) -> Dict:
     }
 
 
-def _parse_json_response(ai_response: str) -> Dict:
-    """
-    Parse a JSON object from the AI response string.
-
-    Args:
-        ai_response: Raw response string from the API
-
-    Returns:
-        Parsed dict
-
-    Raises:
-        Exception: If no valid JSON can be extracted
-    """
-    try:
-        return json.loads(ai_response)
-    except json.JSONDecodeError:
-        pass
-
-    # Try to extract JSON from mixed text
-    start_idx = ai_response.find('{')
-    if start_idx != -1:
-        brace_count = 0
-        for i in range(start_idx, len(ai_response)):
-            if ai_response[i] == '{':
-                brace_count += 1
-            elif ai_response[i] == '}':
-                brace_count -= 1
-                if brace_count == 0:
-                    json_str = ai_response[start_idx:i+1]
-                    try:
-                        return json.loads(json_str)
-                    except json.JSONDecodeError:
-                        continue
-        logger.error("No valid JSON object found in response")
-        raise Exception("No valid JSON object found in response")
-    else:
-        logger.error("No JSON object found in response")
-        raise Exception("No JSON object found in response")
-
-
 def main():
     """Main entry point."""
     parser = argparse.ArgumentParser(
-        description="Update staffing_summaries.csv with AI-generated staffing problem classifications",
+        description="Update sir_violation_levels.csv with AI-generated violation severity levels",
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     parser.add_argument(
         '--summaries',
-        default='sir_summaries.csv',
-        help='Path to sir_summaries.csv file (default: sir_summaries.csv)'
+        default='../data/sir_summaries.csv',
+        help='Path to sir_summaries.csv file (default: ../data/sir_summaries.csv)'
     )
     parser.add_argument(
         '--theming',
-        default='staffing_theming.txt',
-        help='Path to staffing_theming.txt file (default: staffing_theming.txt)'
+        default='../theming/sir_theming.txt',
+        help='Path to sir_theming.txt file (default: ../theming/sir_theming.txt)'
     )
     parser.add_argument(
         '--parquet-dir',
-        default='../ingestion/parquet_files',
-        help='Directory containing parquet files (default: ../ingestion/parquet_files)'
+        default='../ingestion/data/parquet_files',
+        help='Directory containing parquet files (default: ../ingestion/data/parquet_files)'
     )
     parser.add_argument(
         '--output',
         '-o',
-        default='staffing_summaries.csv',
-        help='Output CSV file path (default: staffing_summaries.csv)'
+        default='../data/sir_violation_levels.csv',
+        help='Output CSV file path (default: ../data/sir_violation_levels.csv)'
     )
     parser.add_argument(
         '--max-count',
@@ -356,16 +390,16 @@ def main():
         default=100,
         help='Maximum number of new SIRs to query (default: 100)'
     )
-
+    
     args = parser.parse_args()
-
+    
     # Resolve paths relative to script directory
     script_dir = Path(__file__).parent
     summaries_path = script_dir / args.summaries
     theming_path = script_dir / args.theming
     parquet_dir = script_dir / args.parquet_dir
     output_path = script_dir / args.output
-
+    
     # Get API key
     try:
         api_key = get_api_key()
@@ -373,7 +407,7 @@ def main():
     except ValueError as e:
         logger.error(str(e))
         sys.exit(1)
-
+    
     # Load theming instructions
     logger.info(f"Loading theming instructions from {theming_path}...")
     try:
@@ -382,7 +416,7 @@ def main():
     except FileNotFoundError as e:
         logger.error(str(e))
         sys.exit(1)
-
+    
     # Get all SIRs with violations from summaries CSV
     logger.info(f"Reading summaries from {summaries_path}...")
     try:
@@ -390,121 +424,118 @@ def main():
     except FileNotFoundError as e:
         logger.error(str(e))
         sys.exit(1)
-
+    
     if not all_sirs:
         logger.warning("No SIRs with violations found in summaries CSV")
         sys.exit(0)
-
+    
     all_sir_shas = set(all_sirs)
-
-    # Get existing staffing summary shas
-    existing_shas = get_existing_staffing_shas(str(output_path))
-
+    
+    # Get existing level shas
+    existing_shas = get_existing_level_shas(str(output_path))
+    
     # Find missing shas
     missing_shas = all_sir_shas - existing_shas
-    logger.info(f"Found {len(missing_shas)} SIRs without staffing summaries")
-
+    logger.info(f"Found {len(missing_shas)} SIRs without violation levels")
+    
     if not missing_shas:
-        logger.info("All SIRs with violations already have staffing summaries!")
+        logger.info("All SIRs with violations already have levels!")
         sys.exit(0)
-
+    
     # Limit to requested count
     shas_to_query = sorted(list(missing_shas))[:args.max_count]
     logger.info(f"Will query {len(shas_to_query)} SIRs")
-
+    
     # Prepare results list
     results = []
-
+    
     # Query each SIR
     for idx, sha in enumerate(shas_to_query, 1):
         logger.info(f"\n{'='*80}")
         logger.info(f"Processing SIR {idx}/{len(shas_to_query)}: {sha}")
-
+        
         logger.info("Loading document from parquet...")
         doc = load_document_from_parquet(sha, str(parquet_dir))
-
+        
         if not doc:
             logger.error(f"Could not find document in parquet files: {sha}")
             continue
-
+        
         logger.info(f"Document: {len(doc['text_pages'])} pages, {len(doc['full_text'])} characters")
-
-        # Build prompt using the theming template
-        prompt = build_prompt(theming_instructions, doc['full_text'])
-
+        
         # Query the API
         logger.info("Querying OpenRouter API...")
         try:
-            result = query_openrouter(api_key, prompt)
-
+            result = query_openrouter(api_key, theming_instructions, doc['full_text'])
+            
             logger.info(f"Response received:")
             logger.info(f"  Input tokens: {result['input_tokens']}")
             logger.info(f"  Output tokens: {result['output_tokens']}")
             logger.info(f"  Cached tokens: {result['cached_tokens']}")
             logger.info(f"  Duration: {result['duration_ms']/1000:.2f}s")
-            logger.info(f"  Staffing problem: {result['staffing_problem']}")
-            logger.info(f"  Confidence: {result['confidence']}")
-            logger.info(f"  Primary reason: {result['primary_reason']}")
-            logger.info(f"  Explanation preview: {result['evidence_explanation'][:150]}...")
-
+            logger.info(f"  Level: {result['level']}")
+            logger.info(f"  Keywords: {result['keywords']}")
+            logger.info(f"  Justification preview: {result['justification'][:150]}...")
+            
             # Store result
             results.append({
                 'sha256': sha,
-                'staffing_problem': result['staffing_problem'],
-                'confidence': result['confidence'],
-                'primary_reason': result['primary_reason'],
-                'evidence_staffing_cited': result['evidence_staffing_cited'],
-                'evidence_keywords_found': json.dumps(result['evidence_keywords_found']),
-                'evidence_quotes': json.dumps(result['evidence_quotes']),
-                'evidence_explanation': result['evidence_explanation'],
+                'level': result['level'],
+                'justification': result['justification'],
+                'keywords': json.dumps(result['keywords']),  # Store as JSON string
+                'input_tokens': result['input_tokens'],
+                'output_tokens': result['output_tokens'],
+                'duration_ms': result['duration_ms']
             })
-
+            
             # Add a small delay to avoid rate limiting
             if idx < len(shas_to_query):
                 logger.info("Waiting 2 seconds before next query...")
                 time.sleep(2)
-
+            
         except requests.RequestException as e:
             logger.error(f"API request error: {e}")
             continue
         except Exception as e:
             logger.error(f"Error processing query: {e}")
             continue
-
+    
     if not results:
         logger.warning("No results to save")
         sys.exit(0)
-
+    
     # Append results to CSV
     logger.info(f"\n{'='*80}")
     logger.info(f"Appending {len(results)} results to {output_path}")
-
+    
     file_exists = output_path.exists()
-
-    fieldnames = ['sha256', 'staffing_problem', 'confidence', 'primary_reason',
-                  'evidence_staffing_cited', 'evidence_keywords_found',
-                  'evidence_quotes', 'evidence_explanation']
-
+    
     with open(output_path, 'a', newline='', encoding='utf-8') as f:
+        fieldnames = ['sha256', 'level', 'justification', 'keywords',
+                     'input_tokens', 'output_tokens', 'duration_ms']
         writer = csv.DictWriter(f, fieldnames=fieldnames)
-
+        
         if not file_exists:
             writer.writeheader()
-
+        
         writer.writerows(results)
-
+    
     logger.info("Done!")
-
+    
     # Print summary
     successful = len(results)
-    staffing_counts = {}
+    total_input_tokens = sum(r['input_tokens'] for r in results)
+    total_output_tokens = sum(r['output_tokens'] for r in results)
+    level_counts = {}
     for r in results:
-        sp = str(r['staffing_problem'])
-        staffing_counts[sp] = staffing_counts.get(sp, 0) + 1
-
+        level = r['level']
+        level_counts[level] = level_counts.get(level, 0) + 1
+    
     logger.info(f"\nSummary:")
-    logger.info(f"  New staffing summaries added: {successful}")
-    logger.info(f"  Staffing problem distribution: {staffing_counts}")
+    logger.info(f"  New levels added: {successful}")
+    logger.info(f"  Level distribution: {level_counts}")
+    logger.info(f"  Total input tokens: {total_input_tokens:,}")
+    logger.info(f"  Total output tokens: {total_output_tokens:,}")
     logger.info(f"  Output file: {output_path}")
 
 

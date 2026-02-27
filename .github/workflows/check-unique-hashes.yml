@@ -5,8 +5,8 @@ on:
     branches:
       - main
     paths:
-      - 'ingestion/parquet_files/*.parquet'
-      - 'ingestion/check_unique_hashes.py'
+      - 'ingestion/data/parquet_files/*.parquet'
+      - 'ingestion/scripts/check_unique_hashes.py'
       - '.github/workflows/check-unique-hashes.yml'
 
 jobs:
@@ -27,7 +27,7 @@ jobs:
 
       - name: Check for duplicate SHA256 hashes
         run: |
-          uv run python ingestion/check_unique_hashes.py
+          uv run python ingestion/scripts/check_unique_hashes.py
 
       - name: Report success
         if: success()

@@ -79,7 +79,7 @@ def check_unique_hashes(parquet_dir: Path) -> tuple[bool, dict]:
 
 def main():
     """Run the uniqueness check."""
-    parquet_dir = Path(__file__).parent / "parquet_files"
+    parquet_dir = Path(__file__).parent.parent / "data" / "parquet_files"
 
     if not parquet_dir.exists():
         print(f"❌ Directory {parquet_dir} does not exist")

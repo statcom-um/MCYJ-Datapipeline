@@ -365,8 +365,8 @@ def main():
     )
     parser.add_argument(
         "-o", "--parquet-dir",
-        default="ingestion/parquet_files",
-        help="Output directory for timestamped Parquet files (default: ingestion/parquet_files)"
+        default="ingestion/data/parquet_files",
+        help="Output directory for timestamped Parquet files (default: ingestion/data/parquet_files)"
     )
     parser.add_argument(
         "--spot-check",

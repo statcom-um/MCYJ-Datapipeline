@@ -268,19 +268,19 @@ def main():
     )
     parser.add_argument(
         '--doc-info',
-        default='../ingestion/document_info.csv',
-        help='Path to document_info.csv file (default: ../ingestion/document_info.csv)'
+        default='../ingestion/data/document_info.csv',
+        help='Path to document_info.csv file (default: ../ingestion/data/document_info.csv)'
     )
     parser.add_argument(
         '--parquet-dir',
-        default='../ingestion/parquet_files',
-        help='Directory containing parquet files (default: ../ingestion/parquet_files)'
+        default='../ingestion/data/parquet_files',
+        help='Directory containing parquet files (default: ../ingestion/data/parquet_files)'
     )
     parser.add_argument(
         '--output',
         '-o',
-        default='sir_summaries.csv',
-        help='Output CSV file path (default: sir_summaries.csv)'
+        default='../data/sir_summaries.csv',
+        help='Output CSV file path (default: ../data/sir_summaries.csv)'
     )
     parser.add_argument(
         '--count',

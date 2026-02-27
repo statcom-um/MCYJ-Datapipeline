@@ -28,18 +28,8 @@ jobs:
       - name: Install Python dependencies
         run: uv sync
 
-      - name: Run update_sir_summaries.py
-        run: uv run python llm_analysis/update_sir_summaries.py --count ${{ inputs.max_docs }}
-        env:
-          OPENROUTER_KEY: ${{ secrets.OPENROUTER_KEY }}
-
-      - name: Run update_violation_levels.py
-        run: uv run python llm_analysis/update_violation_levels.py --max-count ${{ inputs.max_docs }}
-        env:
-          OPENROUTER_KEY: ${{ secrets.OPENROUTER_KEY }}
-
-      - name: Run update_staffing_summaries.py
-        run: uv run python llm_analysis/update_staffing_summaries.py --max-count ${{ inputs.max_docs }}
+      - name: Run LLM analysis
+        run: uv run python llm_analysis/run.py --max-count ${{ inputs.max_docs }}
         env:
           OPENROUTER_KEY: ${{ secrets.OPENROUTER_KEY }}
 
@@ -48,9 +38,9 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          git add llm_analysis/sir_summaries.csv \
-                  llm_analysis/sir_violation_levels.csv \
-                  llm_analysis/staffing_summaries.csv || true
+          git add llm_analysis/data/sir_summaries.csv \
+                  llm_analysis/data/sir_violation_levels.csv \
+                  llm_analysis/data/staffing_summaries.csv || true
 
           if git diff --cached --quiet; then
             echo "No LLM output changes to commit."

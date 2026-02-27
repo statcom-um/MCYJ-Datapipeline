@@ -2,39 +2,37 @@
 
 ## Single-command pipeline
 
-Run the full metadata + download pipeline in one script:
+Run the full ingestion pipeline:
 
 ```bash
-python ingestion/run_full_pipeline.py --metadata-output-dir metadata_output --download-dir Downloads
+python ingestion/run.py
 ```
 
-This script discovers and downloads incrementally: it checks each API file and downloads immediately when a new `ContentDocumentId` is found.
-After downloading, it runs PDF text extraction for newly downloaded files and writes parquet output in `pdf_parsing/parquet_files`.
-By default, it writes:
-- persistent download database: `metadata_output/downloaded_files_database.csv`
-- run-only metadata (new downloads only): `metadata_output/latest_downloaded_metadata.csv`
+This runs 4 sequential steps:
+1. **Pull agency data** → `ingestion/data/facility_information.csv`
+2. **Pull document lists** → `ingestion/data/downloaded_files_database.csv`
+3. **Download unprocessed documents** + PDF text extraction → `ingestion/data/parquet_files/`
+4. **Extract document info** → `ingestion/data/document_info.csv`
 
-Important preflight behavior:
-- It first checks existing metadata rows for missing `sha256` and backfills those before any new downloads.
-
-To process only 5 **new** downloads:
+To limit new downloads:
 
 ```bash
-python ingestion/run_full_pipeline.py --metadata-output-dir metadata_output --download-dir Downloads --limit 5
+python ingestion/run.py --limit 5
 ```
 
-Re-run behavior:
-- The pipeline always reads the persistent download database first (if available).
-- If a `ContentDocumentId` already has a `sha256` in the database, it is skipped.
-- If the file exists locally but `sha256` is missing, SHA is backfilled and it is skipped.
-- A download only occurs when the `ContentDocumentId` has no corresponding SHA-backed database record.
-
-When 5 qualifying new files are found, `metadata_output/latest_downloaded_metadata.csv` will have 5 rows with `ContentDocumentId` and `sha256`.
-
-You can override the database path with:
+To skip PDF parsing (download-only mode):
 
 ```bash
-python ingestion/run_full_pipeline.py --download-db-csv metadata_output/my_download_db.csv
+python ingestion/run.py --skip-pdf-parsing
+```
+
+Each step can also be run independently:
+
+```bash
+python ingestion/scripts/step1_pull_agency_data.py
+python ingestion/scripts/step2_pull_document_lists.py
+python ingestion/scripts/step3_pull_unprocessed_docs.py --limit 5
+python ingestion/scripts/extract_document_info.py --parquet-dir ingestion/data/parquet_files -o ingestion/data/document_info.csv
 ```
 
 ### GitHub Actions workflow
@@ -46,19 +44,8 @@ You can run the same pipeline from GitHub:
 3. Set `limit` (for example `5`)
 
 The workflow will:
-- run `ingestion/run_full_pipeline.py` with your limit
-- commit pipeline outputs directly to the triggering branch:
-  - `metadata_output/downloaded_files_database.csv`
-  - `metadata_output/latest_downloaded_metadata.csv`
-  - new parquet files in `pdf_parsing/parquet_files/`
-
-This lets you test exactly the same behavior from GitHub, including the "download only new ContentDocumentId values" logic.
-
-To skip parsing (download-only mode), add:
-
-```bash
-python ingestion/run_full_pipeline.py --skip-pdf-parsing
-```
+- run `ingestion/run.py` with your limit
+- commit pipeline outputs directly to the triggering branch
 
 ## 1. Get all the available documents from the Michigan Welfare public search API
 

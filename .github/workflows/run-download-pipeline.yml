@@ -38,52 +38,26 @@ jobs:
         run: |
           mkdir -p Downloads
 
-      - name: Run incremental download pipeline
+      - name: Run ingestion workflow
         run: |
           LIMIT_ARG=""
           if [ -n "${{ inputs.limit }}" ]; then
             LIMIT_ARG="--limit ${{ inputs.limit }}"
           fi
 
-          uv run python ingestion/run_full_pipeline.py \
-            --metadata-output-dir ingestion \
-            --download-dir Downloads \
+          uv run python ingestion/run.py \
             ${LIMIT_ARG} \
             --sleep "${{ inputs.sleep_seconds }}"
-
-      - name: Show run output summary
-        run: |
-          uv run python - <<'PY'
-          import csv
-          p = 'ingestion/latest_downloaded_metadata.csv'
-          with open(p, newline='', encoding='utf-8') as f:
-              r = csv.DictReader(f)
-              rows = list(r)
-          print('rows', len(rows))
-          print('has_ContentDocumentId', 'ContentDocumentId' in (r.fieldnames or []))
-          print('has_sha256', 'sha256' in (r.fieldnames or []))
-          print('ids', [row.get('ContentDocumentId', '') for row in rows])
-          PY
-
-      - name: Extract document info from parquet files
-        run: |
-          uv run python ingestion/extract_document_info.py \
-            --parquet-dir ingestion/parquet_files \
-            -o ingestion/document_info.csv
-
-      - name: Check unique hashes
-        run: |
-          uv run python ingestion/check_unique_hashes.py
 
       - name: Commit and push pipeline outputs
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          git add ingestion/downloaded_files_database.csv \
-                  ingestion/parquet_files/*.parquet \
-                  ingestion/document_info.csv \
-                  ingestion/facility_information.csv || true
+          git add ingestion/data/downloaded_files_database.csv \
+                  ingestion/data/parquet_files/*.parquet \
+                  ingestion/data/document_info.csv \
+                  ingestion/data/facility_information.csv || true
 
           if git diff --cached --quiet; then
             echo "No pipeline output changes to commit."
