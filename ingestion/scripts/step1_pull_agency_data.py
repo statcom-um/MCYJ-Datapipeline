@@ -91,7 +91,7 @@ def run(facility_info_csv: str) -> None:
     merged = merged[[c for c in FACILITY_INFO_COLUMNS if c in merged.columns]]
 
     os.makedirs(os.path.dirname(facility_info_csv) or ".", exist_ok=True)
-    merged.to_csv(facility_info_csv, index=False, quoting=1)  # QUOTE_ALL
+    merged.to_csv(facility_info_csv, index=False, quoting=1, lineterminator="\r\n")  # QUOTE_ALL
 
     appended = len(api_license_numbers - set(existing["LicenseNumber"].unique())) if len(existing) > 0 else len(api_license_numbers)
     print(

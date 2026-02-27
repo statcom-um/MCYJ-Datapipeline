@@ -20,7 +20,7 @@ PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(_
 if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 
-from ingestion.scripts.pull_agency_info_api import get_all_agency_info, get_content_details_method
+from ingestion.scripts.pull_agency_info_api import get_all_agency_info, get_agency_document_list
 
 DEFAULT_DOWNLOAD_DB_CSV = "ingestion/data/downloaded_files_database.csv"
 
@@ -70,7 +70,7 @@ def run(download_db_csv: str) -> None:
         if not agency_id:
             continue
 
-        pdf_results = get_content_details_method(agency_id)
+        pdf_results = get_agency_document_list(agency_id)
         if not pdf_results:
             failed_agency_count += 1
             continue
@@ -143,7 +143,7 @@ def run(download_db_csv: str) -> None:
 
     # Save
     os.makedirs(os.path.dirname(download_db_csv) or ".", exist_ok=True)
-    db.to_csv(download_db_csv, index=False)
+    db.to_csv(download_db_csv, index=False, lineterminator="\r\n")
 
     print(
         f"Document list update complete: total={len(db)}, new={new_count}, "

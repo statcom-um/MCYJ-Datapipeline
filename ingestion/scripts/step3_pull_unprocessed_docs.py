@@ -104,7 +104,7 @@ def run(
             time.sleep(sleep_seconds)
 
     # Save updated DB
-    db.to_csv(download_db_csv, index=False)
+    db.to_csv(download_db_csv, index=False, lineterminator="\r\n")
     print(f"Download database updated: {download_db_csv} ({len(new_downloads)} new downloads)")
 
     # Parse new downloads to parquet

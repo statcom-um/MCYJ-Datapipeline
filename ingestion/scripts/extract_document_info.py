@@ -233,85 +233,92 @@ def parse_document(text_pages: List[str]) -> Dict[str, Any]:
 
 
 def process_parquet_files(parquet_dir: str, output_csv: str) -> None:
-    """Process all parquet files in directory and output to CSV."""
+    """Process parquet files and append new records to CSV.
+
+    Only documents whose sha256 is not already in the output CSV are parsed
+    and appended.  Existing rows are never overwritten or removed.
+    """
     parquet_path = Path(parquet_dir)
-    
+
     if not parquet_path.exists():
         logger.error(f"Directory '{parquet_dir}' does not exist")
         sys.exit(1)
-    
+
     # Find all parquet files
     parquet_files = list(parquet_path.glob("*.parquet"))
-    
+
     if not parquet_files:
         logger.error(f"No parquet files found in '{parquet_dir}'")
         sys.exit(1)
-    
+
     logger.info(f"Found {len(parquet_files)} parquet files")
-    
-    # Collect all records
-    all_records = []
-    total_documents = 0
-    
+
+    # Load existing sha256s from the output CSV so we can skip them
+    existing_sha256s: set = set()
+    output_path = Path(output_csv)
+    if output_path.exists():
+        existing_df = pd.read_csv(output_csv, dtype=str, usecols=["sha256"])
+        existing_sha256s = set(existing_df["sha256"].dropna())
+        logger.info(f"Found {len(existing_sha256s)} existing records in {output_csv}")
+
+    # Collect new records only
+    new_records = []
+    skipped = 0
+
     for parquet_file in sorted(parquet_files):
-        logger.info(f"Processing: {parquet_file.name}")
-        
         try:
             df = pd.read_parquet(parquet_file)
-            logger.info(f"  Found {len(df)} documents in file")
-            
-            for idx, row in df.iterrows():
-                total_documents += 1
-                
-                # Parse text (stored as string representation of list)
+            for _, row in df.iterrows():
+                if row["sha256"] in existing_sha256s:
+                    skipped += 1
+                    continue
+
                 try:
                     text_pages = ast.literal_eval(row['text']) if isinstance(row['text'], str) else row['text']
                 except (ValueError, SyntaxError):
                     logger.error(f"Failed to parse text for document {row['sha256']}")
                     continue
-                
-                # Parse document
+
                 parsed = parse_document(text_pages)
-                
-                # Add metadata from parquet
                 parsed['sha256'] = row['sha256']
                 parsed['date_processed'] = row['dateprocessed']
-                
-                all_records.append(parsed)
-                
+                new_records.append(parsed)
+                existing_sha256s.add(row['sha256'])
+
         except Exception as e:
             logger.error(f"Error processing {parquet_file.name}: {e}")
             continue
-    
-    logger.info(f"\nProcessed {total_documents} documents total")
-    
-    # Write to CSV
-    if all_records:
-        output_path = Path(output_csv)
-        output_path.parent.mkdir(parents=True, exist_ok=True)
-        
-        with open(output_csv, 'w', newline='', encoding='utf-8') as csvfile:
-            fieldnames = [
-                'agency_id', 'date', 'agency_name', 'document_title', 
-                'is_special_investigation', 'sha256', 'date_processed'
-            ]
-            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
 
+    logger.info(f"Skipped {skipped} already-processed documents")
+
+    if not new_records:
+        logger.info("No new documents to process")
+        return
+
+    # Append new records to CSV (write header only if file doesn't exist)
+    fieldnames = [
+        'agency_id', 'date', 'agency_name', 'document_title',
+        'is_special_investigation', 'sha256', 'date_processed'
+    ]
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    write_header = not output_path.exists()
+
+    with open(output_csv, 'a', newline='', encoding='utf-8') as csvfile:
+        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+        if write_header:
             writer.writeheader()
-            for record in all_records:
-                writer.writerow({
-                    'agency_id': record['agency_id'] or '',
-                    'date': record['date'] or '',
-                    'agency_name': record['agency_name'] or '',
-                    'document_title': record['document_title'] or '',
-                    'is_special_investigation': record['is_special_investigation'],
-                    'sha256': record['sha256'],
-                    'date_processed': record['date_processed']
-                })
-        
-        logger.info(f"\nWrote {len(all_records)} records to {output_csv}")
-    else:
-        logger.warning("No records to write")
+        for record in new_records:
+            writer.writerow({
+                'agency_id': record['agency_id'] or '',
+                'date': record['date'] or '',
+                'agency_name': record['agency_name'] or '',
+                'document_title': record['document_title'] or '',
+                'is_special_investigation': record['is_special_investigation'],
+                'sha256': record['sha256'],
+                'date_processed': record['date_processed']
+            })
+
+    logger.info(f"Appended {len(new_records)} new records to {output_csv}")
 
 
 def main():
