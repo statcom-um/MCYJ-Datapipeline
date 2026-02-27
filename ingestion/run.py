@@ -9,15 +9,16 @@ import sys
 def main():
     parser = argparse.ArgumentParser(description="Run the full ingestion workflow")
     parser.add_argument(
-        "--limit", type=int, default=None, help="Max number of new files to download"
+        "--limit", type=int, default=None, help="Max number of new PDFs to process"
     )
     parser.add_argument(
-        "--sleep", type=float, default=0.0, help="Seconds to sleep between downloads"
+        "--sleep", type=float, default=0.0, help="Seconds to sleep between API calls"
     )
     parser.add_argument(
-        "--skip-pdf-parsing",
-        action="store_true",
-        help="Skip PDF text extraction step after downloads",
+        "--save-pdfs",
+        default=None,
+        metavar="DIR",
+        help="Also save raw PDF files to this directory",
     )
     args = parser.parse_args()
 
@@ -27,21 +28,21 @@ def main():
         check=True,
     )
 
-    # Step 2: Pull document lists → downloaded_files_database.csv
+    # Step 2: Fetch per-agency document lists → downloaded_files_database.csv
     subprocess.run(
         [sys.executable, "ingestion/scripts/step2_pull_document_lists.py"],
         check=True,
     )
 
-    # Step 3: Download unprocessed documents + PDF parsing
+    # Step 3: Fetch unprocessed PDFs, extract text, write to parquet
     cmd = [
         sys.executable, "ingestion/scripts/step3_pull_unprocessed_docs.py",
         "--sleep", str(args.sleep),
     ]
     if args.limit is not None:
         cmd.extend(["--limit", str(args.limit)])
-    if args.skip_pdf_parsing:
-        cmd.append("--skip-pdf-parsing")
+    if args.save_pdfs is not None:
+        cmd.extend(["--save-pdfs", args.save_pdfs])
     subprocess.run(cmd, check=True)
 
     # Step 4: Extract document info from parquet files

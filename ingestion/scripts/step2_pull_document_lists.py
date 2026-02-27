@@ -1,11 +1,16 @@
 #!/usr/bin/env python3
-"""Step 2: Iterate all agencies, fetch document lists, update downloaded_files_database.csv.
+"""Step 2: Fetch document metadata for every agency from the Michigan API.
 
-No downloading happens here — only metadata discovery and tracking.
+This is the most network-intensive step — it makes one API call per agency
+to retrieve each agency's document list.  No PDF file downloads happen here,
+only metadata discovery.
 
+Behaviour:
 - New documents get download_status='pending', empty sha256.
 - Existing documents get API fields refreshed and last_seen_in_api_utc updated.
-- Documents no longer in API get download_status='unavailable' (only if no API calls failed).
+- Documents no longer in API get download_status='unavailable'
+  (only when *every* agency call succeeded, so partial failures don't
+  incorrectly mark documents as gone).
 - Never deletes rows.
 """
 
@@ -31,22 +36,66 @@ DB_COLUMNS = [
     "download_status", "id_match_checked",
 ]
 
+API_METADATA_FIELDS = ["FileExtension", "CreatedDate", "Title", "ContentBodyId", "Id"]
 
-def run(download_db_csv: str) -> None:
-    # Load existing DB
-    if os.path.exists(download_db_csv):
-        db = pd.read_csv(download_db_csv, dtype=str).fillna("")
+
+def _load_db(csv_path: str) -> pd.DataFrame:
+    """Load the download database CSV, indexed by ContentDocumentId."""
+    if os.path.exists(csv_path):
+        db = pd.read_csv(csv_path, dtype=str).fillna("")
     else:
         db = pd.DataFrame(columns=DB_COLUMNS)
 
-    # Index by ContentDocumentId for fast lookup
-    db_index = {}
-    for idx, row in db.iterrows():
-        cdid = row.get("ContentDocumentId", "").strip()
-        if cdid:
-            db_index[cdid] = idx
+    # ContentDocumentId is the natural key — enforce uniqueness and use as index
+    db["ContentDocumentId"] = db["ContentDocumentId"].str.strip()
+    dupes = db["ContentDocumentId"].duplicated(keep="first")
+    if dupes.any():
+        n = dupes.sum()
+        print(f"WARNING: dropped {n} duplicate ContentDocumentId rows from DB")
+        db = db[~dupes]
 
-    # Fetch agency list
+    db = db.set_index("ContentDocumentId", drop=False)
+    return db
+
+
+def _update_existing_row(db: pd.DataFrame, cdid: str, agency_name: str,
+                         agency_id: str, record: dict, now_utc: str) -> None:
+    """Refresh API metadata on a document we already know about."""
+    if agency_name:
+        db.at[cdid, "agency_name"] = agency_name
+    if agency_id:
+        db.at[cdid, "agency_id"] = agency_id
+    for key in API_METADATA_FIELDS:
+        new_val = (record.get(key) or "").strip()
+        if new_val:
+            db.at[cdid, key] = new_val
+    db.at[cdid, "last_seen_in_api_utc"] = now_utc
+    db.at[cdid, "id_match_checked"] = "true"
+    if db.at[cdid, "download_status"] == "unavailable":
+        db.at[cdid, "download_status"] = "available_existing"
+    db.at[cdid, "unavailable_marked_at_utc"] = ""
+
+
+def _make_new_row(cdid: str, agency_name: str, agency_id: str,
+                  record: dict, now_utc: str) -> dict:
+    """Build a fresh row dict for a newly discovered document."""
+    row = {col: "" for col in DB_COLUMNS}
+    row["ContentDocumentId"] = cdid
+    row["agency_name"] = agency_name
+    row["agency_id"] = agency_id
+    for key in API_METADATA_FIELDS:
+        row[key] = (record.get(key) or "").strip()
+    row["last_seen_in_api_utc"] = now_utc
+    row["download_status"] = "pending"
+    row["id_match_checked"] = "true"
+    return row
+
+
+def run(download_db_csv: str) -> None:
+    """Fetch document lists for all agencies and update the download database."""
+    db = _load_db(download_db_csv)
+
+    # Fetch agency list (single API call)
     all_agency_info = get_all_agency_info()
     if not all_agency_info:
         raise RuntimeError("Failed to fetch agency information from API")
@@ -56,13 +105,13 @@ def run(download_db_csv: str) -> None:
         .get("objectData", {})
         .get("responseResult", [])
     )
-    print(f"Fetched {len(agency_list)} agencies. Starting document list discovery.")
+    print(f"Fetched {len(agency_list)} agencies. Fetching document lists...")
 
-    api_seen = set()
+    api_seen: set[str] = set()
     failed_agency_count = 0
-    new_count = 0
     now_utc = datetime.now(timezone.utc).isoformat()
-    new_rows = []
+    new_rows: list[dict] = []
+    new_cdids_this_run: set[str] = set()  # dedup within this run
 
     for agency in agency_list:
         agency_id = (agency.get("agencyId") or "").strip()
@@ -81,57 +130,32 @@ def run(download_db_csv: str) -> None:
             continue
 
         for record in records:
-            content_document_id = (record.get("ContentDocumentId") or "").strip()
-            if not content_document_id:
+            cdid = (record.get("ContentDocumentId") or "").strip()
+            if not cdid:
                 continue
 
-            api_seen.add(content_document_id)
+            api_seen.add(cdid)
 
-            if content_document_id in db_index:
-                # Update existing row with API metadata
-                idx = db_index[content_document_id]
-                db.at[idx, "agency_name"] = agency_name or db.at[idx, "agency_name"]
-                db.at[idx, "agency_id"] = agency_id or db.at[idx, "agency_id"]
-                for key in ["FileExtension", "CreatedDate", "Title", "ContentBodyId", "Id"]:
-                    new_val = (record.get(key) or "").strip()
-                    if new_val:
-                        db.at[idx, key] = new_val
-                db.at[idx, "last_seen_in_api_utc"] = now_utc
-                db.at[idx, "id_match_checked"] = "true"
-                # If was unavailable, mark available again
-                if db.at[idx, "download_status"] == "unavailable":
-                    db.at[idx, "download_status"] = "available_existing"
-                db.at[idx, "unavailable_marked_at_utc"] = ""
-            else:
-                # New document
-                new_row = {col: "" for col in DB_COLUMNS}
-                new_row["ContentDocumentId"] = content_document_id
-                new_row["agency_name"] = agency_name
-                new_row["agency_id"] = agency_id
-                for key in ["FileExtension", "CreatedDate", "Title", "ContentBodyId", "Id"]:
-                    new_row[key] = (record.get(key) or "").strip()
-                new_row["last_seen_in_api_utc"] = now_utc
-                new_row["download_status"] = "pending"
-                new_row["id_match_checked"] = "true"
-                new_rows.append(new_row)
-                # Register in index so we don't add duplicates within this run
-                db_index[content_document_id] = len(db) + len(new_rows) - 1
-                new_count += 1
+            if cdid in db.index:
+                _update_existing_row(db, cdid, agency_name, agency_id, record, now_utc)
+            elif cdid not in new_cdids_this_run:
+                new_rows.append(_make_new_row(cdid, agency_name, agency_id, record, now_utc))
+                new_cdids_this_run.add(cdid)
 
     # Append new rows
     if new_rows:
-        db = pd.concat([db, pd.DataFrame(new_rows, columns=DB_COLUMNS)], ignore_index=True)
+        new_df = pd.DataFrame(new_rows, columns=DB_COLUMNS)
+        new_df = new_df.set_index("ContentDocumentId", drop=False)
+        db = pd.concat([db, new_df])
 
-    # Mark unavailable if we had a complete API sweep
+    # Mark unavailable — only if every agency call succeeded
     unavailable_count = 0
     if failed_agency_count == 0:
-        for idx, row in db.iterrows():
-            cdid = row.get("ContentDocumentId", "").strip()
-            if cdid and cdid not in api_seen:
-                if db.at[idx, "download_status"] != "unavailable":
-                    unavailable_count += 1
-                db.at[idx, "download_status"] = "unavailable"
-                db.at[idx, "unavailable_marked_at_utc"] = now_utc
+        not_seen = ~db.index.isin(api_seen) & (db.index != "")
+        newly_unavailable = not_seen & (db["download_status"] != "unavailable")
+        unavailable_count = newly_unavailable.sum()
+        db.loc[not_seen, "download_status"] = "unavailable"
+        db.loc[not_seen, "unavailable_marked_at_utc"] = now_utc
         print(
             f"Availability sync: seen_in_api={len(api_seen)}, "
             f"marked_unavailable={unavailable_count}"
@@ -141,19 +165,20 @@ def run(download_db_csv: str) -> None:
             f"Skipped unavailable marking (failed_agencies={failed_agency_count})"
         )
 
-    # Save
+    # Save (reset index so ContentDocumentId goes back to being a normal column)
+    db = db.reset_index(drop=True)
     os.makedirs(os.path.dirname(download_db_csv) or ".", exist_ok=True)
     db.to_csv(download_db_csv, index=False, lineterminator="\r\n")
 
     print(
-        f"Document list update complete: total={len(db)}, new={new_count}, "
+        f"Document list update complete: total={len(db)}, new={len(new_rows)}, "
         f"failed_agencies={failed_agency_count}"
     )
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Step 2: Fetch document lists from API and update downloaded_files_database.csv"
+        description="Step 2: Fetch per-agency document lists and update downloaded_files_database.csv"
     )
     parser.add_argument(
         "--download-db-csv",
