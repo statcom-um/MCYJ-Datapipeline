@@ -13,20 +13,15 @@ Use --save-pdfs DIR to also persist the raw PDF files to disk.
 import argparse
 import hashlib
 import os
-import sys
 import time
 from datetime import datetime, timezone
 from pathlib import Path
 
 import pandas as pd
 
-PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-if PROJECT_ROOT not in sys.path:
-    sys.path.insert(0, PROJECT_ROOT)
-
-from ingestion.scripts.download_pdf import fetch_pdf_bytes, save_pdf
-from ingestion.scripts.extract_pdf_text import extract_text_from_pdf_bytes
-from ingestion.scripts.pipeline_utils import parse_created_date_to_iso
+from download_pdf import fetch_pdf_bytes, save_pdf
+from extract_pdf_text import extract_text_from_pdf_bytes
+from pipeline_utils import parse_created_date_to_iso
 
 DEFAULT_DOWNLOAD_DB_CSV = "ingestion/data/downloaded_files_database.csv"
 DEFAULT_PARQUET_DIR = "ingestion/data/parquet_files"

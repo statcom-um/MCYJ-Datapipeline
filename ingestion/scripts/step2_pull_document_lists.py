@@ -16,16 +16,11 @@ Behaviour:
 
 import argparse
 import os
-import sys
 from datetime import datetime, timezone
 
 import pandas as pd
 
-PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-if PROJECT_ROOT not in sys.path:
-    sys.path.insert(0, PROJECT_ROOT)
-
-from ingestion.scripts.pull_agency_info_api import get_all_agency_info, get_agency_document_list
+from pull_agency_info_api import get_all_agency_info, get_agency_document_list
 
 DEFAULT_DOWNLOAD_DB_CSV = "ingestion/data/downloaded_files_database.csv"
 
