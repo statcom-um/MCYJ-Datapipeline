@@ -27,17 +27,17 @@ if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 
 from ingestion.download_pdf import download_michigan_pdf
-from pdf_parsing.extract_pdf_text import process_directory as process_pdf_directory
+from ingestion.extract_pdf_text import process_directory as process_pdf_directory
 from ingestion.pull_agency_info_api import get_all_agency_info, get_content_details_method
 
 
-DEFAULT_METADATA_OUTPUT_DIR = "metadata_output"
+DEFAULT_METADATA_OUTPUT_DIR = "ingestion"
 DEFAULT_DOWNLOAD_DIR = "Downloads"
 DEFAULT_METADATA_FILENAME = "facility_information_metadata.csv"
 DEFAULT_RUN_OUTPUT_FILENAME = "latest_downloaded_metadata.csv"
 DEFAULT_DOWNLOAD_DB_FILENAME = "downloaded_files_database.csv"
-DEFAULT_PARQUET_DIR = "pdf_parsing/parquet_files"
-DEFAULT_FACILITY_INFO_CSV = "facility_information/facility_information.csv"
+DEFAULT_PARQUET_DIR = "ingestion/parquet_files"
+DEFAULT_FACILITY_INFO_CSV = "ingestion/facility_information.csv"
 
 
 FACILITY_INFO_COLUMNS = [
@@ -355,7 +355,7 @@ def main() -> None:
     parser.add_argument(
         "--metadata-output-dir",
         default=DEFAULT_METADATA_OUTPUT_DIR,
-        help="Directory for API metadata outputs (default: metadata_output)",
+        help="Directory for API metadata outputs (default: ingestion)",
     )
     parser.add_argument(
         "--download-dir",
@@ -402,7 +402,7 @@ def main() -> None:
     parser.add_argument(
         "--parquet-dir",
         default=DEFAULT_PARQUET_DIR,
-        help="Output directory for parsed PDF text parquet files (default: pdf_parsing/parquet_files)",
+        help="Output directory for parsed PDF text parquet files (default: ingestion/parquet_files)",
     )
     parser.add_argument(
         "--skip-pdf-parsing",

@@ -321,8 +321,8 @@ def main():
     )
     parser.add_argument(
         "--parquet-dir",
-        default="pdf_parsing/parquet_files",
-        help="Directory containing parquet files (default: pdf_parsing/parquet_files)"
+        default="ingestion/parquet_files",
+        help="Directory containing parquet files (default: ingestion/parquet_files)"
     )
     parser.add_argument(
         "-o", "--output",

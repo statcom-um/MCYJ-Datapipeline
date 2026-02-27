@@ -4,9 +4,9 @@ Update sir_summaries.csv with AI-generated summaries for SIRs.
 
 This script:
 1. Reads document_info.csv to identify all SIR document shas
-2. Compares against existing summaries in pdf_parsing/sir_summaries.csv
+2. Compares against existing summaries in llm_analysis/sir_summaries.csv
 3. Queries up to N missing SIRs using OpenRouter API
-4. Appends new results to pdf_parsing/sir_summaries.csv
+4. Appends new results to llm_analysis/sir_summaries.csv
 """
 
 import argparse
@@ -268,13 +268,13 @@ def main():
     )
     parser.add_argument(
         '--doc-info',
-        default='document_info.csv',
-        help='Path to document_info.csv file (default: document_info.csv)'
+        default='../ingestion/document_info.csv',
+        help='Path to document_info.csv file (default: ../ingestion/document_info.csv)'
     )
     parser.add_argument(
         '--parquet-dir',
-        default='parquet_files',
-        help='Directory containing parquet files (default: parquet_files)'
+        default='../ingestion/parquet_files',
+        help='Directory containing parquet files (default: ../ingestion/parquet_files)'
     )
     parser.add_argument(
         '--output',
