@@ -134,6 +134,8 @@ def run(download_db_csv: str, sleep_seconds: float = 0.0) -> None:
     new_cbids_this_run: set[str] = set()  # dedup within this run
     body_id_changes = 0
 
+    n_agencies = len(agency_list)
+    agencies_processed = 0
     for agency in agency_list:
         agency_id = (agency.get("agencyId") or "").strip()
         agency_name = (agency.get("AgencyName") or "").strip()
@@ -142,6 +144,10 @@ def run(download_db_csv: str, sleep_seconds: float = 0.0) -> None:
 
         if sleep_seconds > 0:
             time.sleep(sleep_seconds)
+
+        agencies_processed += 1
+        if agencies_processed % 10 == 0 or agencies_processed == n_agencies:
+            print(f"  Fetching document lists... {agencies_processed}/{n_agencies}")
 
         pdf_results = get_agency_document_list(agency_id)
         if not pdf_results:

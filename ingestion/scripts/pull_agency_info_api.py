@@ -27,12 +27,11 @@ def get_all_agency_info():
     }
 
     try:
-        print("GET request with recordId=null")
         response = requests.get(base_url, params=params, headers=headers, verify=False, timeout=30)
         response.raise_for_status()
         return response.json()
     except Exception as e:
-        print(f"GET request with recordId=null failed: {e}")
+        print(f"getAgenciesDetail failed: {e}")
         return None
 
 def get_agency_document_list(record_id):
@@ -65,9 +64,6 @@ def get_agency_document_list(record_id):
     }
 
     try:
-        print("POST with JSON payload directly to the API endpoint")
-        print(f"Payload: {json.dumps(payload, indent=2)}")
-
         response = requests.post(
             base_url,
             json=payload,
@@ -78,8 +74,6 @@ def get_agency_document_list(record_id):
         response.raise_for_status()
         return response.json()
     except Exception as e:
-        print(f"POST with JSON payload directly to the API endpoint failed: {e}")
-        if 'response' in locals():
-            print(f"Response content: {response.text}")
+        print(f"getContentDetails({record_id}) failed: {e}")
         return None
 
