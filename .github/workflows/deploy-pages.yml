@@ -22,11 +22,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-
       - name: Install uv
         uses: astral-sh/setup-uv@v4
         with:
@@ -34,7 +29,7 @@ jobs:
           cache-dependency-glob: '**/pyproject.toml'
 
       - name: Install Python dependencies
-        run: uv pip install --system -e .
+        run: uv sync
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -51,26 +46,26 @@ jobs:
       - name: Generate website data
         run: |
           cd website
-          python3 generate_website_data.py \
-            --document-csv ../pdf_parsing/document_info.csv \
-            --sir-summaries-csv ../pdf_parsing/sir_summaries.csv \
-            --sir-violation-levels-csv ../pdf_parsing/sir_violation_levels.csv \
-            --keyword-reduction-csv ../pdf_parsing/violation_curation_keyword_reduction.csv \
-            --facility-info-csv ../facility_information/facility_information.csv \
-            --staffing-summaries-csv ../pdf_parsing/staffing_summaries.csv \
+          uv run python generate_website_data.py \
+            --document-csv ../ingestion/data/document_info.csv \
+            --sir-summaries-csv ../llm_analysis/data/sir_summaries.csv \
+            --sir-violation-levels-csv ../llm_analysis/data/sir_violation_levels.csv \
+            --keyword-reduction-csv ../llm_analysis/data/violation_curation_keyword_reduction.csv \
+            --facility-info-csv ../ingestion/data/facility_information.csv \
+            --staffing-summaries-csv ../llm_analysis/data/staffing_summaries.csv \
             --output-dir public/data
 
       - name: Export parquet documents to JSON
         run: |
           cd website
-          python3 export_parquet_to_json.py \
-            --parquet-dir ../pdf_parsing/parquet_files \
+          uv run python export_parquet_to_json.py \
+            --parquet-dir ../ingestion/data/parquet_files \
             --output-dir public/documents \
-            --document-csv ../pdf_parsing/document_info.csv \
-            --sir-summaries-csv ../pdf_parsing/sir_summaries.csv \
-            --sir-violation-levels-csv ../pdf_parsing/sir_violation_levels.csv \
-            --keyword-reduction-csv ../pdf_parsing/violation_curation_keyword_reduction.csv \
-            --staffing-summaries-csv ../pdf_parsing/staffing_summaries.csv
+            --document-csv ../ingestion/data/document_info.csv \
+            --sir-summaries-csv ../llm_analysis/data/sir_summaries.csv \
+            --sir-violation-levels-csv ../llm_analysis/data/sir_violation_levels.csv \
+            --keyword-reduction-csv ../llm_analysis/data/violation_curation_keyword_reduction.csv \
+            --staffing-summaries-csv ../llm_analysis/data/staffing_summaries.csv
 
       - name: Build website
         run: |

@@ -11,7 +11,7 @@ on:
       sleep_seconds:
         description: 'Optional seconds to sleep between downloads'
         required: false
-        default: '0'
+        default: '0.5'
         type: string
 
 permissions:
@@ -25,11 +25,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-
       - name: Install uv
         uses: astral-sh/setup-uv@v4
         with:
@@ -37,47 +32,32 @@ jobs:
           cache-dependency-glob: '**/pyproject.toml'
 
       - name: Install Python dependencies
-        run: uv pip install --system -e .
+        run: uv sync
 
       - name: Ensure output directories exist
         run: |
-          mkdir -p metadata_output
           mkdir -p Downloads
 
-      - name: Run incremental download pipeline
+      - name: Run ingestion workflow
         run: |
           LIMIT_ARG=""
           if [ -n "${{ inputs.limit }}" ]; then
             LIMIT_ARG="--limit ${{ inputs.limit }}"
           fi
 
-          python3 ingestion/run_full_pipeline.py \
-            --metadata-output-dir metadata_output \
-            --download-dir Downloads \
+          uv run python ingestion/run.py \
             ${LIMIT_ARG} \
             --sleep "${{ inputs.sleep_seconds }}"
-
-      - name: Show run output summary
-        run: |
-          python3 - <<'PY'
-          import csv
-          p = 'metadata_output/latest_downloaded_metadata.csv'
-          with open(p, newline='', encoding='utf-8') as f:
-              r = csv.DictReader(f)
-              rows = list(r)
-          print('rows', len(rows))
-          print('has_ContentDocumentId', 'ContentDocumentId' in (r.fieldnames or []))
-          print('has_sha256', 'sha256' in (r.fieldnames or []))
-          print('ids', [row.get('ContentDocumentId', '') for row in rows])
-          PY
 
       - name: Commit and push pipeline outputs
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          git add metadata_output/downloaded_files_database.csv \
-                  pdf_parsing/parquet_files/*.parquet || true
+          git add ingestion/data/downloaded_files_database.csv \
+                  ingestion/data/parquet_files/*.parquet \
+                  ingestion/data/document_info.csv \
+                  ingestion/data/facility_information.csv || true
 
           if git diff --cached --quiet; then
             echo "No pipeline output changes to commit."

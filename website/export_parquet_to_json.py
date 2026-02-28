@@ -292,8 +292,8 @@ def main():
     )
     parser.add_argument(
         "--parquet-dir",
-        default=str(script_dir / "../pdf_parsing/parquet_files"),
-        help="Directory containing parquet files (default: ../pdf_parsing/parquet_files)"
+        default=str(script_dir / "../ingestion/data/parquet_files"),
+        help="Directory containing parquet files (default: ../ingestion/data/parquet_files)"
     )
     parser.add_argument(
         "--output-dir",
@@ -302,28 +302,28 @@ def main():
     )
     parser.add_argument(
         "--document-csv",
-        default=str(script_dir / "../document_info.csv"),
-        help="Path to document info CSV file for metadata (default: ../document_info.csv)"
+        default=str(script_dir / "../ingestion/data/document_info.csv"),
+        help="Path to document info CSV file for metadata (default: ../ingestion/data/document_info.csv)"
     )
     parser.add_argument(
         "--sir-summaries-csv",
-        default=str(script_dir / "../pdf_parsing/sir_summaries.csv"),
-        help="Path to SIR summaries CSV file (default: ../pdf_parsing/sir_summaries.csv)"
+        default=str(script_dir / "../llm_analysis/data/sir_summaries.csv"),
+        help="Path to SIR summaries CSV file (default: ../llm_analysis/data/sir_summaries.csv)"
     )
     parser.add_argument(
         "--sir-violation-levels-csv",
-        default=str(script_dir / "../pdf_parsing/sir_violation_levels.csv"),
-        help="Path to SIR violation levels CSV file (default: ../pdf_parsing/sir_violation_levels.csv)"
+        default=str(script_dir / "../llm_analysis/data/sir_violation_levels.csv"),
+        help="Path to SIR violation levels CSV file (default: ../llm_analysis/data/sir_violation_levels.csv)"
     )
     parser.add_argument(
         "--keyword-reduction-csv",
-        default=str(script_dir / "../pdf_parsing/violation_curation_keyword_reduction.csv"),
-        help="Path to keyword reduction CSV file (default: ../pdf_parsing/violation_curation_keyword_reduction.csv)"
+        default=str(script_dir / "../llm_analysis/data/violation_curation_keyword_reduction.csv"),
+        help="Path to keyword reduction CSV file (default: ../llm_analysis/data/violation_curation_keyword_reduction.csv)"
     )
     parser.add_argument(
         "--staffing-summaries-csv",
-        default=str(script_dir / "../pdf_parsing/staffing_summaries.csv"),
-        help="Path to staffing summaries CSV file (default: ../pdf_parsing/staffing_summaries.csv)"
+        default=str(script_dir / "../llm_analysis/data/staffing_summaries.csv"),
+        help="Path to staffing summaries CSV file (default: ../llm_analysis/data/staffing_summaries.csv)"
     )
     parser.add_argument(
         "--verbose",

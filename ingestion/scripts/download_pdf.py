@@ -1,17 +1,16 @@
-import requests
+import argparse
 import base64
-import urllib3
 import os
 import re
-import argparse
 
-def get_content_base_data(document_id):
-    """
-    POST request to fetch content base data for a given ContentDocumentId.
-    """
+import requests
+import urllib3
+
+
+def fetch_pdf_bytes(document_id: str) -> bytes | None:
+    """Fetch a PDF from the Michigan API and return raw bytes, or None on failure."""
     urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-    # Use same base endpoint as other functions; include the query params
     base_url = "https://michildwelfarepubliclicensingsearch.michigan.gov/licagencysrch/webruntime/api/apex/execute?language=en-US&asGuest=true&htmlEncode=false"
 
     payload = {
@@ -35,7 +34,6 @@ def get_content_base_data(document_id):
     }
 
     try:
-        print(f"POST getContentBaseData for ContentDocumentId={document_id}")
         response = requests.post(
             base_url,
             json=payload,
@@ -44,75 +42,42 @@ def get_content_base_data(document_id):
             timeout=60
         )
         response.raise_for_status()
-        return response.json()
+        data = response.json()
+        return base64.b64decode(data['returnValue'])
     except Exception as e:
-        print(f"get_document_body failed for {document_id}: {e}")
-        if 'response' in locals():
-            try:
-                print(f"Response content: {response.text}")
-            except Exception:
-                pass
+        print(f"Failed to fetch PDF for {document_id}: {e}")
         return None
 
-# Note: I think we can do the same thing here using get_content_base_data
-def download_michigan_pdf(document_id, document_agency=None, document_name=None, document_date=None, output_dir="./"):
-    """
-    Download a PDF from Michigan Child Welfare Public Licensing Search
 
-    Args:
-        document_id (str): The document ID (e.g., "0698z0000061FxYAAU")
-        document_agency (str, optional): Name of the agency for filename
-        document_name (str, optional): Name of the document for filename
-        output_dir (str): Directory to save the PDF (default: current directory)
+def save_pdf(pdf_bytes: bytes, document_id: str, document_agency=None,
+             document_name=None, document_date=None, output_dir="./") -> str:
+    """Save PDF bytes to disk. Returns the file path."""
+    filename = generate_filename(document_id, document_agency, document_name, document_date)
+    os.makedirs(output_dir, exist_ok=True)
+    file_path = os.path.join(output_dir, filename)
+    with open(file_path, 'wb') as f:
+        f.write(pdf_bytes)
+    return file_path
+
+
+def download_michigan_pdf(document_id, document_agency=None, document_name=None,
+                          document_date=None, output_dir="./"):
+    """Fetch a PDF and save it to disk (convenience wrapper).
 
     Returns:
         str: Path to the downloaded file if successful, None if failed
     """
-
-    # Disable SSL warnings
-    urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-
-    # Headers to mimic a real browser
-    headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-        'Accept-Language': 'en-US,en;q=0.5',
-        'Accept-Encoding': 'gzip, deflate',
-        'Connection': 'keep-alive',
-        'Upgrade-Insecure-Requests': '1'
-    }
+    pdf_bytes = fetch_pdf_bytes(document_id)
+    if pdf_bytes is None:
+        return None
 
     try:
-        # Make the request
-        res = get_content_base_data(document_id=document_id)
-        base64_data = res['returnValue']
-
-        # Decode the PDF content
-        pdf_content = base64.b64decode(base64_data)
-
-        # Generate filename
-        filename = generate_filename(document_id, document_agency, document_name, document_date)
-
-        # Ensure output directory exists
-        os.makedirs(output_dir, exist_ok=True)
-
-        # Full path for the file
-        file_path = os.path.join(output_dir, filename)
-
-        # Save the PDF
-        with open(file_path, 'wb') as f:
-            f.write(pdf_content)
-
-        print(f"PDF downloaded successfully: {file_path}")
-        print(f"File size: {len(pdf_content)} bytes")
-
+        file_path = save_pdf(pdf_bytes, document_id, document_agency,
+                             document_name, document_date, output_dir)
+        print(f"PDF downloaded successfully: {file_path} ({len(pdf_bytes)} bytes)")
         return file_path
-
-    except requests.exceptions.RequestException as e:
-        print(f"Error making request: {e}")
-        return None
     except Exception as e:
-        print(f"Error processing PDF: {e}")
+        print(f"Error saving PDF: {e}")
         return None
 
 def generate_filename(document_id, document_agency, document_name, document_date):

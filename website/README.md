@@ -1,13 +1,14 @@
 # Michigan Child Welfare Licensing Dashboard
 
-A lightweight web dashboard built with Vite to display Michigan Child Welfare agency documents and reports.  Main is live [here](https://statcom-um.github.io/MCYJ-Datapipeline/) and production is live [here](https://statcom-mcyj-datapipeline.netlify.app/).
+A lightweight web dashboard built with Vite + React to display Michigan child welfare agency documents and reports. Main is live [here](https://statcom-um.github.io/MCYJ-Datapipeline/) and production is live [here](https://statcom-mcyj-datapipeline.netlify.app/).
 
 ## Features
 
 - **Agency Directory**: Browse all child welfare agencies
+- **Facility Pages**: View detailed info and documents per facility
 - **Document Tracking**: View detailed document reports for each agency
 - **Search & Filter**: Search agencies by name or ID
-- **Expandable Details**: Click any agency to view detailed documents
+- **Keyword Analysis**: Filter SIRs by violation severity keywords
 - **Summary Statistics**: Dashboard showing total agencies and reports
 
 ## Development
@@ -16,7 +17,7 @@ A lightweight web dashboard built with Vite to display Michigan Child Welfare ag
 
 - Node.js (v18 or later recommended)
 - Python 3.11+
-- pandas and pyarrow Python packages
+- pandas and pyarrow Python packages (installed via `uv sync` from the repo root)
 
 ### Local Development
 
@@ -40,11 +41,10 @@ A lightweight web dashboard built with Vite to display Michigan Child Welfare ag
 ### Building for Production
 
 Run the build script which:
-1. Installs Python dependencies from pyproject.toml
-2. Generates JSON data files from CSVs (document info, SIR summaries, violation levels)
-3. Applies keyword reduction to consolidate violation keywords
-4. Exports parquet documents to individual JSON files
-5. Builds the static website with Vite
+1. Generates JSON data files from CSVs (document info, SIR summaries, violation levels, staffing summaries)
+2. Applies keyword reduction to consolidate violation keywords
+3. Exports parquet documents to individual JSON files
+4. Builds the static website with Vite
 
 ```bash
 ./build.sh
@@ -69,7 +69,7 @@ The build process applies keyword reduction to consolidate similar violation key
 - "unsafe de-escalation" → "de-escalation failure"
 - "paperwork delay" → "paperwork error"
 
-This is configured through `pdf_parsing/violation_curation_keyword_reduction.csv` and is automatically applied during the build. The original data in `sir_violation_levels.csv` remains unchanged.
+This is configured through `../llm_analysis/data/violation_curation_keyword_reduction.csv` and is automatically applied during the build. The original data in `sir_violation_levels.csv` remains unchanged.
 
 ### Netlify Configuration
 
@@ -81,25 +81,33 @@ The `netlify.toml` file configures:
 
 ## Data Sources
 
-The dashboard uses data from:
+The dashboard reads data from the upstream pipeline directories:
 
-- **Document Info CSV**: `../pdf_parsing/document_info.csv` - structured metadata about documents
-- **SIR Summaries CSV**: `../pdf_parsing/sir_summaries.csv` - AI-generated summaries for Special Investigation Reports
-- **SIR Violation Levels CSV**: `../pdf_parsing/sir_violation_levels.csv` - severity levels and keywords for SIRs
-- **Keyword Reduction CSV**: `../pdf_parsing/violation_curation_keyword_reduction.csv` - maps keywords to consolidated versions
-- **Parquet Files**: `../pdf_parsing/parquet_files/` - source PDF text extracts exported to individual document JSON files
-
-The dashboard derives all agency information directly from the document data (no separate facility metadata required).
+- `../ingestion/data/document_info.csv` — structured metadata about documents
+- `../ingestion/data/facility_information.csv` — facility details (name, address, license status)
+- `../ingestion/data/parquet_files/` — source PDF text, exported to individual document JSON files
+- `../llm_analysis/data/sir_summaries.csv` — AI-generated summaries for Special Investigation Reports
+- `../llm_analysis/data/sir_violation_levels.csv` — severity levels and keywords for SIRs
+- `../llm_analysis/data/staffing_summaries.csv` — AI-generated staffing report summaries
+- `../llm_analysis/data/violation_curation_keyword_reduction.csv` — maps keywords to consolidated versions
 
 ## Project Structure
 
 ```
 website/
-├── index.html               # Main HTML file
+├── index.html               # Main HTML file (agency directory)
 ├── document.html            # Document detail page
+├── facilities.html          # Facility detail page
 ├── keywords.html            # Keywords analysis page
 ├── src/
-│   └── main.js              # JavaScript application logic
+│   ├── index.jsx            # Main app entry point
+│   ├── document-entry.jsx   # Document page entry point
+│   ├── facilities-entry.jsx # Facilities page entry point
+│   ├── keywords-entry.jsx   # Keywords page entry point
+│   ├── components/          # Shared React components
+│   ├── pages/               # Page-level React components
+│   ├── styles/              # CSS styles
+│   └── utils/               # Helper utilities
 ├── public/
 │   ├── data/                # Generated JSON data files (git-ignored)
 │   └── documents/           # Individual document JSON files (git-ignored)
@@ -115,10 +123,10 @@ website/
 
 ## Scripts
 
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm run preview` - Preview production build locally
-- `./build.sh` - Full build pipeline (data generation + site build)
+- `npm run dev` — Start development server
+- `npm run build` — Build for production
+- `npm run preview` — Preview production build locally
+- `./build.sh` — Full build pipeline (data generation + site build)
 
 ## License
 
