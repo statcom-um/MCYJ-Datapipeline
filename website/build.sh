@@ -4,7 +4,8 @@
 
 set -e  # Exit on error
 
-echo "==> Step 0: Python dependencies already installed in venv..."
+echo "==> Step 0: Installing Python dependencies..."
+pip install pandas pyarrow
 
 echo ""
 echo "==> Step 1: Generating JSON data for website..."
