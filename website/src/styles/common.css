@@ -780,6 +780,7 @@ h1 {
     font-weight: 700;
     min-width: 22px;
     text-align: center;
+    margin-left: 8px;
 }
 
 /* Filter panel container */
@@ -1268,7 +1269,7 @@ h1 {
     }
 }
 
-/* Desktop: two-column layout for facility attributes */
+/* Desktop: three-column layout for facility attributes */
 @media (min-width: 769px) {
     .filter-facility-grid {
         display: grid;

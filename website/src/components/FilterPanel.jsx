@@ -6,7 +6,7 @@ import { getBaseUrl } from '../utils/helpers.js';
 /**
  * Collapsible section within the filter panel
  */
-function FilterSection({ id, icon, label, defaultOpen = false, openSections, onToggle, children }) {
+function FilterSection({ id, icon, label, openSections, onToggle, children }) {
     const isOpen = openSections.includes(id);
     return (
         <div className="filter-section">
@@ -162,7 +162,7 @@ export function FilterPanel({
             >
                 <span>
                     🔍 Filters
-                    {activeCount > 0 && <span className="filter-badge-count" style={{ marginLeft: 8 }}>{activeCount}</span>}
+                    {activeCount > 0 && <span className="filter-badge-count">{activeCount}</span>}
                 </span>
                 <span className={`filter-toggle-icon ${panelOpen ? 'open' : ''}`} aria-hidden="true">▾</span>
             </button>
@@ -203,7 +203,6 @@ export function FilterPanel({
                         id="agency"
                         icon="🏢"
                         label="Agency"
-                        defaultOpen
                         openSections={openSections}
                         onToggle={toggleSection}
                     >
@@ -235,7 +234,6 @@ export function FilterPanel({
                         id="report-type"
                         icon="📋"
                         label="Report Type"
-                        defaultOpen
                         openSections={openSections}
                         onToggle={toggleSection}
                     >
