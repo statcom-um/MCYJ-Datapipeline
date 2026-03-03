@@ -74,8 +74,8 @@ export function AgencyCard({ agency, isOpen = false, onToggle, onCopyDocumentLin
                 <span className="stat-badge reports-badge">
                     📋 {agency.total_reports} {agency.total_reports === 1 ? 'Report' : 'Reports'}
                     {agency.filtered_out_count > 0 && (
-                        <span style={{ color: '#e67e22' }}>
-                            {' '}({agency.filtered_out_count} filtered out)
+                        <span style={{ color: '#888', fontSize: '0.9em' }}>
+                            {' '}({agency.total_reports} selected of {agency.original_total_reports})
                         </span>
                     )}
                 </span>

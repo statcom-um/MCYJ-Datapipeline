@@ -333,6 +333,19 @@ export function App() {
             agencies = agencies.filter(agency => agency.total_reports > 0);
         }
         
+        // Sort agencies by most recent document date (newest first)
+        agencies.sort((a, b) => {
+            const getLatestDate = (agency) => {
+                if (!agency.documents || agency.documents.length === 0) return 0;
+                return Math.max(...agency.documents.map(d => {
+                    if (d.date_iso) return new Date(d.date_iso).getTime();
+                    if (d.date) return new Date(d.date).getTime();
+                    return 0;
+                }));
+            };
+            return getLatestDate(b) - getLatestDate(a);
+        });
+        
         setFilteredAgencies(agencies);
         
         // Auto-open agency card if specific agency is selected
@@ -540,6 +553,27 @@ export function App() {
                     totalAgencies={totalAgencies}
                     totalReports={totalReports}
                 />
+
+                <div style={{
+                    background: '#f8f9fa',
+                    border: '1px solid #e0e0e0',
+                    borderRadius: '6px',
+                    padding: '14px 18px',
+                    marginBottom: '20px',
+                    fontSize: '0.85em',
+                    color: '#555',
+                    lineHeight: 1.6
+                }}>
+                    <strong>ℹ️ About this data:</strong>{' '}
+                    Summaries, severity assessments, staffing analysis, and keywords are AI-generated
+                    (DeepSeek v3.2) from publicly available report text and may contain errors.
+                    Always refer to the full report document that is linked for each entry.
+                    Licensing investigations reflect findings at a specific point in time and do not alone indicate
+                    current quality of care. Agencies are sorted by most recent report date.
+                    {' '}<a href="https://github.com/statcom-um/MCYJ-Datapipeline/tree/main/llm_analysis/theming" target="_blank" rel="noopener noreferrer" style={{ color: '#3498db' }}>
+                        View AI prompts and methodology
+                    </a>.
+                </div>
                 
                 <AgencyList
                     agencies={filteredAgencies}

@@ -145,7 +145,7 @@ export function DocumentList({ documents, filteredOutCount = 0, baseUrl, onCopyL
                 borderRadius: '4px',
                 borderLeft: '3px solid #f39c12'
             }}>
-                <strong>All {filteredOutCount} {filteredOutCount === 1 ? 'report' : 'reports'} have been filtered out.</strong><br />
+                <strong>All {filteredOutCount} {filteredOutCount === 1 ? 'report' : 'reports'} were excluded by the current filters.</strong><br />
                 <span style={{ fontSize: '0.9em' }}>Try adjusting the filters above to see more reports.</span>
             </p>
         ) : (
