@@ -730,6 +730,432 @@ h1 {
     color: #2c3e50;
 }
 
+/* ===========================
+   Filter Panel Styles
+   =========================== */
+
+/* Mobile toggle button */
+.filter-toggle-btn {
+    display: none;
+    width: 100%;
+    padding: 14px 18px;
+    background: #2c3e50;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1em;
+    font-weight: 600;
+    cursor: pointer;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 12px;
+    transition: background 0.2s;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.filter-toggle-btn:hover {
+    background: #34495e;
+}
+
+.filter-toggle-btn:active {
+    background: #1a252f;
+}
+
+.filter-toggle-icon {
+    font-size: 1.2em;
+    transition: transform 0.3s ease;
+}
+
+.filter-toggle-icon.open {
+    transform: rotate(180deg);
+}
+
+.filter-badge-count {
+    background: #e74c3c;
+    color: white;
+    border-radius: 12px;
+    padding: 2px 8px;
+    font-size: 0.8em;
+    font-weight: 700;
+    min-width: 22px;
+    text-align: center;
+}
+
+/* Filter panel container */
+.filter-panel {
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    margin-bottom: 20px;
+    overflow: hidden;
+}
+
+.filter-panel-inner {
+    padding: 20px;
+}
+
+/* Filter panel header */
+.filter-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.filter-panel-title {
+    font-size: 1.15em;
+    font-weight: 700;
+    color: #2c3e50;
+    margin: 0;
+}
+
+.filter-reset-btn {
+    background: none;
+    border: 1px solid #e74c3c;
+    color: #e74c3c;
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-size: 0.85em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.filter-reset-btn:hover {
+    background: #e74c3c;
+    color: white;
+}
+
+/* Active filters summary strip */
+.active-filters-strip {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 14px;
+    background: #eef6fb;
+    border-radius: 8px;
+    margin-bottom: 16px;
+    font-size: 0.88em;
+}
+
+.active-filters-label {
+    font-weight: 600;
+    color: #2c3e50;
+    margin-right: 4px;
+    white-space: nowrap;
+}
+
+.active-filter-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: #3498db;
+    color: white;
+    padding: 4px 10px;
+    border-radius: 14px;
+    font-size: 0.88em;
+    font-weight: 500;
+    white-space: nowrap;
+    max-width: 220px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.active-filter-chip-remove {
+    background: rgba(255,255,255,0.3);
+    border: none;
+    color: white;
+    cursor: pointer;
+    border-radius: 50%;
+    width: 18px;
+    height: 18px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    line-height: 1;
+    padding: 0;
+    flex-shrink: 0;
+    transition: background 0.2s;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.active-filter-chip-remove:hover {
+    background: rgba(255,255,255,0.5);
+}
+
+/* Collapsible filter section */
+.filter-section {
+    border-top: 1px solid #ecf0f1;
+}
+
+.filter-section:first-child {
+    border-top: none;
+}
+
+.filter-section-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    background: none;
+    border: none;
+    padding: 14px 4px;
+    cursor: pointer;
+    text-align: left;
+    gap: 10px;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.filter-section-toggle:hover {
+    background: #f8f9fa;
+}
+
+.filter-section-label {
+    font-weight: 600;
+    color: #2c3e50;
+    font-size: 0.95em;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.filter-section-arrow {
+    font-size: 0.75em;
+    color: #999;
+    transition: transform 0.25s ease;
+    flex-shrink: 0;
+}
+
+.filter-section-arrow.open {
+    transform: rotate(90deg);
+}
+
+.filter-section-body {
+    padding: 0 4px 16px 4px;
+}
+
+/* Filter controls */
+.filter-select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 0.95em;
+    background: white;
+    color: #333;
+    cursor: pointer;
+    -webkit-appearance: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 32px;
+    transition: border-color 0.2s;
+}
+
+.filter-select:hover,
+.filter-select:focus {
+    border-color: #3498db;
+    outline: none;
+}
+
+.filter-checkbox-label {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    cursor: pointer;
+    padding: 8px 10px;
+    border-radius: 6px;
+    transition: background 0.15s;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.filter-checkbox-label:hover {
+    background: #f8f9fa;
+}
+
+.filter-checkbox-label input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    margin-top: 2px;
+    cursor: pointer;
+    flex-shrink: 0;
+    accent-color: #3498db;
+}
+
+.filter-checkbox-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.filter-checkbox-title {
+    font-weight: 500;
+    color: #2c3e50;
+    font-size: 0.95em;
+}
+
+.filter-checkbox-desc {
+    color: #888;
+    font-size: 0.8em;
+    line-height: 1.3;
+}
+
+.filter-field-label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 0.88em;
+    color: #666;
+    font-weight: 500;
+}
+
+.filter-field-group {
+    margin-bottom: 12px;
+}
+
+.filter-field-group:last-child {
+    margin-bottom: 0;
+}
+
+/* Severity pills */
+.filter-severity-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.filter-severity-pill {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.9em;
+    font-weight: 500;
+    border: 2px solid #eee;
+    background: #fafafa;
+    transition: all 0.2s;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.filter-severity-pill:hover {
+    border-color: #ccc;
+}
+
+.filter-severity-pill.active {
+    border-color: currentColor;
+    background: white;
+}
+
+.filter-severity-pill input[type="checkbox"] {
+    display: none;
+}
+
+.filter-note {
+    color: #888;
+    font-size: 0.82em;
+    margin-top: 8px;
+    line-height: 1.4;
+    font-style: italic;
+}
+
+.filter-hint {
+    padding: 10px 12px;
+    background: #fff8e1;
+    border-left: 3px solid #ffc107;
+    border-radius: 4px;
+    font-size: 0.83em;
+    margin-top: 10px;
+    line-height: 1.4;
+    color: #795600;
+}
+
+.filter-hint a {
+    color: #795600;
+    text-decoration: underline;
+}
+
+.filter-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: #3498db;
+    text-decoration: none;
+    font-size: 0.88em;
+    margin-top: 10px;
+    transition: color 0.2s;
+}
+
+.filter-link:hover {
+    color: #2980b9;
+    text-decoration: underline;
+}
+
+/* Results count bar */
+.filter-results-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px;
+    background: #f8f9fa;
+    border-top: 1px solid #ecf0f1;
+    font-size: 0.9em;
+    color: #555;
+    font-weight: 500;
+}
+
+.filter-results-count {
+    font-weight: 700;
+    color: #2c3e50;
+}
+
+/* Keywords section */
+.filter-keywords-empty {
+    color: #999;
+    font-size: 0.88em;
+    font-style: italic;
+    padding: 4px 0;
+}
+
+.filter-keywords-or-label {
+    color: #e67e22;
+    font-weight: 600;
+    font-size: 0.83em;
+    margin-bottom: 6px;
+}
+
+.filter-keywords-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+}
+
+.filter-clear-keywords-btn {
+    background: #e74c3c;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 16px;
+    font-size: 0.82em;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background 0.2s;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.filter-clear-keywords-btn:hover {
+    background: #c0392b;
+}
+
 /* Animations */
 @keyframes spin {
     0% { transform: rotate(0deg); }
@@ -777,6 +1203,37 @@ h1 {
     .bar-chart-bar-container {
         height: 20px;
     }
+
+    /* Filter panel mobile */
+    .filter-toggle-btn {
+        display: flex;
+    }
+
+    .filter-panel.collapsed .filter-panel-inner,
+    .filter-panel.collapsed .filter-results-bar {
+        display: none;
+    }
+
+    .filter-panel-inner {
+        padding: 16px;
+    }
+
+    .filter-section-toggle {
+        padding: 12px 4px;
+    }
+
+    .filter-severity-group {
+        gap: 6px;
+    }
+
+    .filter-severity-pill {
+        padding: 6px 12px;
+        font-size: 0.85em;
+    }
+
+    .active-filter-chip {
+        max-width: 160px;
+    }
 }
 
 @media (max-width: 480px) {
@@ -794,5 +1251,33 @@ h1 {
 
     .bar-chart-bar-container {
         height: 18px;
+    }
+
+    .filter-panel-inner {
+        padding: 12px;
+    }
+
+    .filter-panel-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .active-filters-strip {
+        padding: 8px 10px;
+        font-size: 0.82em;
+    }
+}
+
+/* Desktop: two-column layout for facility attributes */
+@media (min-width: 769px) {
+    .filter-facility-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 12px;
+    }
+
+    .filter-checkbox-row {
+        display: flex;
+        gap: 24px;
     }
 }
