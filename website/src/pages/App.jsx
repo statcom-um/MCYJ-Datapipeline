@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Header, FilterPanel, AgencyList, Loading, Error } from '../components/index.js';
 import { Trie } from '../trie.js';
-import { getBaseUrl, ACTIVE_LICENSE_STATUSES, copyToClipboard } from '../utils/helpers.js';
+import { getBaseUrl, ACTIVE_LICENSE_STATUSES, ALL_SEVERITY_LEVELS, copyToClipboard } from '../utils/helpers.js';
 
 const BASE_URL = getBaseUrl();
 const DOM_READY_DELAY = 100;
@@ -28,7 +28,7 @@ export function App() {
         agencyType: null,
         county: null,
         lastNMonths: null,
-        severityLevels: [],
+        severityLevels: [...ALL_SEVERITY_LEVELS],
         staffingConfidence: null
     });
     
@@ -192,7 +192,7 @@ export function App() {
         }
         
         if (severityParam) {
-            const levels = severityParam.split(',').map(s => s.trim().toLowerCase()).filter(s => ['low', 'moderate', 'severe'].includes(s));
+            const levels = severityParam.split(',').map(s => s.trim().toLowerCase()).filter(s => ALL_SEVERITY_LEVELS.includes(s));
             if (levels.length > 0) {
                 newFilters.severityLevels = levels;
             }
@@ -288,9 +288,11 @@ export function App() {
                 }
                 
                 // Filter by severity levels (only applies when sirOnly is true)
-                if (filters.severityLevels.length > 0 && filters.sirOnly) {
+                // Only filter when not all levels are selected (i.e. user unchecked something)
+                if (filters.sirOnly && filters.severityLevels.length < ALL_SEVERITY_LEVELS.length) {
                     const docLevel = d.sir_violation_level?.level?.toLowerCase();
-                    if (!docLevel || !filters.severityLevels.includes(docLevel)) {
+                    const effectiveLevel = docLevel || 'none';
+                    if (!filters.severityLevels.includes(effectiveLevel)) {
                         return false;
                     }
                 }
@@ -467,8 +469,8 @@ export function App() {
             url.searchParams.delete('months');
         }
         
-        // Update severity levels filter
-        if (newFilters.severityLevels && newFilters.severityLevels.length > 0) {
+        // Update severity levels filter (only set URL param when not all are selected)
+        if (newFilters.severityLevels && newFilters.severityLevels.length > 0 && newFilters.severityLevels.length < ALL_SEVERITY_LEVELS.length) {
             url.searchParams.set('severity', newFilters.severityLevels.join(','));
         } else {
             url.searchParams.delete('severity');

@@ -96,3 +96,6 @@ export function getBaseUrl() {
 
 // Active license statuses
 export const ACTIVE_LICENSE_STATUSES = ['Regular', 'Original', '1st Provisional', '2nd Provisional', 'Inspected'];
+
+// All severity levels including "none" for reports with no identified severity
+export const ALL_SEVERITY_LEVELS = ['low', 'moderate', 'severe', 'none'];

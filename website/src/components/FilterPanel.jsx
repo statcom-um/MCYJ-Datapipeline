@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { KeywordBadge, KeywordBadgeList } from './KeywordBadge.jsx';
 import { AutocompleteInput } from './AutocompleteInput.jsx';
-import { getBaseUrl } from '../utils/helpers.js';
+import { getBaseUrl, ALL_SEVERITY_LEVELS } from '../utils/helpers.js';
 
 /**
  * Collapsible section within the filter panel
@@ -49,6 +49,9 @@ const TIME_LABELS = {
     '24': '2 years',
     '36': '3 years'
 };
+
+const SEVERITY_COLORS = { low: '#f39c12', moderate: '#e67e22', severe: '#e74c3c', none: '#95a5a6' };
+const SEVERITY_LABELS = { low: 'Low', moderate: 'Moderate', severe: 'Severe', none: 'None identified' };
 
 /**
  * FilterPanel component for filtering agencies and documents
@@ -123,8 +126,12 @@ export function FilterPanel({
         if (filters.county) {
             items.push({ key: 'county', label: filters.county, onRemove: () => onFilterChange('county', null) });
         }
-        if (filters.severityLevels && filters.severityLevels.length > 0) {
-            items.push({ key: 'severity', label: `Severity: ${filters.severityLevels.join(', ')}`, onRemove: () => onFilterChange('severityLevels', []) });
+        if (filters.severityLevels && filters.severityLevels.length > 0 && filters.severityLevels.length < ALL_SEVERITY_LEVELS.length) {
+            const excluded = ALL_SEVERITY_LEVELS.filter(l => !filters.severityLevels.includes(l));
+            const label = excluded.length === 1
+                ? `Excluding ${excluded[0]} severity`
+                : `Excluding ${excluded.join(', ')} severity`;
+            items.push({ key: 'severity', label, onRemove: () => onFilterChange('severityLevels', [...ALL_SEVERITY_LEVELS]) });
         }
         if (filters.staffingConfidence) {
             items.push({ key: 'staffing', label: STAFFING_LABELS[filters.staffingConfidence] || filters.staffingConfidence, onRemove: () => onFilterChange('staffingConfidence', null) });
@@ -144,7 +151,7 @@ export function FilterPanel({
         onFilterChange('licenseStatus', null);
         onFilterChange('agencyType', null);
         onFilterChange('county', null);
-        onFilterChange('severityLevels', []);
+        onFilterChange('severityLevels', [...ALL_SEVERITY_LEVELS]);
         onFilterChange('staffingConfidence', null);
         if (filters.agency) onAgencyRemove();
         if (filters.keywords.length > 0) onClearAllKeywords();
@@ -182,7 +189,7 @@ export function FilterPanel({
                     {/* Active filters summary strip */}
                     {activeCount > 0 && (
                         <div className="active-filters-strip" role="status" aria-live="polite">
-                            <span className="active-filters-label">Active:</span>
+                            <span className="active-filters-label">Active filters:</span>
                             {activeFilters.map(f => (
                                 <span key={f.key} className="active-filter-chip">
                                     <span>{f.label}</span>
@@ -298,17 +305,16 @@ export function FilterPanel({
                             onToggle={toggleSection}
                         >
                             <p className="filter-note" style={{ marginTop: 0, marginBottom: '10px' }}>
-                                Select one or more levels — results include reports matching any selected level.
+                                Uncheck a level to exclude those reports from results.
                             </p>
                             <div className="filter-severity-group">
-                                {['low', 'moderate', 'severe'].map(level => {
+                                {ALL_SEVERITY_LEVELS.map(level => {
                                     const isActive = filters.severityLevels.includes(level);
-                                    const color = level === 'low' ? '#f39c12' : level === 'moderate' ? '#e67e22' : '#e74c3c';
                                     return (
                                         <label
                                             key={level}
                                             className={`filter-severity-pill ${isActive ? 'active' : ''}`}
-                                            style={{ color }}
+                                            style={{ color: SEVERITY_COLORS[level] }}
                                         >
                                             <input
                                                 type="checkbox"
@@ -321,7 +327,7 @@ export function FilterPanel({
                                                 }}
                                             />
                                             <span>{isActive ? '●' : '○'}</span>
-                                            <span>{level.charAt(0).toUpperCase() + level.slice(1)}</span>
+                                            <span>{SEVERITY_LABELS[level]}</span>
                                         </label>
                                     );
                                 })}
