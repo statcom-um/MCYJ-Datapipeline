@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { KeywordBadge, KeywordBadgeList } from './KeywordBadge.jsx';
 import { AutocompleteInput } from './AutocompleteInput.jsx';
+import { AiCaution } from './AiCaution.jsx';
 import { getBaseUrl, ALL_SEVERITY_LEVELS } from '../utils/helpers.js';
 
 /**
@@ -65,13 +66,9 @@ const SEVERITY_LABELS = { low: 'Low', moderate: 'Moderate', severe: 'Severe', no
  * @param {Function} props.onKeywordSelect - Callback when keyword is selected
  * @param {Function} props.onKeywordRemove - Callback when keyword is removed
  * @param {Function} props.onClearAllKeywords - Callback to clear all keywords
- * @param {Function} props.onAgencySearch - Function to search agencies
- * @param {Function} props.onAgencySelect - Callback when agency is selected
- * @param {Function} props.onAgencyRemove - Callback when agency is removed
  * @param {Array} props.uniqueLicenseStatuses - Available license status options
  * @param {Array} props.uniqueAgencyTypes - Available agency type options
  * @param {Array} props.uniqueCounties - Available county options
- * @param {string} [props.selectedAgencyText] - Display text for selected agency
  * @param {number} props.totalAgencies - Total agencies count
  * @param {number} props.totalReports - Total reports count
  */
@@ -82,19 +79,15 @@ export function FilterPanel({
     onKeywordSelect,
     onKeywordRemove,
     onClearAllKeywords,
-    onAgencySearch,
-    onAgencySelect,
-    onAgencyRemove,
     uniqueLicenseStatuses = [],
     uniqueAgencyTypes = [],
     uniqueCounties = [],
-    selectedAgencyText,
     totalAgencies,
     totalReports
 }) {
     const baseUrl = getBaseUrl();
     const [panelOpen, setPanelOpen] = useState(true);
-    const [openSections, setOpenSections] = useState(['agency', 'report-type']);
+    const [openSections, setOpenSections] = useState(['report-type']);
 
     const toggleSection = (id) => {
         setOpenSections(prev =>
@@ -105,9 +98,6 @@ export function FilterPanel({
     // Compute active filter descriptions for the summary strip
     const activeFilters = useMemo(() => {
         const items = [];
-        if (filters.agency) {
-            items.push({ key: 'agency', label: selectedAgencyText || filters.agency, onRemove: () => onAgencyRemove() });
-        }
         if (filters.sirOnly) {
             items.push({ key: 'sirOnly', label: 'Investigations only', onRemove: () => onFilterChange('sirOnly', false) });
         }
@@ -140,7 +130,7 @@ export function FilterPanel({
             items.push({ key: `kw-${kw}`, label: `🏷️ ${kw}`, onRemove: () => onKeywordRemove(kw) });
         });
         return items;
-    }, [filters, selectedAgencyText]);
+    }, [filters]);
 
     const activeCount = activeFilters.length;
 
@@ -153,7 +143,6 @@ export function FilterPanel({
         onFilterChange('county', null);
         onFilterChange('severityLevels', [...ALL_SEVERITY_LEVELS]);
         onFilterChange('staffingConfidence', null);
-        if (filters.agency) onAgencyRemove();
         if (filters.keywords.length > 0) onClearAllKeywords();
     };
 
@@ -204,37 +193,6 @@ export function FilterPanel({
                             ))}
                         </div>
                     )}
-
-                    {/* === SECTION: Agency === */}
-                    <FilterSection
-                        id="agency"
-                        icon="🏢"
-                        label="Agency"
-                        openSections={openSections}
-                        onToggle={toggleSection}
-                    >
-                        {!filters.agency ? (
-                            <AutocompleteInput
-                                id="agencyFilterInput"
-                                placeholder="Search by agency name…"
-                                onSearch={onAgencySearch}
-                                onSelect={onAgencySelect}
-                                renderSuggestion={(s) => (
-                                    <span>{s.keyword}</span>
-                                )}
-                            />
-                        ) : null}
-                        <div style={{ marginTop: '8px', minHeight: '28px' }}>
-                            {filters.agency ? (
-                                <KeywordBadge
-                                    keyword={selectedAgencyText || filters.agency}
-                                    onRemove={onAgencyRemove}
-                                />
-                            ) : (
-                                <span className="filter-keywords-empty">All agencies shown</span>
-                            )}
-                        </div>
-                    </FilterSection>
 
                     {/* === SECTION: Report Type === */}
                     <FilterSection
@@ -334,6 +292,7 @@ export function FilterPanel({
                             </div>
                             <p className="filter-note">
                                 Severity is only available for Special Investigation Reports with substantiated violations.
+                                <AiCaution label="AI-classified" />
                             </p>
                         </FilterSection>
                     )}
@@ -365,7 +324,7 @@ export function FilterPanel({
                                 <option value="no_high">Believed No — High Confidence</option>
                             </select>
                             <p className="filter-note">
-                                Staffing analysis is AI-generated and may contain errors.
+                                <AiCaution label="AI-analyzed" /> Staffing analysis may contain errors.
                             </p>
                         </FilterSection>
                     )}
@@ -482,7 +441,7 @@ export function FilterPanel({
                             )}
                         </div>
                         <div className="filter-hint">
-                            <strong>Note:</strong> Keywords were generated by AI and may be inconsistent.
+                            <AiCaution label="AI-generated keywords" /> Keywords may be inconsistent.
                             See the <a href={`${baseUrl}keywords.html`}>keywords page</a> for details.
                         </div>
                         <a href={`${baseUrl}keywords.html`} className="filter-link">
