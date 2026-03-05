@@ -199,7 +199,7 @@ export function AgencyPage() {
                                 {facility.Address && (
                                     <div className="agency-page-info-item">
                                         <span className="agency-page-info-label">Address</span>
-                                        <span>{facility.Address}{facility.City ? `, ${facility.City}` : ''}{facility.Zip ? ` ${facility.Zip}` : ''}</span>
+                                        <span>{[facility.Address, facility.City, facility.Zip].filter(Boolean).join(', ')}</span>
                                     </div>
                                 )}
                             </div>

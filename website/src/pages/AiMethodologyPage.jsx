@@ -139,8 +139,8 @@ export function AiMethodologyPage() {
                             <div className="methodology-task-card">
                                 <h4>2. Violation Severity Classification</h4>
                                 <p>
-                                    For SIRs with substantiated violations, AI classifies the severity as
-                                    <strong> low</strong>, <strong> moderate</strong>, or <strong> severe</strong> based
+                                    For SIRs with substantiated violations, AI classifies the severity as{' '}
+                                    <strong>low</strong>, <strong>moderate</strong>, or <strong>severe</strong> based
                                     on a defined categorization framework (see prompts below).
                                 </p>
                             </div>
