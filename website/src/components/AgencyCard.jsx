@@ -16,7 +16,7 @@ export function AgencyCard({ agency, isOpen = false, onToggle, onCopyDocumentLin
 
     const handleCopyAgencyLink = (e) => {
         e.stopPropagation();
-        const url = `${window.location.origin}${window.location.pathname}?agency=${agency.agencyId}`;
+        const url = `${window.location.origin}${baseUrl}agency.html?id=${agency.agencyId}`;
         
         copyToClipboard(
             url,
@@ -82,6 +82,16 @@ export function AgencyCard({ agency, isOpen = false, onToggle, onCopyDocumentLin
             </div>
 
             <div className={`agency-details ${isOpen ? 'visible' : ''}`}>
+                <div style={{ marginBottom: '12px' }}>
+                    <a
+                        href={`${baseUrl}agency.html?id=${agency.agencyId}`}
+                        className="view-document-btn"
+                        style={{ textDecoration: 'none', display: 'inline-block' }}
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        🏢 View Full Agency Page
+                    </a>
+                </div>
                 <DocumentList 
                     documents={agency.documents}
                     filteredOutCount={agency.filtered_out_count}

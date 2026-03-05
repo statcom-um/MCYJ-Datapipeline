@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Header, Loading, Error } from '../components/index.js';
 import { KeywordBadgeList } from '../components/KeywordBadge.jsx';
+import { AiCaution } from '../components/AiCaution.jsx';
 import { getBaseUrl, copyToClipboard, escapeHtml } from '../utils/helpers.js';
 
 const BASE_URL = getBaseUrl();
@@ -136,7 +137,7 @@ export function DocumentPage() {
         return (
             <div className="sir-summary">
                 <h3>
-                    📋 Special Investigation Report Summary (AI-generated)
+                    📋 Special Investigation Report Summary <AiCaution />
                     {documentData.sir_summary.violation === 'y' && (
                         <span className="violation-badge violation-yes">⚠️ Violation Substantiated</span>
                     )}
@@ -194,7 +195,7 @@ export function DocumentPage() {
         return (
             <div className="sir-summary" style={{ borderLeftColor: isStaffingProblem ? '#e74c3c' : '#27ae60' }}>
                 <h3>
-                    👥 Staffing Violation Analysis (AI-generated)
+                    👥 Staffing Violation Analysis <AiCaution />
                     <span style={{
                         color: isStaffingProblem ? '#e74c3c' : '#27ae60',
                         marginLeft: '8px',

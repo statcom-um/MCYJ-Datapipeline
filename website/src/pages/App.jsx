@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Header, FilterPanel, AgencyList, Loading, Error } from '../components/index.js';
+import { AutocompleteInput } from '../components/AutocompleteInput.jsx';
+import { AiCaution } from '../components/AiCaution.jsx';
 import { Trie } from '../trie.js';
-import { getBaseUrl, ACTIVE_LICENSE_STATUSES, copyToClipboard } from '../utils/helpers.js';
+import { getBaseUrl, ACTIVE_LICENSE_STATUSES, ALL_SEVERITY_LEVELS, copyToClipboard } from '../utils/helpers.js';
 
 const BASE_URL = getBaseUrl();
 const DOM_READY_DELAY = 100;
@@ -16,19 +18,17 @@ export function App() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [openAgencyId, setOpenAgencyId] = useState(null);
-    const [selectedAgencyText, setSelectedAgencyText] = useState('');
     
     // Filter state
     const [filters, setFilters] = useState({
         sirOnly: true,
         keywords: [],
-        agency: null,
         activeLicenseOnly: true,
         licenseStatus: null,
         agencyType: null,
         county: null,
         lastNMonths: null,
-        severityLevels: [],
+        severityLevels: [...ALL_SEVERITY_LEVELS],
         staffingConfidence: null
     });
     
@@ -163,12 +163,9 @@ export function App() {
         const newFilters = { ...filters };
         
         if (agencyId) {
-            const agency = allAgencies.find(a => a.agencyId === agencyId);
-            if (agency) {
-                const searchText = `${agency.AgencyName} (${agency.agencyId})`;
-                newFilters.agency = agencyId;
-                setSelectedAgencyText(searchText);
-            }
+            // Redirect to the dedicated agency page
+            window.location.href = `${BASE_URL}agency.html?id=${encodeURIComponent(agencyId)}`;
+            return;
         }
         
         if (licenseStatusParam) {
@@ -192,7 +189,7 @@ export function App() {
         }
         
         if (severityParam) {
-            const levels = severityParam.split(',').map(s => s.trim().toLowerCase()).filter(s => ['low', 'moderate', 'severe'].includes(s));
+            const levels = severityParam.split(',').map(s => s.trim().toLowerCase()).filter(s => ALL_SEVERITY_LEVELS.includes(s));
             if (levels.length > 0) {
                 newFilters.severityLevels = levels;
             }
@@ -217,7 +214,6 @@ export function App() {
 
     const applyFilters = useCallback(() => {
         let agencies = JSON.parse(JSON.stringify(allAgencies));
-        let selectedAgencyIdForAutoOpen = null;
         
         // Calculate cutoff date for lastNMonths filter
         let cutoffDate = null;
@@ -225,14 +221,6 @@ export function App() {
             const now = new Date();
             cutoffDate = new Date(now);
             cutoffDate.setMonth(cutoffDate.getMonth() - filters.lastNMonths);
-        }
-        
-        // Filter by selected agency
-        if (filters.agency) {
-            agencies = agencies.filter(agency => agency.agencyId === filters.agency);
-            if (agencies.length === 1) {
-                selectedAgencyIdForAutoOpen = agencies[0].agencyId;
-            }
         }
         
         // Apply facility-level filters
@@ -288,9 +276,11 @@ export function App() {
                 }
                 
                 // Filter by severity levels (only applies when sirOnly is true)
-                if (filters.severityLevels.length > 0 && filters.sirOnly) {
+                // Only filter when not all levels are selected (i.e. user unchecked something)
+                if (filters.sirOnly && filters.severityLevels.length < ALL_SEVERITY_LEVELS.length) {
                     const docLevel = d.sir_violation_level?.level?.toLowerCase();
-                    if (!docLevel || !filters.severityLevels.includes(docLevel)) {
+                    const effectiveLevel = docLevel || 'none';
+                    if (!filters.severityLevels.includes(effectiveLevel)) {
                         return false;
                     }
                 }
@@ -328,23 +318,10 @@ export function App() {
             };
         });
         
-        // Remove agencies with no reports (unless specific agency is selected)
-        if (!filters.agency) {
-            agencies = agencies.filter(agency => agency.total_reports > 0);
-        }
+        // Remove agencies with no reports
+        agencies = agencies.filter(agency => agency.total_reports > 0);
         
         setFilteredAgencies(agencies);
-        
-        // Auto-open agency card if specific agency is selected
-        if (selectedAgencyIdForAutoOpen) {
-            setTimeout(() => {
-                setOpenAgencyId(selectedAgencyIdForAutoOpen);
-                const card = document.getElementById(`agency-${selectedAgencyIdForAutoOpen}`);
-                if (card) {
-                    card.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }
-            }, DOM_READY_DELAY);
-        }
     }, [allAgencies, filters]);
 
     // Filter change handlers
@@ -383,16 +360,12 @@ export function App() {
 
     const handleAgencySelect = (suggestion) => {
         const agencyId = agencyIdMapRef.current.get(suggestion.keyword.toLowerCase()) || '';
-        setFilters(prev => ({ ...prev, agency: agencyId }));
-        setSelectedAgencyText(suggestion.keyword);
-        updateUrlWithFilters({ ...filters, agency: agencyId });
+        // Redirect to the dedicated agency page
+        window.location.href = `${BASE_URL}agency.html?id=${encodeURIComponent(agencyId)}`;
     };
 
     const handleAgencyRemove = () => {
-        setFilters(prev => ({ ...prev, agency: null }));
-        setSelectedAgencyText('');
-        setOpenAgencyId(null);
-        updateUrlWithFilters({ ...filters, agency: null });
+        // No longer used for filtering — agency search redirects to agency page
     };
 
     const handleToggleAgency = (agencyId) => {
@@ -434,12 +407,8 @@ export function App() {
             url.searchParams.set('keywords', newFilters.keywords.join(','));
         }
         
-        // Update agency
-        if (newFilters.agency) {
-            url.searchParams.set('agency', newFilters.agency);
-        } else {
-            url.searchParams.delete('agency');
-        }
+        // Agency is now handled by separate page, remove from URL
+        url.searchParams.delete('agency');
         
         // Update facility filters
         if (newFilters.licenseStatus) {
@@ -467,8 +436,8 @@ export function App() {
             url.searchParams.delete('months');
         }
         
-        // Update severity levels filter
-        if (newFilters.severityLevels && newFilters.severityLevels.length > 0) {
+        // Update severity levels filter (only set URL param when not all are selected)
+        if (newFilters.severityLevels && newFilters.severityLevels.length > 0 && newFilters.severityLevels.length < ALL_SEVERITY_LEVELS.length) {
             url.searchParams.set('severity', newFilters.severityLevels.join(','));
         } else {
             url.searchParams.delete('severity');
@@ -523,6 +492,45 @@ export function App() {
                 subtitle="Agency Documents and Reports" 
             />
             <div className="container">
+                {/* About Section */}
+                <div className="about-section">
+                    <h2>About This Dashboard</h2>
+                    <p>
+                        This dashboard aggregates publicly available child welfare licensing documents
+                        from the Michigan Department of Licensing and Regulatory Affairs (LARA).
+                        It is designed for advocates, researchers, and journalists who need to
+                        identify patterns across facilities.
+                    </p>
+                    <p>
+                        <AiCaution label="AI is used on this site" />{' '}
+                        Some content on this dashboard — including document summaries, severity classifications,
+                        and staffing analysis — is generated by artificial intelligence.
+                        Wherever you see the <AiCaution /> symbol, AI was involved.
+                        <a href={`${BASE_URL}ai-methodology.html`} className="about-methodology-link">
+                            Learn about our AI methodology →
+                        </a>
+                    </p>
+                </div>
+
+                {/* Agency Search — redirects to dedicated agency page */}
+                <div className="agency-search-bar">
+                    <div className="agency-search-bar-inner">
+                        <span className="agency-search-bar-icon">🏢</span>
+                        <span className="agency-search-bar-label">Look up an agency:</span>
+                        <div className="agency-search-bar-input">
+                            <AutocompleteInput
+                                id="agencySearchInput"
+                                placeholder="Search by agency name or ID…"
+                                onSearch={handleAgencySearch}
+                                onSelect={handleAgencySelect}
+                                renderSuggestion={(s) => (
+                                    <span>{s.keyword}</span>
+                                )}
+                            />
+                        </div>
+                    </div>
+                </div>
+
                 <FilterPanel
                     filters={filters}
                     onFilterChange={handleFilterChange}
@@ -530,13 +538,9 @@ export function App() {
                     onKeywordSelect={handleKeywordSelect}
                     onKeywordRemove={handleKeywordRemove}
                     onClearAllKeywords={handleClearAllKeywords}
-                    onAgencySearch={handleAgencySearch}
-                    onAgencySelect={handleAgencySelect}
-                    onAgencyRemove={handleAgencyRemove}
                     uniqueLicenseStatuses={uniqueLicenseStatuses}
                     uniqueAgencyTypes={uniqueAgencyTypes}
                     uniqueCounties={uniqueCounties}
-                    selectedAgencyText={selectedAgencyText}
                     totalAgencies={totalAgencies}
                     totalReports={totalReports}
                 />
