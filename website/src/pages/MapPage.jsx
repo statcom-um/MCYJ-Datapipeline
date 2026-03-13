@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
+import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import MarkerClusterGroup from 'react-leaflet-cluster';
 import L from 'leaflet';
 import { Header, Loading, Error } from '../components/index.js';
@@ -7,53 +7,57 @@ import { getBaseUrl } from '../utils/helpers.js';
 
 const BASE_URL = getBaseUrl();
 
-const TYPE_COLORS = {
-    'CPA-Private':  '#4fffb0',
-    'CPA-Govt':     '#7b6fff',
-    'CPA-MDHHS':    '#ffd166',
-    'CCI':          '#ff6b6b',
-    'Court':        '#48cae4',
-};
-const DEFAULT_COLOR = '#9b59b6';
+const MARKER_COLOR = '#2563eb';
+const MARKER_HIGHLIGHT_COLOR = '#dc2626';
 
-function classifyType(agencyType) {
-    if (!agencyType) return 'CPA-Private';
-    if (agencyType.includes('Private'))                                  return 'CPA-Private';
-    if (agencyType.includes('Governmental'))                             return 'CPA-Govt';
-    if (agencyType.includes('MDHHS') && agencyType.includes('Placing')) return 'CPA-MDHHS';
-    if (agencyType.includes('Caring'))                                   return 'CCI';
-    if (agencyType.includes('Court'))                                    return 'Court';
-    return 'CPA-Private';
-}
+const defaultIcon = L.divIcon({
+    html: `<span class="map-marker-dot"></span>`,
+    className: 'map-marker-icon',
+    iconSize: [18, 18],
+    iconAnchor: [9, 9],
+});
 
-function getColor(agencyType) {
-    return TYPE_COLORS[classifyType(agencyType)] || DEFAULT_COLOR;
-}
+const highlightIcon = L.divIcon({
+    html: `<span class="map-marker-dot map-marker-highlight"></span>`,
+    className: 'map-marker-icon',
+    iconSize: [24, 24],
+    iconAnchor: [12, 12],
+});
 
-function makeDivIcon(color) {
+function createClusterIcon(cluster) {
+    const count = cluster.getChildCount();
+    let sizeClass = 'map-cluster-small';
+    let size = 40;
+    if (count >= 100) { sizeClass = 'map-cluster-large'; size = 54; }
+    else if (count >= 20) { sizeClass = 'map-cluster-medium'; size = 46; }
+
     return L.divIcon({
-        html: `<div style="width:11px;height:11px;border-radius:50%;background:${color};border:2px solid rgba(255,255,255,0.8);box-shadow:0 0 5px ${color}80;"></div>`,
-        className: '',
-        iconSize: [11, 11],
-        iconAnchor: [5, 5],
+        html: `<div class="map-cluster ${sizeClass}"><span>${count}</span></div>`,
+        className: 'map-cluster-icon',
+        iconSize: [size, size],
     });
 }
 
-// Cache icons per color
-const iconCache = {};
-function getIcon(agencyType) {
-    const color = getColor(agencyType);
-    if (!iconCache[color]) {
-        iconCache[color] = makeDivIcon(color);
-    }
-    return iconCache[color];
+/** Fly the map to a location */
+function FlyTo({ position, zoom }) {
+    const map = useMap();
+    useEffect(() => {
+        if (position) {
+            map.flyTo(position, zoom || 14, { duration: 0.8 });
+        }
+    }, [position, zoom, map]);
+    return null;
 }
 
 export function MapPage() {
     const [facilities, setFacilities] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [visibleTypes, setVisibleTypes] = useState(null);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [searchField, setSearchField] = useState('all');
+    const [selectedId, setSelectedId] = useState(null);
+    const [flyTarget, setFlyTarget] = useState(null);
+    const markerRefs = useRef({});
 
     useEffect(() => {
         loadData();
@@ -66,15 +70,7 @@ export function MapPage() {
 
             const data = await response.json();
             const withCoords = data.filter(f => f.lat != null && f.lon != null);
-            // Attach classified type
-            withCoords.forEach(f => { f._type = classifyType(f.AgencyType); });
             setFacilities(withCoords);
-
-            const types = new Set(withCoords.map(f => f._type));
-            const initial = {};
-            types.forEach(t => { initial[t] = true; });
-            setVisibleTypes(initial);
-
             setLoading(false);
         } catch (err) {
             console.error('Error loading data:', err);
@@ -83,13 +79,39 @@ export function MapPage() {
         }
     };
 
-    const filteredFacilities = useMemo(() => {
-        if (!visibleTypes) return facilities;
-        return facilities.filter(f => visibleTypes[f._type]);
-    }, [facilities, visibleTypes]);
+    const matchesSearch = useCallback((f, term) => {
+        if (!term) return true;
+        const q = term.toLowerCase();
+        if (searchField === 'name') return (f.AgencyName || '').toLowerCase().includes(q);
+        if (searchField === 'city') return (f.City || '').toLowerCase().includes(q);
+        if (searchField === 'county') return (f.County || '').toLowerCase().includes(q);
+        if (searchField === 'zip') return (f.ZipCode || '').startsWith(q);
+        // "all" — search across all fields
+        return (
+            (f.AgencyName || '').toLowerCase().includes(q) ||
+            (f.City || '').toLowerCase().includes(q) ||
+            (f.County || '').toLowerCase().includes(q) ||
+            (f.ZipCode || '').startsWith(q)
+        );
+    }, [searchField]);
 
-    const toggleType = (type) => {
-        setVisibleTypes(prev => ({ ...prev, [type]: !prev[type] }));
+    const searchResults = useMemo(() => {
+        if (!searchTerm) return [];
+        return facilities
+            .filter(f => matchesSearch(f, searchTerm))
+            .sort((a, b) => (a.AgencyName || '').localeCompare(b.AgencyName || ''));
+    }, [facilities, searchTerm, matchesSearch]);
+
+    const handleSelectAgency = (f) => {
+        const id = f.LicenseNumber;
+        setSelectedId(id);
+        setFlyTarget({ position: [f.lat, f.lon], zoom: 15 });
+
+        // Open the marker popup after a brief delay to let fly animation start
+        setTimeout(() => {
+            const marker = markerRefs.current[id];
+            if (marker) marker.openPopup();
+        }, 900);
     };
 
     if (loading) {
@@ -123,59 +145,94 @@ export function MapPage() {
         );
     }
 
-    const typeEntries = visibleTypes ? Object.keys(visibleTypes).sort() : [];
-    const typeCounts = {};
-    facilities.forEach(f => { typeCounts[f._type] = (typeCounts[f._type] || 0) + 1; });
-
     return (
         <>
             <Header title="Agency Map" subtitle="Geographic distribution of licensed agencies" />
             <div className="container">
-                <div className="map-page-container">
-                    <div className="map-legend">
-                        <strong>Agency Types:</strong>
-                        <div className="map-legend-items">
-                            {typeEntries.map(type => (
-                                <label key={type} className={`map-legend-item ${visibleTypes[type] ? 'active' : ''}`}>
-                                    <input
-                                        type="checkbox"
-                                        checked={visibleTypes[type]}
-                                        onChange={() => toggleType(type)}
-                                    />
-                                    <span
-                                        className="map-legend-color"
-                                        style={{ background: TYPE_COLORS[type] || DEFAULT_COLOR }}
-                                    ></span>
-                                    <span>{type.replace('-', ' ')} ({typeCounts[type] || 0})</span>
-                                </label>
-                            ))}
+                <div className="map-page-layout">
+                    {/* Search sidebar */}
+                    <div className="map-sidebar">
+                        <div className="map-search-header">
+                            <h3>Find an Agency</h3>
+                            <p>{facilities.length} agencies on map</p>
                         </div>
-                        <div className="map-legend-count">
-                            Showing {filteredFacilities.length} of {facilities.length} agencies
+
+                        <div className="map-search-controls">
+                            <select
+                                className="map-search-field"
+                                value={searchField}
+                                onChange={(e) => setSearchField(e.target.value)}
+                                aria-label="Search field"
+                            >
+                                <option value="all">All Fields</option>
+                                <option value="name">Name</option>
+                                <option value="city">City</option>
+                                <option value="county">County</option>
+                                <option value="zip">Zip Code</option>
+                            </select>
+                            <input
+                                type="text"
+                                className="map-search-input"
+                                placeholder={searchField === 'zip' ? 'Enter zip code…' : `Search by ${searchField === 'all' ? 'name, city, county, or zip' : searchField}…`}
+                                value={searchTerm}
+                                onChange={(e) => { setSearchTerm(e.target.value); setSelectedId(null); }}
+                                aria-label="Search agencies"
+                            />
+                        </div>
+
+                        <div className="map-search-results">
+                            {searchTerm && searchResults.length === 0 && (
+                                <div className="map-search-empty">No agencies found.</div>
+                            )}
+                            {!searchTerm && (
+                                <div className="map-search-hint">
+                                    Type a name, city, county, or zip code to find agencies.
+                                </div>
+                            )}
+                            {searchResults.map((f) => {
+                                const id = f.LicenseNumber;
+                                return (
+                                    <button
+                                        key={id}
+                                        className={`map-search-result ${selectedId === id ? 'selected' : ''}`}
+                                        onClick={() => handleSelectAgency(f)}
+                                        type="button"
+                                    >
+                                        <span className="map-result-name">{f.AgencyName || 'Unknown'}</span>
+                                        <span className="map-result-detail">
+                                            {[f.City, f.County ? `${f.County} County` : null, f.ZipCode].filter(Boolean).join(' · ')}
+                                        </span>
+                                    </button>
+                                );
+                            })}
                         </div>
                     </div>
 
-                    <div className="map-wrapper">
+                    {/* Map */}
+                    <div className="map-main">
                         <MapContainer
                             center={[44.3148, -85.6024]}
                             zoom={7}
-                            style={{ height: '600px', width: '100%', borderRadius: '0 0 8px 8px' }}
+                            style={{ height: '100%', width: '100%' }}
                         >
                             <TileLayer
                                 attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &amp; <a href="https://carto.com/">CARTO</a>'
                                 url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
                             />
+                            {flyTarget && <FlyTo position={flyTarget.position} zoom={flyTarget.zoom} />}
                             <MarkerClusterGroup
                                 chunkedLoading
-                                maxClusterRadius={50}
+                                maxClusterRadius={45}
                                 spiderfyOnMaxZoom={true}
                                 showCoverageOnHover={false}
+                                iconCreateFunction={createClusterIcon}
                             >
-                                {filteredFacilities.map((f, idx) => (
+                                {facilities.map((f, idx) => (
                                     <Marker
                                         key={`${f.LicenseNumber}-${idx}`}
                                         position={[f.lat, f.lon]}
-                                        icon={getIcon(f.AgencyType)}
+                                        icon={selectedId === f.LicenseNumber ? highlightIcon : defaultIcon}
+                                        ref={(ref) => { if (ref) markerRefs.current[f.LicenseNumber] = ref; }}
                                     >
                                         <Popup>
                                             <div className="map-popup">
@@ -184,10 +241,10 @@ export function MapPage() {
                                                         {f.AgencyName || 'Unknown'}
                                                     </a>
                                                 </strong>
-                                                <div>{f.AgencyType}</div>
-                                                {f.County && <div>County: {f.County}</div>}
-                                                {f.City && <div>City: {f.City}</div>}
-                                                <div>License: {f.LicenseStatus}</div>
+                                                {f.AgencyType && <div className="map-popup-row">{f.AgencyType}</div>}
+                                                {f.City && <div className="map-popup-row">📍 {f.City}{f.County ? `, ${f.County} County` : ''}</div>}
+                                                {f.ZipCode && <div className="map-popup-row">Zip: {f.ZipCode}</div>}
+                                                <div className="map-popup-row">License: {f.LicenseStatus}</div>
                                             </div>
                                         </Popup>
                                     </Marker>
