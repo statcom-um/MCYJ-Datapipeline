@@ -29,7 +29,9 @@ export default defineConfig({
         document: resolve(__dirname, 'document.html'),
         facilities: resolve(__dirname, 'facilities.html'),
         agency: resolve(__dirname, 'agency.html'),
-        'ai-methodology': resolve(__dirname, 'ai-methodology.html')
+        'ai-methodology': resolve(__dirname, 'ai-methodology.html'),
+        documents: resolve(__dirname, 'documents.html'),
+        map: resolve(__dirname, 'map.html')
       }
     }
   },

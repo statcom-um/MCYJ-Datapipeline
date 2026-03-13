@@ -1,4 +1,5 @@
 import React from 'react';
+import { Navbar } from './Navbar.jsx';
 
 /**
  * Header component for the dashboard
@@ -8,12 +9,15 @@ import React from 'react';
  */
 export function Header({ title, subtitle }) {
     return (
-        <header>
-            <div className="container">
-                <h1>{title}</h1>
-                {subtitle && <p className="subtitle">{subtitle}</p>}
-            </div>
-        </header>
+        <>
+            <Navbar />
+            <header>
+                <div className="container">
+                    <h1>{title}</h1>
+                    {subtitle && <p className="subtitle">{subtitle}</p>}
+                </div>
+            </header>
+        </>
     );
 }
 

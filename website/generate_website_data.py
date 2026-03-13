@@ -12,6 +12,7 @@ import json
 import os
 import re
 import sys
+import zipfile
 from collections import defaultdict
 from datetime import datetime
 from pathlib import Path
@@ -257,7 +258,54 @@ def load_facility_information_csv(csv_path):
     return facilities_by_license
 
 
-def generate_json_files(document_csv, output_dir, sir_summaries_csv=None, sir_violation_levels_csv=None, keyword_reduction_csv=None, facility_info_csv=None, staffing_summaries_csv=None):
+def load_zip_geocodes(gazetteer_path):
+    """Load ZIP code to lat/lon mapping from Census Bureau ZCTA gazetteer ZIP file.
+
+    The gazetteer contains GEOID (5-digit ZIP), INTPTLAT, INTPTLONG columns.
+    Returns dict mapping zip5 string to (lat, lon) tuple.
+    """
+    geocodes = {}
+
+    if not gazetteer_path or not os.path.exists(gazetteer_path):
+        return geocodes
+
+    print(f"Loading ZIP code geocodes from {gazetteer_path}...")
+
+    try:
+        with zipfile.ZipFile(gazetteer_path, 'r') as zf:
+            # Find the text/CSV file inside the zip
+            txt_files = [n for n in zf.namelist() if n.endswith('.txt') or n.endswith('.csv')]
+            if not txt_files:
+                print(f"Warning: No .txt or .csv file found in {gazetteer_path}")
+                return geocodes
+
+            # Read file content to detect delimiter, then parse
+            content = zf.read(txt_files[0]).decode('utf-8')
+            lines = content.splitlines()
+            if not lines:
+                return geocodes
+
+            delimiter = '|' if '|' in lines[0] else '\t'
+            reader = csv.DictReader(lines, delimiter=delimiter)
+            for row in reader:
+                geoid = row.get('GEOID', '').strip()
+                lat_str = row.get('INTPTLAT', '').strip()
+                lon_str = row.get('INTPTLONG', '').strip()
+
+                if geoid and lat_str and lon_str:
+                    try:
+                        geocodes[geoid] = (float(lat_str), float(lon_str))
+                    except ValueError:
+                        continue
+
+        print(f"Loaded {len(geocodes)} ZIP code geocodes")
+    except Exception as e:
+        print(f"Warning: Failed to load gazetteer: {e}")
+
+    return geocodes
+
+
+def generate_json_files(document_csv, output_dir, sir_summaries_csv=None, sir_violation_levels_csv=None, keyword_reduction_csv=None, facility_info_csv=None, staffing_summaries_csv=None, gazetteer_path=None):
     """Generate JSON files for the website."""
     
     # Create output directory
@@ -297,6 +345,24 @@ def generate_json_files(document_csv, output_dir, sir_summaries_csv=None, sir_vi
         staffing_summaries = load_staffing_summaries_csv(staffing_summaries_csv)
         print(f"Loaded {len(staffing_summaries)} staffing summaries")
     
+    # Load ZIP code geocodes if gazetteer provided
+    zip_geocodes = {}
+    if gazetteer_path:
+        zip_geocodes = load_zip_geocodes(gazetteer_path)
+
+    # Add lat/lon to facility info from ZIP codes
+    if zip_geocodes and facility_info:
+        geocoded_count = 0
+        for license_number, fac in facility_info.items():
+            zip_code = fac.get('ZipCode', '')
+            zip5 = zip_code[:5].strip() if zip_code else ''
+            if zip5 in zip_geocodes:
+                lat, lon = zip_geocodes[zip5]
+                fac['lat'] = lat
+                fac['lon'] = lon
+                geocoded_count += 1
+        print(f"Geocoded {geocoded_count} of {len(facility_info)} facilities")
+
     # Load document info data
     print("Loading document info data...")
     documents_by_agency, agency_names = load_document_info_csv(document_csv, sir_summaries, sir_violation_levels, staffing_summaries)
@@ -402,6 +468,10 @@ def main():
         help="Path to staffing summaries CSV file (optional)"
     )
     parser.add_argument(
+        "--gazetteer-zip",
+        help="Path to Census Bureau ZCTA gazetteer ZIP file for geocoding facilities (optional)"
+    )
+    parser.add_argument(
         "--output-dir",
         default="public/data",
         help="Output directory for JSON files"
@@ -421,7 +491,8 @@ def main():
         args.sir_violation_levels_csv,
         args.keyword_reduction_csv,
         args.facility_info_csv,
-        args.staffing_summaries_csv
+        args.staffing_summaries_csv,
+        args.gazetteer_zip
     )
 
 

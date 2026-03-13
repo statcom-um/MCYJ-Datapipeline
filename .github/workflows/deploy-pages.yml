@@ -53,6 +53,7 @@ jobs:
             --keyword-reduction-csv ../llm_analysis/data/violation_curation_keyword_reduction.csv \
             --facility-info-csv ../ingestion/data/facility_information.csv \
             --staffing-summaries-csv ../llm_analysis/data/staffing_summaries.csv \
+            --gazetteer-zip ../public/2025_Gaz_zcta_national.zip \
             --output-dir public/data
 
       - name: Export parquet documents to JSON

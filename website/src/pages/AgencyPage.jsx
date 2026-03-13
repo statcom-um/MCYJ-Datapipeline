@@ -93,7 +93,7 @@ export function AgencyPage() {
                     subtitle="Michigan Child Welfare Licensing Dashboard"
                 />
                 <div className="container">
-                    <a href={`${BASE_URL}`} className="back-link">← Back to Dashboard</a>
+
                     <Loading message="Loading agency data..." />
                 </div>
             </>
@@ -108,7 +108,7 @@ export function AgencyPage() {
                     subtitle="Michigan Child Welfare Licensing Dashboard"
                 />
                 <div className="container">
-                    <a href={`${BASE_URL}`} className="back-link">← Back to Dashboard</a>
+
                     <Error message={error} />
                 </div>
             </>
@@ -140,7 +140,6 @@ export function AgencyPage() {
                 subtitle="Agency Details"
             />
             <div className="container">
-                <a href={`${BASE_URL}`} className="back-link">← Back to Dashboard</a>
 
                 <div className="agency-page-container">
                     {/* Agency Header Info */}
