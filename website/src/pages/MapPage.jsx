@@ -7,8 +7,17 @@ import { getBaseUrl } from '../utils/helpers.js';
 
 const BASE_URL = getBaseUrl();
 
-const MARKER_COLOR = '#2563eb';
-const MARKER_HIGHLIGHT_COLOR = '#dc2626';
+const FLY_ANIMATION_MS = 900;
+
+function getSearchPlaceholder(field) {
+    if (field === 'zip') return 'Enter zip code…';
+    if (field === 'all') return 'Search by name, city, county, or zip…';
+    return `Search by ${field}…`;
+}
+
+function formatLocation(city, county, zip) {
+    return [city, county ? `${county} County` : null, zip].filter(Boolean).join(' · ');
+}
 
 const defaultIcon = L.divIcon({
     html: `<span class="map-marker-dot"></span>`,
@@ -107,11 +116,10 @@ export function MapPage() {
         setSelectedId(id);
         setFlyTarget({ position: [f.lat, f.lon], zoom: 15 });
 
-        // Open the marker popup after a brief delay to let fly animation start
         setTimeout(() => {
             const marker = markerRefs.current[id];
             if (marker) marker.openPopup();
-        }, 900);
+        }, FLY_ANIMATION_MS);
     };
 
     if (loading) {
@@ -173,7 +181,7 @@ export function MapPage() {
                             <input
                                 type="text"
                                 className="map-search-input"
-                                placeholder={searchField === 'zip' ? 'Enter zip code…' : `Search by ${searchField === 'all' ? 'name, city, county, or zip' : searchField}…`}
+                                placeholder={getSearchPlaceholder(searchField)}
                                 value={searchTerm}
                                 onChange={(e) => { setSearchTerm(e.target.value); setSelectedId(null); }}
                                 aria-label="Search agencies"
@@ -200,7 +208,7 @@ export function MapPage() {
                                     >
                                         <span className="map-result-name">{f.AgencyName || 'Unknown'}</span>
                                         <span className="map-result-detail">
-                                            {[f.City, f.County ? `${f.County} County` : null, f.ZipCode].filter(Boolean).join(' · ')}
+                                            {formatLocation(f.City, f.County, f.ZipCode)}
                                         </span>
                                     </button>
                                 );
