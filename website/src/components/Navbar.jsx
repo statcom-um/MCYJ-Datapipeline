@@ -4,9 +4,9 @@ import { getBaseUrl } from '../utils/helpers.js';
 const BASE_URL = getBaseUrl();
 
 const NAV_LINKS = [
-    { label: 'Dashboard', href: `${BASE_URL}` },
+    { label: 'Agency View', href: `${BASE_URL}` },
     { label: 'Documents', href: `${BASE_URL}documents.html` },
-    { label: 'Facilities', href: `${BASE_URL}facilities.html` },
+    { label: 'Agency Counts', href: `${BASE_URL}facilities.html` },
     { label: 'Keywords', href: `${BASE_URL}keywords.html` },
     { label: 'Map', href: `${BASE_URL}map.html` },
     { label: 'AI Methodology', href: `${BASE_URL}ai-methodology.html` },

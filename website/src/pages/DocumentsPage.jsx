@@ -13,7 +13,7 @@ export function DocumentsPage() {
     const [currentPage, setCurrentPage] = useState(1);
 
     // Filters
-    const [sirOnly, setSirOnly] = useState(false);
+    const [sirOnly, setSirOnly] = useState(true);
     const [severity, setSeverity] = useState('');
     const [county, setCounty] = useState('');
     const [dateFrom, setDateFrom] = useState('');

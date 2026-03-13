@@ -69,7 +69,7 @@ export function MapPage() {
     if (loading) {
         return (
             <>
-                <Header title="Facility Map" subtitle="Geographic distribution of licensed facilities" />
+                <Header title="Agency Map" subtitle="Geographic distribution of licensed agencies" />
                 <div className="container"><Loading message="Loading map data..." /></div>
             </>
         );
@@ -78,7 +78,7 @@ export function MapPage() {
     if (error) {
         return (
             <>
-                <Header title="Facility Map" subtitle="Geographic distribution of licensed facilities" />
+                <Header title="Agency Map" subtitle="Geographic distribution of licensed agencies" />
                 <div className="container"><Error message={error} /></div>
             </>
         );
@@ -87,10 +87,10 @@ export function MapPage() {
     if (facilities.length === 0) {
         return (
             <>
-                <Header title="Facility Map" subtitle="Geographic distribution of licensed facilities" />
+                <Header title="Agency Map" subtitle="Geographic distribution of licensed agencies" />
                 <div className="container">
                     <div className="map-no-data">
-                        No facilities with geographic coordinates found. Run the data generation script with the geocoding gazetteer to populate coordinates.
+                        No agencies with geographic coordinates found. Run the data generation script with --gazetteer-zip to populate coordinates.
                     </div>
                 </div>
             </>
@@ -123,7 +123,7 @@ export function MapPage() {
                             ))}
                         </div>
                         <div className="map-legend-count">
-                            Showing {filteredFacilities.length} of {facilities.length} facilities
+                            Showing {filteredFacilities.length} of {facilities.length} agencies
                         </div>
                     </div>
 

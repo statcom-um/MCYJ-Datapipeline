@@ -88,7 +88,6 @@ export function AiMethodologyPage() {
                 subtitle="Michigan Child Welfare Licensing Dashboard"
             />
             <div className="container">
-                <a href={`${BASE_URL}`} className="back-link">← Back to Dashboard</a>
 
                 <div className="methodology-container">
                     {/* Intro */}

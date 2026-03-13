@@ -140,7 +140,6 @@ export function AgencyPage() {
                 subtitle="Agency Details"
             />
             <div className="container">
-                <a href={`${BASE_URL}`} className="back-link">← Back to Dashboard</a>
 
                 <div className="agency-page-container">
                     {/* Agency Header Info */}
