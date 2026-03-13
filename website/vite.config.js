@@ -27,7 +27,9 @@ export default defineConfig({
         main: resolve(__dirname, 'index.html'),
         keywords: resolve(__dirname, 'keywords.html'),
         document: resolve(__dirname, 'document.html'),
-        facilities: resolve(__dirname, 'facilities.html')
+        facilities: resolve(__dirname, 'facilities.html'),
+        agency: resolve(__dirname, 'agency.html'),
+        'ai-methodology': resolve(__dirname, 'ai-methodology.html')
       }
     }
   },
