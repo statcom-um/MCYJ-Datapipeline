@@ -120,7 +120,7 @@ export function FacilitiesPage() {
                 subtitle="Active Licensed Facilities by Grouping" 
             />
             <div className="container">
-                <a href={`${BASE_URL}`} className="back-link">← Back to Dashboard</a>
+
                 
                 <div className="facilities-container">
                     <div className="facilities-header">

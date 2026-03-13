@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Header, FilterPanel, AgencyList, Loading, Error } from '../components/index.js';
+import { Header, FilterPanel, AgencyList, Loading, Error, Pagination } from '../components/index.js';
 import { AutocompleteInput } from '../components/AutocompleteInput.jsx';
 import { AiCaution } from '../components/AiCaution.jsx';
 import { Trie } from '../trie.js';
@@ -18,6 +18,8 @@ export function App() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [openAgencyId, setOpenAgencyId] = useState(null);
+    const [currentPage, setCurrentPage] = useState(1);
+    const PAGE_SIZE = 25;
     
     // Filter state
     const [filters, setFilters] = useState({
@@ -322,6 +324,7 @@ export function App() {
         agencies = agencies.filter(agency => agency.total_reports > 0);
         
         setFilteredAgencies(agencies);
+        setCurrentPage(1);
     }, [allAgencies, filters]);
 
     // Filter change handlers
@@ -546,10 +549,16 @@ export function App() {
                 />
                 
                 <AgencyList
-                    agencies={filteredAgencies}
+                    agencies={filteredAgencies.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE)}
                     openAgencyId={openAgencyId}
                     onToggleAgency={handleToggleAgency}
                     onCopyDocumentLink={handleCopyDocumentLink}
+                />
+                <Pagination
+                    totalItems={filteredAgencies.length}
+                    itemsPerPage={PAGE_SIZE}
+                    currentPage={currentPage}
+                    onPageChange={setCurrentPage}
                 />
             </div>
             

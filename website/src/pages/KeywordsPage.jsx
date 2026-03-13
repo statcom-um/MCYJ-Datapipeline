@@ -107,7 +107,7 @@ export function KeywordsPage() {
                 subtitle="Complete list of keywords from all documents" 
             />
             <div className="container">
-                <a href={`${BASE_URL}`} className="back-link">← Back to Dashboard</a>
+
                 
                 <div className="keywords-container">
                     <div className="keywords-header">
