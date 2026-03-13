@@ -1,27 +1,52 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { MapContainer, TileLayer, CircleMarker, Popup } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import MarkerClusterGroup from 'react-leaflet-cluster';
+import L from 'leaflet';
 import { Header, Loading, Error } from '../components/index.js';
 import { getBaseUrl } from '../utils/helpers.js';
 
 const BASE_URL = getBaseUrl();
 
-const AGENCY_TYPE_COLORS = {
-    'CPA - Private': '#3498db',
-    'CPA - Government': '#27ae60',
-    'CCI': '#e67e22',
-    'Court': '#e74c3c',
-    'Child Placing Agency': '#3498db',
-    'Child Caring Institution': '#e67e22',
+const TYPE_COLORS = {
+    'CPA-Private':  '#4fffb0',
+    'CPA-Govt':     '#7b6fff',
+    'CPA-MDHHS':    '#ffd166',
+    'CCI':          '#ff6b6b',
+    'Court':        '#48cae4',
 };
 const DEFAULT_COLOR = '#9b59b6';
 
+function classifyType(agencyType) {
+    if (!agencyType) return 'CPA-Private';
+    if (agencyType.includes('Private'))                                  return 'CPA-Private';
+    if (agencyType.includes('Governmental'))                             return 'CPA-Govt';
+    if (agencyType.includes('MDHHS') && agencyType.includes('Placing')) return 'CPA-MDHHS';
+    if (agencyType.includes('Caring'))                                   return 'CCI';
+    if (agencyType.includes('Court'))                                    return 'Court';
+    return 'CPA-Private';
+}
+
 function getColor(agencyType) {
-    if (!agencyType) return DEFAULT_COLOR;
-    for (const [key, color] of Object.entries(AGENCY_TYPE_COLORS)) {
-        if (agencyType.toLowerCase().includes(key.toLowerCase())) return color;
+    return TYPE_COLORS[classifyType(agencyType)] || DEFAULT_COLOR;
+}
+
+function makeDivIcon(color) {
+    return L.divIcon({
+        html: `<div style="width:11px;height:11px;border-radius:50%;background:${color};border:2px solid rgba(255,255,255,0.8);box-shadow:0 0 5px ${color}80;"></div>`,
+        className: '',
+        iconSize: [11, 11],
+        iconAnchor: [5, 5],
+    });
+}
+
+// Cache icons per color
+const iconCache = {};
+function getIcon(agencyType) {
+    const color = getColor(agencyType);
+    if (!iconCache[color]) {
+        iconCache[color] = makeDivIcon(color);
     }
-    return DEFAULT_COLOR;
+    return iconCache[color];
 }
 
 export function MapPage() {
@@ -41,10 +66,11 @@ export function MapPage() {
 
             const data = await response.json();
             const withCoords = data.filter(f => f.lat != null && f.lon != null);
+            // Attach classified type
+            withCoords.forEach(f => { f._type = classifyType(f.AgencyType); });
             setFacilities(withCoords);
 
-            // Initialize all types as visible
-            const types = new Set(withCoords.map(f => f.AgencyType || 'Unknown'));
+            const types = new Set(withCoords.map(f => f._type));
             const initial = {};
             types.forEach(t => { initial[t] = true; });
             setVisibleTypes(initial);
@@ -59,7 +85,7 @@ export function MapPage() {
 
     const filteredFacilities = useMemo(() => {
         if (!visibleTypes) return facilities;
-        return facilities.filter(f => visibleTypes[f.AgencyType || 'Unknown']);
+        return facilities.filter(f => visibleTypes[f._type]);
     }, [facilities, visibleTypes]);
 
     const toggleType = (type) => {
@@ -98,17 +124,19 @@ export function MapPage() {
     }
 
     const typeEntries = visibleTypes ? Object.keys(visibleTypes).sort() : [];
+    const typeCounts = {};
+    facilities.forEach(f => { typeCounts[f._type] = (typeCounts[f._type] || 0) + 1; });
 
     return (
         <>
-            <Header title="Facility Map" subtitle="Geographic distribution of licensed facilities" />
+            <Header title="Agency Map" subtitle="Geographic distribution of licensed agencies" />
             <div className="container">
                 <div className="map-page-container">
                     <div className="map-legend">
                         <strong>Agency Types:</strong>
                         <div className="map-legend-items">
                             {typeEntries.map(type => (
-                                <label key={type} className="map-legend-item">
+                                <label key={type} className={`map-legend-item ${visibleTypes[type] ? 'active' : ''}`}>
                                     <input
                                         type="checkbox"
                                         checked={visibleTypes[type]}
@@ -116,9 +144,9 @@ export function MapPage() {
                                     />
                                     <span
                                         className="map-legend-color"
-                                        style={{ background: getColor(type) }}
+                                        style={{ background: TYPE_COLORS[type] || DEFAULT_COLOR }}
                                     ></span>
-                                    <span>{type} ({facilities.filter(f => (f.AgencyType || 'Unknown') === type).length})</span>
+                                    <span>{type.replace('-', ' ')} ({typeCounts[type] || 0})</span>
                                 </label>
                             ))}
                         </div>
@@ -129,25 +157,25 @@ export function MapPage() {
 
                     <div className="map-wrapper">
                         <MapContainer
-                            center={[44.3, -84.7]}
+                            center={[44.3148, -85.6024]}
                             zoom={7}
-                            style={{ height: '600px', width: '100%', borderRadius: '8px' }}
+                            style={{ height: '600px', width: '100%', borderRadius: '0 0 8px 8px' }}
                         >
                             <TileLayer
-                                attribution='&copy; <a href="https://carto.com/">CARTO</a>'
+                                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &amp; <a href="https://carto.com/">CARTO</a>'
                                 url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
                             />
-                            <MarkerClusterGroup chunkedLoading>
+                            <MarkerClusterGroup
+                                chunkedLoading
+                                maxClusterRadius={50}
+                                spiderfyOnMaxZoom={true}
+                                showCoverageOnHover={false}
+                            >
                                 {filteredFacilities.map((f, idx) => (
-                                    <CircleMarker
+                                    <Marker
                                         key={`${f.LicenseNumber}-${idx}`}
-                                        center={[f.lat, f.lon]}
-                                        radius={7}
-                                        fillColor={getColor(f.AgencyType)}
-                                        color="#fff"
-                                        weight={1}
-                                        opacity={1}
-                                        fillOpacity={0.8}
+                                        position={[f.lat, f.lon]}
+                                        icon={getIcon(f.AgencyType)}
                                     >
                                         <Popup>
                                             <div className="map-popup">
@@ -162,7 +190,7 @@ export function MapPage() {
                                                 <div>License: {f.LicenseStatus}</div>
                                             </div>
                                         </Popup>
-                                    </CircleMarker>
+                                    </Marker>
                                 ))}
                             </MarkerClusterGroup>
                         </MapContainer>
