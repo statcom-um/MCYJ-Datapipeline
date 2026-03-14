@@ -2039,6 +2039,22 @@ h1 {
 
 /* --- Individual markers --- */
 
+/* --- Zip code notice banner --- */
+
+.map-zip-notice {
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    border-radius: 8px;
+    padding: 10px 16px;
+    margin-bottom: 14px;
+    color: #1e40af;
+    font-size: 0.9em;
+    line-height: 1.5;
+    text-align: center;
+}
+
+/* --- Individual markers — translucent circles suggesting area, not exact pin --- */
+
 .map-marker-icon {
     background: transparent !important;
     border: none !important;
@@ -2046,22 +2062,145 @@ h1 {
 
 .map-marker-dot {
     display: block;
-    width: 14px;
-    height: 14px;
+    position: relative;
+    width: 18px;
+    height: 18px;
     border-radius: 50%;
-    background: #2563eb;
-    border: 2.5px solid #fff;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+    background: rgba(37, 99, 235, 0.45);
+    border: 2px solid rgba(37, 99, 235, 0.7);
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
     margin: 2px;
 }
 
+.map-marker-ring {
+    position: absolute;
+    inset: -5px;
+    border-radius: 50%;
+    border: 1.5px dashed rgba(37, 99, 235, 0.30);
+    pointer-events: none;
+}
+
 .map-marker-dot.map-marker-highlight {
-    width: 18px;
-    height: 18px;
-    background: #dc2626;
-    border: 3px solid #fff;
-    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.3), 0 2px 6px rgba(0,0,0,0.3);
+    width: 22px;
+    height: 22px;
+    background: rgba(220, 38, 38, 0.45);
+    border: 2.5px solid rgba(220, 38, 38, 0.7);
+    box-shadow: 0 0 0 5px rgba(220, 38, 38, 0.15), 0 2px 6px rgba(0,0,0,0.2);
     margin: 0;
+}
+
+.map-marker-dot.map-marker-highlight .map-marker-ring {
+    inset: -6px;
+    border-color: rgba(220, 38, 38, 0.30);
+}
+
+/* --- Zip group markers — numbered badge for multiple agencies at same zip --- */
+
+.map-zipgroup {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: rgba(37, 99, 235, 0.55);
+    border: 2.5px solid rgba(37, 99, 235, 0.8);
+    box-shadow: 0 0 0 5px rgba(37, 99, 235, 0.15), 0 1px 4px rgba(0,0,0,0.18);
+    color: #fff;
+    font-weight: 700;
+    font-size: 13px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    line-height: 1;
+}
+
+.map-zipgroup-highlight {
+    background: rgba(220, 38, 38, 0.55);
+    border-color: rgba(220, 38, 38, 0.8);
+    box-shadow: 0 0 0 5px rgba(220, 38, 38, 0.18), 0 1px 4px rgba(0,0,0,0.22);
+}
+
+/* --- Multi-agency popup — scrollable agency list --- */
+
+.map-popup-group-header {
+    margin-bottom: 8px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.map-popup-group-header strong {
+    font-size: 0.95em;
+    color: #1e293b;
+}
+
+.map-popup-agency-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    max-height: 180px;
+    overflow-y: auto;
+}
+
+.map-popup-agency-list li {
+    padding: 5px 0;
+    border-bottom: 1px solid #f1f5f9;
+    line-height: 1.35;
+}
+
+.map-popup-agency-list li:last-child {
+    border-bottom: none;
+}
+
+.map-popup-agency-list li a {
+    color: #2563eb;
+    text-decoration: none;
+    font-size: 0.88em;
+    font-weight: 600;
+}
+
+.map-popup-agency-list li a:hover {
+    text-decoration: underline;
+}
+
+.map-popup-agency-type {
+    display: block;
+    font-size: 0.78em;
+    color: #64748b;
+    margin-top: 1px;
+}
+
+.map-popup-agency-meta {
+    display: block;
+    margin-top: 1px;
+}
+
+.map-popup-agency-license {
+    font-size: 0.75em;
+    color: #94a3b8;
+    font-family: monospace;
+    margin-right: 6px;
+}
+
+.map-popup-zip-link {
+    display: block;
+    margin-top: 8px;
+    padding-top: 6px;
+    border-top: 1px solid #e5e7eb;
+    font-size: 0.85em;
+    color: #2563eb;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.map-popup-zip-link:hover {
+    text-decoration: underline;
+}
+
+.map-popup-agency-selected {
+    background: #eff6ff;
+    margin: 0 -8px;
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+    border-radius: 4px;
 }
 
 /* --- Cluster markers — circles with concentric rings --- */
@@ -2128,6 +2267,16 @@ h1 {
     font-size: 0.88em;
     color: #475569;
     margin-top: 3px;
+    line-height: 1.35;
+}
+
+.map-popup-approx {
+    font-size: 0.8em;
+    color: #6b7280;
+    font-style: italic;
+    margin-top: 6px;
+    padding-top: 5px;
+    border-top: 1px solid #e5e7eb;
     line-height: 1.35;
 }
 

@@ -29,6 +29,7 @@ export function App() {
         licenseStatus: null,
         agencyType: null,
         county: null,
+        zipCode: null,
         lastNMonths: null,
         severityLevels: [...ALL_SEVERITY_LEVELS],
         staffingConfidence: null
@@ -38,6 +39,7 @@ export function App() {
     const [uniqueLicenseStatuses, setUniqueLicenseStatuses] = useState([]);
     const [uniqueAgencyTypes, setUniqueAgencyTypes] = useState([]);
     const [uniqueCounties, setUniqueCounties] = useState([]);
+    const [uniqueZipCodes, setUniqueZipCodes] = useState([]);
     
     // Tries for autocomplete
     const keywordTrieRef = useRef(new Trie());
@@ -136,18 +138,22 @@ export function App() {
         const licenseStatuses = new Set();
         const agencyTypes = new Set();
         const counties = new Set();
+        const zipCodes = new Set();
         
         agencies.forEach(agency => {
             if (agency.facility) {
                 if (agency.facility.LicenseStatus) licenseStatuses.add(agency.facility.LicenseStatus);
                 if (agency.facility.AgencyType) agencyTypes.add(agency.facility.AgencyType);
                 if (agency.facility.County) counties.add(agency.facility.County);
+                const zip5 = (agency.facility.ZipCode || '').slice(0, 5);
+                if (zip5) zipCodes.add(zip5);
             }
         });
         
         setUniqueLicenseStatuses(Array.from(licenseStatuses).sort());
         setUniqueAgencyTypes(Array.from(agencyTypes).sort());
         setUniqueCounties(Array.from(counties).sort());
+        setUniqueZipCodes(Array.from(zipCodes).sort());
     };
 
     const handleUrlQueryString = () => {
@@ -158,6 +164,7 @@ export function App() {
         const licenseStatusParam = urlParams.get('licensestatus');
         const agencyTypeParam = urlParams.get('agencytype');
         const countyParam = urlParams.get('county');
+        const zipParam = urlParams.get('zip');
         const lastNMonthsParam = urlParams.get('months');
         const severityParam = urlParams.get('severity');
         const staffingParam = urlParams.get('staffing');
@@ -181,6 +188,10 @@ export function App() {
         
         if (countyParam) {
             newFilters.county = countyParam;
+        }
+        
+        if (zipParam) {
+            newFilters.zipCode = zipParam.slice(0, 5);
         }
         
         if (lastNMonthsParam) {
@@ -249,6 +260,13 @@ export function App() {
             
             if (filters.county) {
                 if (!facility || facility.County !== filters.county) {
+                    return false;
+                }
+            }
+            
+            if (filters.zipCode) {
+                const zip5 = (facility?.ZipCode || '').slice(0, 5);
+                if (zip5 !== filters.zipCode) {
                     return false;
                 }
             }
@@ -432,6 +450,12 @@ export function App() {
             url.searchParams.delete('county');
         }
         
+        if (newFilters.zipCode) {
+            url.searchParams.set('zip', newFilters.zipCode);
+        } else {
+            url.searchParams.delete('zip');
+        }
+        
         // Update lastNMonths filter
         if (newFilters.lastNMonths) {
             url.searchParams.set('months', newFilters.lastNMonths.toString());
@@ -544,6 +568,7 @@ export function App() {
                     uniqueLicenseStatuses={uniqueLicenseStatuses}
                     uniqueAgencyTypes={uniqueAgencyTypes}
                     uniqueCounties={uniqueCounties}
+                    uniqueZipCodes={uniqueZipCodes}
                     totalAgencies={totalAgencies}
                     totalReports={totalReports}
                 />

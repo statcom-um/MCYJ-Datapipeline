@@ -19,22 +19,37 @@ function formatLocation(city, county, zip) {
     return [city, county ? `${county} County` : null, zip].filter(Boolean).join(' · ');
 }
 
+/** Single-agency marker — translucent dot with dashed ring */
 const defaultIcon = L.divIcon({
-    html: `<span class="map-marker-dot"></span>`,
+    html: `<span class="map-marker-dot"><span class="map-marker-ring"></span></span>`,
     className: 'map-marker-icon',
-    iconSize: [18, 18],
-    iconAnchor: [9, 9],
+    iconSize: [22, 22],
+    iconAnchor: [11, 11],
 });
 
 const highlightIcon = L.divIcon({
-    html: `<span class="map-marker-dot map-marker-highlight"></span>`,
+    html: `<span class="map-marker-dot map-marker-highlight"><span class="map-marker-ring"></span></span>`,
     className: 'map-marker-icon',
-    iconSize: [24, 24],
-    iconAnchor: [12, 12],
+    iconSize: [28, 28],
+    iconAnchor: [14, 14],
 });
 
+/** Multi-agency zip group marker — shows count badge */
+function createZipGroupIcon(count, isHighlighted) {
+    const cls = isHighlighted ? 'map-zipgroup map-zipgroup-highlight' : 'map-zipgroup';
+    const size = isHighlighted ? 38 : 34;
+    return L.divIcon({
+        html: `<div class="${cls}"><span>${count}</span></div>`,
+        className: 'map-marker-icon',
+        iconSize: [size, size],
+        iconAnchor: [size / 2, size / 2],
+    });
+}
+
 function createClusterIcon(cluster) {
-    const count = cluster.getChildCount();
+    // Sum actual agency counts, not zip-group marker counts
+    const markers = cluster.getAllChildMarkers();
+    const count = markers.reduce((sum, m) => sum + (m.options.agencyCount || 1), 0);
     let sizeClass = 'map-cluster-small';
     let size = 40;
     if (count >= 100) { sizeClass = 'map-cluster-large'; size = 54; }
@@ -56,6 +71,27 @@ function FlyTo({ position, zoom }) {
         }
     }, [position, zoom, map]);
     return null;
+}
+
+/**
+ * Group facilities by zip code.
+ * Returns an array of { zip, lat, lon, facilities: [...] } objects,
+ * one per unique zip code.
+ */
+function groupByZip(facilities) {
+    const groups = new Map();
+    for (const f of facilities) {
+        const zip = (f.ZipCode || '').slice(0, 5);
+        if (!groups.has(zip)) {
+            groups.set(zip, { zip, lat: f.lat, lon: f.lon, facilities: [] });
+        }
+        groups.get(zip).facilities.push(f);
+    }
+    // Sort facilities within each group alphabetically
+    for (const g of groups.values()) {
+        g.facilities.sort((a, b) => (a.AgencyName || '').localeCompare(b.AgencyName || ''));
+    }
+    return Array.from(groups.values());
 }
 
 export function MapPage() {
@@ -88,6 +124,20 @@ export function MapPage() {
         }
     };
 
+    /** Group facilities by zip for map markers */
+    const zipGroups = useMemo(() => groupByZip(facilities), [facilities]);
+
+    /** Look up which zip group an agency belongs to */
+    const zipForFacility = useMemo(() => {
+        const map = new Map();
+        for (const g of zipGroups) {
+            for (const f of g.facilities) {
+                map.set(f.LicenseNumber, g.zip);
+            }
+        }
+        return map;
+    }, [zipGroups]);
+
     const matchesSearch = useCallback((f, term) => {
         if (!term) return true;
         const q = term.toLowerCase();
@@ -95,7 +145,6 @@ export function MapPage() {
         if (searchField === 'city') return (f.City || '').toLowerCase().includes(q);
         if (searchField === 'county') return (f.County || '').toLowerCase().includes(q);
         if (searchField === 'zip') return (f.ZipCode || '').startsWith(q);
-        // "all" — search across all fields
         return (
             (f.AgencyName || '').toLowerCase().includes(q) ||
             (f.City || '').toLowerCase().includes(q) ||
@@ -113,11 +162,13 @@ export function MapPage() {
 
     const handleSelectAgency = (f) => {
         const id = f.LicenseNumber;
+        const zip = zipForFacility.get(id) || (f.ZipCode || '').slice(0, 5);
         setSelectedId(id);
         setFlyTarget({ position: [f.lat, f.lon], zoom: 15 });
 
+        // Open the zip group marker's popup
         setTimeout(() => {
-            const marker = markerRefs.current[id];
+            const marker = markerRefs.current[zip];
             if (marker) marker.openPopup();
         }, FLY_ANIMATION_MS);
     };
@@ -157,12 +208,15 @@ export function MapPage() {
         <>
             <Header title="Agency Map" subtitle="Geographic distribution of licensed agencies" />
             <div className="container">
+                <div className="map-zip-notice">
+                    <span aria-hidden="true">📍 </span>Agency locations on this map are approximate. Each marker represents a 5-digit zip code area and lists all agencies registered there.
+                </div>
                 <div className="map-page-layout">
                     {/* Search sidebar */}
                     <div className="map-sidebar">
                         <div className="map-search-header">
                             <h3>Find an Agency</h3>
-                            <p>{facilities.length} agencies on map</p>
+                            <p>{facilities.length} agencies across {zipGroups.length} 5-digit zip codes</p>
                         </div>
 
                         <div className="map-search-controls">
@@ -231,32 +285,73 @@ export function MapPage() {
                             <MarkerClusterGroup
                                 chunkedLoading
                                 maxClusterRadius={45}
-                                spiderfyOnMaxZoom={true}
+                                spiderfyOnMaxZoom={false}
                                 showCoverageOnHover={false}
                                 iconCreateFunction={createClusterIcon}
                             >
-                                {facilities.map((f, idx) => (
-                                    <Marker
-                                        key={`${f.LicenseNumber}-${idx}`}
-                                        position={[f.lat, f.lon]}
-                                        icon={selectedId === f.LicenseNumber ? highlightIcon : defaultIcon}
-                                        ref={(ref) => { if (ref) markerRefs.current[f.LicenseNumber] = ref; }}
-                                    >
-                                        <Popup>
-                                            <div className="map-popup">
-                                                <strong>
-                                                    <a href={`${BASE_URL}agency.html?id=${encodeURIComponent(f.agencyId || f.LicenseNumber)}`}>
-                                                        {f.AgencyName || 'Unknown'}
-                                                    </a>
-                                                </strong>
-                                                {f.AgencyType && <div className="map-popup-row">{f.AgencyType}</div>}
-                                                {f.City && <div className="map-popup-row">📍 {f.City}{f.County ? `, ${f.County} County` : ''}</div>}
-                                                {f.ZipCode && <div className="map-popup-row">Zip: {f.ZipCode}</div>}
-                                                <div className="map-popup-row">License: {f.LicenseStatus}</div>
-                                            </div>
-                                        </Popup>
-                                    </Marker>
-                                ))}
+                                {zipGroups.map((group) => {
+                                    const isMulti = group.facilities.length > 1;
+                                    const isHighlighted = group.facilities.some(f => f.LicenseNumber === selectedId);
+
+                                    const icon = isMulti
+                                        ? createZipGroupIcon(group.facilities.length, isHighlighted)
+                                        : (isHighlighted ? highlightIcon : defaultIcon);
+
+                                    return (
+                                        <Marker
+                                            key={group.zip}
+                                            position={[group.lat, group.lon]}
+                                            icon={icon}
+                                            ref={(ref) => { if (ref) { markerRefs.current[group.zip] = ref; ref.options.agencyCount = group.facilities.length; } }}
+                                        >
+                                            <Popup maxWidth={320} minWidth={220}>
+                                                {isMulti ? (
+                                                    <div className="map-popup map-popup-group">
+                                                        <div className="map-popup-group-header">
+                                                            <strong>{group.facilities.length} agencies in 5-digit zip code {group.zip}</strong>
+                                                            {group.facilities[0].City && (
+                                                                <div className="map-popup-row">
+                                                                    📍 {group.facilities[0].City}
+                                                                    {group.facilities[0].County ? `, ${group.facilities[0].County} County` : ''}
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                        <ul className="map-popup-agency-list">
+                                                            {group.facilities.map(f => (
+                                                                <li key={f.LicenseNumber} className={f.LicenseNumber === selectedId ? 'map-popup-agency-selected' : ''}>
+                                                                    <a href={`${BASE_URL}agency.html?id=${encodeURIComponent(f.agencyId || f.LicenseNumber)}`}>
+                                                                        {f.AgencyName || 'Unknown'}
+                                                                    </a>
+                                                                    <span className="map-popup-agency-meta">
+                                                                        {f.LicenseNumber && <span className="map-popup-agency-license">#{f.LicenseNumber}</span>}
+                                                                        {f.AgencyType && <span className="map-popup-agency-type">{f.AgencyType}</span>}
+                                                                    </span>
+                                                                </li>
+                                                            ))}
+                                                        </ul>
+                                                        <a className="map-popup-zip-link" href={`${BASE_URL}?zip=${encodeURIComponent(group.zip)}`}>
+                                                            View all agencies in zip {group.zip} →
+                                                        </a>
+                                                        <div className="map-popup-approx"><span aria-hidden="true">📌 </span>Marker is at the center of this 5-digit zip code area.</div>
+                                                    </div>
+                                                ) : (
+                                                    <div className="map-popup">
+                                                        <strong>
+                                                            <a href={`${BASE_URL}agency.html?id=${encodeURIComponent(group.facilities[0].agencyId || group.facilities[0].LicenseNumber)}`}>
+                                                                {group.facilities[0].AgencyName || 'Unknown'}
+                                                            </a>
+                                                        </strong>
+                                                        {group.facilities[0].AgencyType && <div className="map-popup-row">{group.facilities[0].AgencyType}</div>}
+                                                        {group.facilities[0].City && <div className="map-popup-row">📍 {group.facilities[0].City}{group.facilities[0].County ? `, ${group.facilities[0].County} County` : ''}</div>}
+                                                        {group.facilities[0].ZipCode && <div className="map-popup-row">Zip: {group.facilities[0].ZipCode}</div>}
+                                                        <div className="map-popup-row">License: {group.facilities[0].LicenseStatus}</div>
+                                                        <div className="map-popup-approx"><span aria-hidden="true">📌 </span>Location shown is the center of 5-digit zip code area, not an exact address.</div>
+                                                    </div>
+                                                )}
+                                            </Popup>
+                                        </Marker>
+                                    );
+                                })}
                             </MarkerClusterGroup>
                         </MapContainer>
                     </div>
