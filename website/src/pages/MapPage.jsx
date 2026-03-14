@@ -20,17 +20,17 @@ function formatLocation(city, county, zip) {
 }
 
 const defaultIcon = L.divIcon({
-    html: `<span class="map-marker-dot"></span>`,
+    html: `<span class="map-marker-dot"><span class="map-marker-ring"></span></span>`,
     className: 'map-marker-icon',
-    iconSize: [18, 18],
-    iconAnchor: [9, 9],
+    iconSize: [22, 22],
+    iconAnchor: [11, 11],
 });
 
 const highlightIcon = L.divIcon({
-    html: `<span class="map-marker-dot map-marker-highlight"></span>`,
+    html: `<span class="map-marker-dot map-marker-highlight"><span class="map-marker-ring"></span></span>`,
     className: 'map-marker-icon',
-    iconSize: [24, 24],
-    iconAnchor: [12, 12],
+    iconSize: [28, 28],
+    iconAnchor: [14, 14],
 });
 
 function createClusterIcon(cluster) {
@@ -157,6 +157,9 @@ export function MapPage() {
         <>
             <Header title="Agency Map" subtitle="Geographic distribution of licensed agencies" />
             <div className="container">
+                <div className="map-zip-notice">
+                    <span aria-hidden="true">📍 </span>Agency locations on this map are approximate. Markers represent the center of each agency's zip code area, not exact street addresses.
+                </div>
                 <div className="map-page-layout">
                     {/* Search sidebar */}
                     <div className="map-sidebar">
@@ -253,6 +256,7 @@ export function MapPage() {
                                                 {f.City && <div className="map-popup-row">📍 {f.City}{f.County ? `, ${f.County} County` : ''}</div>}
                                                 {f.ZipCode && <div className="map-popup-row">Zip: {f.ZipCode}</div>}
                                                 <div className="map-popup-row">License: {f.LicenseStatus}</div>
+                                                <div className="map-popup-approx"><span aria-hidden="true">📌 </span>Location shown is the center of zip code area, not an exact address.</div>
                                             </div>
                                         </Popup>
                                     </Marker>
