@@ -2248,6 +2248,7 @@ h1 {
     }
 
     .map-main {
+        flex: none;
         height: 450px;
     }
 
