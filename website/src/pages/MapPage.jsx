@@ -47,7 +47,9 @@ function createZipGroupIcon(count, isHighlighted) {
 }
 
 function createClusterIcon(cluster) {
-    const count = cluster.getChildCount();
+    // Sum actual agency counts, not zip-group marker counts
+    const markers = cluster.getAllChildMarkers();
+    const count = markers.reduce((sum, m) => sum + (m.options.agencyCount || 1), 0);
     let sizeClass = 'map-cluster-small';
     let size = 40;
     if (count >= 100) { sizeClass = 'map-cluster-large'; size = 54; }
@@ -207,14 +209,14 @@ export function MapPage() {
             <Header title="Agency Map" subtitle="Geographic distribution of licensed agencies" />
             <div className="container">
                 <div className="map-zip-notice">
-                    <span aria-hidden="true">📍 </span>Agency locations on this map are approximate. Each marker represents a zip code area and lists all agencies registered there.
+                    <span aria-hidden="true">📍 </span>Agency locations on this map are approximate. Each marker represents a 5-digit zip code area and lists all agencies registered there.
                 </div>
                 <div className="map-page-layout">
                     {/* Search sidebar */}
                     <div className="map-sidebar">
                         <div className="map-search-header">
                             <h3>Find an Agency</h3>
-                            <p>{facilities.length} agencies across {zipGroups.length} zip codes</p>
+                            <p>{facilities.length} agencies across {zipGroups.length} 5-digit zip codes</p>
                         </div>
 
                         <div className="map-search-controls">
@@ -300,13 +302,13 @@ export function MapPage() {
                                             key={group.zip}
                                             position={[group.lat, group.lon]}
                                             icon={icon}
-                                            ref={(ref) => { if (ref) markerRefs.current[group.zip] = ref; }}
+                                            ref={(ref) => { if (ref) { markerRefs.current[group.zip] = ref; ref.options.agencyCount = group.facilities.length; } }}
                                         >
                                             <Popup maxWidth={320} minWidth={220}>
                                                 {isMulti ? (
                                                     <div className="map-popup map-popup-group">
                                                         <div className="map-popup-group-header">
-                                                            <strong>{group.facilities.length} agencies in zip code {group.zip}</strong>
+                                                            <strong>{group.facilities.length} agencies in 5-digit zip code {group.zip}</strong>
                                                             {group.facilities[0].City && (
                                                                 <div className="map-popup-row">
                                                                     📍 {group.facilities[0].City}
@@ -320,11 +322,17 @@ export function MapPage() {
                                                                     <a href={`${BASE_URL}agency.html?id=${encodeURIComponent(f.agencyId || f.LicenseNumber)}`}>
                                                                         {f.AgencyName || 'Unknown'}
                                                                     </a>
-                                                                    {f.AgencyType && <span className="map-popup-agency-type">{f.AgencyType}</span>}
+                                                                    <span className="map-popup-agency-meta">
+                                                                        {f.LicenseNumber && <span className="map-popup-agency-license">#{f.LicenseNumber}</span>}
+                                                                        {f.AgencyType && <span className="map-popup-agency-type">{f.AgencyType}</span>}
+                                                                    </span>
                                                                 </li>
                                                             ))}
                                                         </ul>
-                                                        <div className="map-popup-approx"><span aria-hidden="true">📌 </span>Marker is at the center of this zip code area.</div>
+                                                        <a className="map-popup-zip-link" href={`${BASE_URL}?zip=${encodeURIComponent(group.zip)}`}>
+                                                            View all agencies in zip {group.zip} →
+                                                        </a>
+                                                        <div className="map-popup-approx"><span aria-hidden="true">📌 </span>Marker is at the center of this 5-digit zip code area.</div>
                                                     </div>
                                                 ) : (
                                                     <div className="map-popup">
@@ -337,7 +345,7 @@ export function MapPage() {
                                                         {group.facilities[0].City && <div className="map-popup-row">📍 {group.facilities[0].City}{group.facilities[0].County ? `, ${group.facilities[0].County} County` : ''}</div>}
                                                         {group.facilities[0].ZipCode && <div className="map-popup-row">Zip: {group.facilities[0].ZipCode}</div>}
                                                         <div className="map-popup-row">License: {group.facilities[0].LicenseStatus}</div>
-                                                        <div className="map-popup-approx"><span aria-hidden="true">📌 </span>Location shown is the center of zip code area, not an exact address.</div>
+                                                        <div className="map-popup-approx"><span aria-hidden="true">📌 </span>Location shown is the center of 5-digit zip code area, not an exact address.</div>
                                                     </div>
                                                 )}
                                             </Popup>

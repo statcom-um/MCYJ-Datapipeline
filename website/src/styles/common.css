@@ -2168,6 +2168,33 @@ h1 {
     margin-top: 1px;
 }
 
+.map-popup-agency-meta {
+    display: block;
+    margin-top: 1px;
+}
+
+.map-popup-agency-license {
+    font-size: 0.75em;
+    color: #94a3b8;
+    font-family: monospace;
+    margin-right: 6px;
+}
+
+.map-popup-zip-link {
+    display: block;
+    margin-top: 8px;
+    padding-top: 6px;
+    border-top: 1px solid #e5e7eb;
+    font-size: 0.85em;
+    color: #2563eb;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.map-popup-zip-link:hover {
+    text-decoration: underline;
+}
+
 .map-popup-agency-selected {
     background: #eff6ff;
     margin: 0 -8px;

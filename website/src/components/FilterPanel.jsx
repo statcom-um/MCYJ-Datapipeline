@@ -82,6 +82,7 @@ export function FilterPanel({
     uniqueLicenseStatuses = [],
     uniqueAgencyTypes = [],
     uniqueCounties = [],
+    uniqueZipCodes = [],
     totalAgencies,
     totalReports
 }) {
@@ -116,6 +117,9 @@ export function FilterPanel({
         if (filters.county) {
             items.push({ key: 'county', label: filters.county, onRemove: () => onFilterChange('county', null) });
         }
+        if (filters.zipCode) {
+            items.push({ key: 'zipCode', label: `Zip ${filters.zipCode}`, onRemove: () => onFilterChange('zipCode', null) });
+        }
         if (filters.severityLevels && filters.severityLevels.length > 0 && filters.severityLevels.length < ALL_SEVERITY_LEVELS.length) {
             const excluded = ALL_SEVERITY_LEVELS.filter(l => !filters.severityLevels.includes(l));
             const label = excluded.length === 1
@@ -141,6 +145,7 @@ export function FilterPanel({
         onFilterChange('licenseStatus', null);
         onFilterChange('agencyType', null);
         onFilterChange('county', null);
+        onFilterChange('zipCode', null);
         onFilterChange('severityLevels', [...ALL_SEVERITY_LEVELS]);
         onFilterChange('staffingConfidence', null);
         if (filters.keywords.length > 0) onClearAllKeywords();
@@ -377,6 +382,20 @@ export function FilterPanel({
                                     <option value="">All Counties</option>
                                     {uniqueCounties.map(county => (
                                         <option key={county} value={county}>{county}</option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div className="filter-field-group">
+                                <label className="filter-field-label" htmlFor="filterZipCode">5-Digit Zip Code</label>
+                                <select
+                                    id="filterZipCode"
+                                    className="filter-select"
+                                    value={filters.zipCode || ''}
+                                    onChange={(e) => onFilterChange('zipCode', e.target.value || null)}
+                                >
+                                    <option value="">All Zip Codes</option>
+                                    {uniqueZipCodes.map(zip => (
+                                        <option key={zip} value={zip}>{zip}</option>
                                     ))}
                                 </select>
                             </div>
