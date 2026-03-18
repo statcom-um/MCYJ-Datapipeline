@@ -160,10 +160,97 @@ def load_staffing_summaries_csv(csv_path):
     return staffing_by_sha
 
 
+def pick_best_name(names):
+    """Choose the single best agency name from a list of document-extracted names.
+
+    Different documents for the same agency often yield slightly different
+    names due to casing, truncation, or format changes across years.  This
+    function picks the most representative one.
+
+    Algorithm:
+    1. Strip trailing connectors (``-``, ``&``, ``,``) that result from
+       line-break truncation in older extractions.
+    2. Group names by a case-insensitive, whitespace-normalised key.
+    3. Select the group that appears most often (majority vote).
+    4. Within that group pick the **longest** variant.
+    """
+    if not names:
+        return None
+
+    # Clean trailing connectors from old data that may still be in the CSV
+    cleaned = []
+    for n in names:
+        n = re.sub(r'\s*[-&,]+\s*$', '', n).strip()
+        if n:
+            cleaned.append(n)
+    if not cleaned:
+        return None
+
+    # Build groups keyed by lowercased, normalised form
+    groups = defaultdict(list)
+    for name in cleaned:
+        key = ' '.join(name.lower().split())
+        groups[key].append(name)
+
+    # Pick the most common group, break ties by longest key
+    best_key = max(groups, key=lambda k: (len(groups[k]), len(k)))
+    best_group = groups[best_key]
+
+    # Within the winning group, pick the longest variant
+    return max(best_group, key=len)
+
+
+def resolve_agency_display_name(facility_name, document_name):
+    """Determine the front-facing display name for an agency.
+
+    ``facility_name`` comes from ``facility_information.csv`` (the state
+    licensing website) and is considered **authoritative** – it is always
+    correct but sometimes generic (e.g. ``"Eagle Village"``).
+
+    ``document_name`` comes from document PDFs and is often **more
+    informative** (e.g. ``"Eagle Village - Hainley House"``) but may
+    occasionally be wrong.
+
+    Strategy:
+    * If both names are essentially the same (case-insensitive), use the
+      facility name (authoritative).
+    * If the document name is a *more specific* version of the facility
+      name (i.e. it starts with the facility name), prefer the document
+      name because it adds useful detail.
+    * Otherwise fall back to the facility name (authoritative).
+    * If only one source is available, use that.
+
+    The returned name is always uppercased for consistent display across
+    all website views.
+    """
+    if not facility_name:
+        result = document_name or 'Unknown Agency'
+    elif not document_name:
+        result = facility_name
+    else:
+        fac_lower = facility_name.lower().strip()
+        doc_lower = document_name.lower().strip()
+
+        if fac_lower == doc_lower:
+            # Names are essentially the same – use facility (authoritative)
+            result = facility_name
+        elif doc_lower.startswith(fac_lower) and len(doc_lower) > len(fac_lower):
+            # Document name is a more-specific version of the facility name
+            result = document_name
+        elif fac_lower in doc_lower and len(doc_lower) > len(fac_lower):
+            # Facility name is contained within the document name
+            result = document_name
+        else:
+            # Default: authoritative facility name
+            result = facility_name
+
+    return result.upper()
+
+
 def load_document_info_csv(csv_path, sir_summaries=None, sir_violation_levels=None, staffing_summaries=None):
     """Load document info CSV and group by agency."""
     documents_by_agency = defaultdict(list)
-    agency_names = {}  # Map agency_id to agency_name
+    agency_name_lists = defaultdict(list)  # agency_id -> [all names seen]
     unparseable_dates = 0
     
     if sir_summaries is None:
@@ -182,9 +269,9 @@ def load_document_info_csv(csv_path, sir_summaries=None, sir_violation_levels=No
             if not agency_id:
                 continue
             
-            # Track agency name for this ID
-            if agency_id and agency_name:
-                agency_names[agency_id] = agency_name
+            # Collect all names seen for this agency (for best-name voting)
+            if agency_name:
+                agency_name_lists[agency_id].append(agency_name)
             
             sha256 = row.get('sha256', '')
             raw_date = row.get('date', '')
@@ -219,6 +306,13 @@ def load_document_info_csv(csv_path, sir_summaries=None, sir_violation_levels=No
     if unparseable_dates > 0:
         print(f"Warning: Could not parse {unparseable_dates} document date(s)")
     
+    # Select the single best document-extracted name per agency
+    agency_names = {}
+    for agency_id, names in agency_name_lists.items():
+        best = pick_best_name(names)
+        if best:
+            agency_names[agency_id] = best
+
     return documents_by_agency, agency_names
 
 
@@ -244,6 +338,7 @@ def load_facility_information_csv(csv_path):
             facilities_by_license[license_number] = {
                 'LicenseNumber': license_number,
                 'Address': row.get('Address', ''),
+                'FacilityAgencyName': row.get('AgencyName', ''),
                 'AgencyType': row.get('AgencyType', ''),
                 'City': row.get('City', ''),
                 'County': row.get('County', ''),
@@ -372,8 +467,23 @@ def generate_json_files(document_csv, output_dir, sir_summaries_csv=None, sir_vi
     agency_data = []
     
     for agency_id, documents in documents_by_agency.items():
-        # Get agency name from the documents data
-        agency_name = agency_names.get(agency_id, 'Unknown Agency')
+        # Get the best document-extracted name
+        doc_name = agency_names.get(agency_id)
+
+        # Resolve against facility information for the front-facing name.
+        # Prefer FacilityAgencyName (specific program name from state API,
+        # e.g. "Eagle Village - Hainley House") over LicenseeGroupOrganizationName
+        # (parent org, e.g. "Eagle Village Inc").
+        fac_name = None
+        if agency_id in facility_info:
+            fac = facility_info[agency_id]
+            fac_name = (
+                fac.get('FacilityAgencyName', '')
+                or fac.get('LicenseeGroupOrganizationName', '')
+                or None
+            )
+
+        agency_name = resolve_agency_display_name(fac_name, doc_name)
         
         agency_info = {
             'agencyId': agency_id,
@@ -420,9 +530,16 @@ def generate_json_files(document_csv, output_dir, sir_summaries_csv=None, sir_vi
     if facility_info:
         facility_data = []
         for license_number, fac in facility_info.items():
+            fac_name = (
+                fac.get('FacilityAgencyName', '')
+                or fac.get('LicenseeGroupOrganizationName', '')
+                or None
+            )
+            doc_name = agency_names.get(license_number)
+            display_name = resolve_agency_display_name(fac_name, doc_name)
             facility_entry = {
                 'agencyId': license_number,  # Use LicenseNumber as agencyId for consistency
-                'AgencyName': fac.get('LicenseeGroupOrganizationName', '') or agency_names.get(license_number, 'Unknown Agency'),
+                'AgencyName': display_name,
                 **fac
             }
             facility_data.append(facility_entry)

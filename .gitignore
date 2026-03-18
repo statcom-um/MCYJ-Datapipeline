@@ -48,3 +48,4 @@ llm_analysis/scripts/*.log
 Download/
 Downloads/
 uv.lock
+.pytest_cache/
