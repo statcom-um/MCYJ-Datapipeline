@@ -172,8 +172,7 @@ def pick_best_name(names):
        line-break truncation in older extractions.
     2. Group names by a case-insensitive, whitespace-normalised key.
     3. Select the group that appears most often (majority vote).
-    4. Within that group prefer **mixed-case** over ALL-CAPS (more
-       human-readable), then pick the **longest** variant.
+    4. Within that group pick the **longest** variant.
     """
     if not names:
         return None
@@ -197,12 +196,8 @@ def pick_best_name(names):
     best_key = max(groups, key=lambda k: (len(groups[k]), len(k)))
     best_group = groups[best_key]
 
-    # Within the winning group, prefer mixed-case, then longest
-    # Score: (is_mixed_case, length)
-    def sort_key(name):
-        return (not name.isupper(), len(name))
-
-    return max(best_group, key=sort_key)
+    # Within the winning group, pick the longest variant
+    return max(best_group, key=len)
 
 
 def resolve_agency_display_name(facility_name, document_name):
@@ -217,38 +212,39 @@ def resolve_agency_display_name(facility_name, document_name):
     occasionally be wrong.
 
     Strategy:
-    * If both names are essentially the same (case-insensitive), prefer
-      whichever is mixed-case (more readable).
+    * If both names are essentially the same (case-insensitive), use the
+      facility name (authoritative).
     * If the document name is a *more specific* version of the facility
       name (i.e. it starts with the facility name), prefer the document
       name because it adds useful detail.
     * Otherwise fall back to the facility name (authoritative).
     * If only one source is available, use that.
+
+    The returned name is always uppercased for consistent display across
+    all website views.
     """
     if not facility_name:
-        return document_name or 'Unknown Agency'
-    if not document_name:
-        return facility_name
+        result = document_name or 'Unknown Agency'
+    elif not document_name:
+        result = facility_name
+    else:
+        fac_lower = facility_name.lower().strip()
+        doc_lower = document_name.lower().strip()
 
-    fac_lower = facility_name.lower().strip()
-    doc_lower = document_name.lower().strip()
+        if fac_lower == doc_lower:
+            # Names are essentially the same – use facility (authoritative)
+            result = facility_name
+        elif doc_lower.startswith(fac_lower) and len(doc_lower) > len(fac_lower):
+            # Document name is a more-specific version of the facility name
+            result = document_name
+        elif fac_lower in doc_lower and len(doc_lower) > len(fac_lower):
+            # Facility name is contained within the document name
+            result = document_name
+        else:
+            # Default: authoritative facility name
+            result = facility_name
 
-    # Names are essentially the same – prefer the mixed-case version
-    if fac_lower == doc_lower:
-        if facility_name.isupper() and not document_name.isupper():
-            return document_name
-        return facility_name
-
-    # Document name is a more-specific version of the facility name
-    if doc_lower.startswith(fac_lower) and len(doc_lower) > len(fac_lower):
-        return document_name
-
-    # Facility name is contained within the document name (e.g. reordered)
-    if fac_lower in doc_lower and len(doc_lower) > len(fac_lower):
-        return document_name
-
-    # Default: authoritative facility name
-    return facility_name
+    return result.upper()
 
 
 def load_document_info_csv(csv_path, sir_summaries=None, sir_violation_levels=None, staffing_summaries=None):

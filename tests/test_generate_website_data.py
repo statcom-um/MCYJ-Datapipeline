@@ -22,13 +22,11 @@ class TestPickBestName:
     def test_single_name(self):
         assert pick_best_name(["Good Agency"]) == "Good Agency"
 
-    def test_prefers_mixed_case(self):
-        names = ["YOUTH GUIDANCE FOSTER CARE", "Youth Guidance Foster Care", "Youth Guidance Foster Care"]
-        assert pick_best_name(names) == "Youth Guidance Foster Care"
-
     def test_majority_wins(self):
         names = ["Samaritas - Bay", "Samaritas - Bay", "Samaritas - Bay", "SAMARITAS - BAY", "Lutheran Social Services"]
-        assert pick_best_name(names) == "Samaritas - Bay"
+        result = pick_best_name(names)
+        # Majority group is "samaritas - bay" (4 entries), longest is picked
+        assert result.lower() == "samaritas - bay"
 
     def test_longest_in_group(self):
         names = [
@@ -50,12 +48,7 @@ class TestPickBestName:
     def test_strips_trailing_dash(self):
         names = ["WELLSPRING LUTHERAN SERVICES -", "Wellspring Lutheran Services"]
         result = pick_best_name(names)
-        assert result == "Wellspring Lutheran Services"
-
-    def test_mixed_case_preferred_over_all_caps(self):
-        names = ["ENNIS CENTER FOR CHILDREN - FLINT", "Ennis Center for Children - Flint"]
-        result = pick_best_name(names)
-        assert result == "Ennis Center for Children - Flint"
+        assert result.lower() == "wellspring lutheran services"
 
 
 # ---------------------------------------------------------------------------
@@ -64,40 +57,43 @@ class TestPickBestName:
 
 class TestResolveAgencyDisplayName:
     def test_neither_available(self):
-        assert resolve_agency_display_name(None, None) == "Unknown Agency"
+        assert resolve_agency_display_name(None, None) == "UNKNOWN AGENCY"
 
     def test_facility_only(self):
-        assert resolve_agency_display_name("Grant Me Hope", None) == "Grant Me Hope"
+        assert resolve_agency_display_name("Grant Me Hope", None) == "GRANT ME HOPE"
 
     def test_document_only(self):
-        assert resolve_agency_display_name(None, "Youth Guidance Foster Care") == "Youth Guidance Foster Care"
+        assert resolve_agency_display_name(None, "Youth Guidance Foster Care") == "YOUTH GUIDANCE FOSTER CARE"
 
     def test_document_more_specific(self):
         """When doc name starts with facility name, prefer doc (more detail)."""
         result = resolve_agency_display_name("Eagle Village", "Eagle Village - Hainley House")
-        assert result == "Eagle Village - Hainley House"
+        assert result == "EAGLE VILLAGE - HAINLEY HOUSE"
 
     def test_facility_contained_in_doc(self):
         """When facility name is fully contained in doc name, prefer doc."""
         result = resolve_agency_display_name("42nd Circuit Court", "42ND CIRCUIT COURT - FAMILY DIVISION")
-        assert "FAMILY DIVISION" in result
+        assert result == "42ND CIRCUIT COURT - FAMILY DIVISION"
 
     def test_completely_different_prefers_facility(self):
         """When names are unrelated, prefer facility (authoritative)."""
         result = resolve_agency_display_name("Berrien County Trial Court-Family Division", "Berrien County Probate Court")
-        assert result == "Berrien County Trial Court-Family Division"
+        assert result == "BERRIEN COUNTY TRIAL COURT-FAMILY DIVISION"
 
     def test_empty_string_treated_as_none(self):
         """Empty strings should be treated like None."""
-        assert resolve_agency_display_name("", "Some Agency") == "Some Agency"
-        assert resolve_agency_display_name("Some Facility", "") == "Some Facility"
+        assert resolve_agency_display_name("", "Some Agency") == "SOME AGENCY"
+        assert resolve_agency_display_name("Some Facility", "") == "SOME FACILITY"
 
-    def test_same_name_prefers_mixed_case(self):
-        """When names are identical (case-insensitive), prefer mixed-case."""
+    def test_same_name_different_case(self):
+        """When names are identical (case-insensitive), result is ALL CAPS."""
         result = resolve_agency_display_name("EAGLE VILLAGE ASHMUN-SHERK", "Eagle Village Ashmun-Sherk")
-        assert result == "Eagle Village Ashmun-Sherk"
+        assert result == "EAGLE VILLAGE ASHMUN-SHERK"
 
-    def test_same_name_keeps_facility_if_already_mixed(self):
-        """When both are mixed-case, prefer facility (authoritative)."""
-        result = resolve_agency_display_name("Eagle Village - Hainley House", "Eagle Village - Hainley House")
-        assert result == "Eagle Village - Hainley House"
+    def test_all_results_are_uppercased(self):
+        """All results from resolve_agency_display_name should be ALL CAPS."""
+        assert resolve_agency_display_name("eagle village", None).isupper()
+        assert resolve_agency_display_name(None, "eagle village").isupper()
+        assert resolve_agency_display_name("eagle village", "eagle village").isupper()
+        assert resolve_agency_display_name("eagle", "eagle village - house").isupper()
+        assert resolve_agency_display_name("totally different", "some agency").isupper()
