@@ -1,6 +1,8 @@
 name: Run Download Pipeline
 
 on:
+  schedule:
+    - cron: '0 0 1,15 * *'   # Run at midnight UTC on the 1st and 15th of every month
   workflow_dispatch:
     inputs:
       limit:
@@ -47,7 +49,7 @@ jobs:
 
           uv run python ingestion/run.py \
             ${LIMIT_ARG} \
-            --sleep "${{ inputs.sleep_seconds }}"
+            --sleep "${{ inputs.sleep_seconds || '0.5' }}"
 
       - name: Commit and push pipeline outputs
         run: |

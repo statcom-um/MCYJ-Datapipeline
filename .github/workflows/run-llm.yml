@@ -1,6 +1,8 @@
 name: Run LLM
 
 on:
+  schedule:
+    - cron: '0 0 1,15 * *'   # Run at midnight UTC on the 1st and 15th of every month
   workflow_dispatch:
     inputs:
       max_docs:
@@ -29,7 +31,7 @@ jobs:
         run: uv sync
 
       - name: Run LLM analysis
-        run: uv run python llm_analysis/run.py --max-count ${{ inputs.max_docs }}
+        run: uv run python llm_analysis/run.py --max-count ${{ inputs.max_docs || 100 }}
         env:
           OPENROUTER_KEY: ${{ secrets.OPENROUTER_KEY }}
 
