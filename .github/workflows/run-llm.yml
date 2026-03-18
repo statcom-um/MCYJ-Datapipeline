@@ -33,7 +33,7 @@ jobs:
         run: uv sync
 
       - name: Run LLM analysis
-        run: uv run python llm_analysis/run.py --max-count ${{ inputs.max_docs || 100 }}
+        run: uv run python llm_analysis/run.py --max-count ${{ inputs.max_docs || 1000 }}
         env:
           OPENROUTER_KEY: ${{ secrets.OPENROUTER_KEY }}
 
