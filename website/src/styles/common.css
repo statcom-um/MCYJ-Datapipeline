@@ -1103,7 +1103,8 @@ h1 {
 .filter-results-bar {
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
     gap: 8px;
     padding: 12px;
     background: #f8f9fa;
@@ -1111,6 +1112,34 @@ h1 {
     font-size: 0.9em;
     color: #555;
     font-weight: 500;
+}
+
+.filter-results-summary {
+    flex: 1 1 auto;
+    text-align: center;
+}
+
+.filter-sort-controls {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+}
+
+.filter-sort-label {
+    font-size: 0.9em;
+    color: #555;
+    white-space: nowrap;
+}
+
+.filter-sort-select {
+    padding: 4px 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 0.9em;
+    color: #2c3e50;
+    background: white;
+    cursor: pointer;
 }
 
 .filter-results-count {

@@ -21,6 +21,9 @@ export function App() {
     const [currentPage, setCurrentPage] = useState(1);
     const PAGE_SIZE = 25;
     
+    // Sort state: 'alpha' (alphabetical) or 'reports' (by report count descending)
+    const [sortOrder, setSortOrder] = useState('alpha');
+
     // Filter state
     const [filters, setFilters] = useState({
         sirOnly: true,
@@ -51,12 +54,12 @@ export function App() {
         loadData();
     }, []);
 
-    // Apply filters when filters or allAgencies change
+    // Apply filters when filters, allAgencies, or sortOrder change
     useEffect(() => {
         if (allAgencies.length > 0) {
             applyFilters();
         }
-    }, [filters, allAgencies]);
+    }, [filters, allAgencies, sortOrder]);
 
     // Handle URL query string on mount
     useEffect(() => {
@@ -168,6 +171,7 @@ export function App() {
         const lastNMonthsParam = urlParams.get('months');
         const severityParam = urlParams.get('severity');
         const staffingParam = urlParams.get('staffing');
+        const sortParam = urlParams.get('sort');
         
         const newFilters = { ...filters };
         
@@ -220,6 +224,10 @@ export function App() {
             newFilters.keywords = keywords;
         } else if (legacyKeyword) {
             newFilters.keywords = [legacyKeyword];
+        }
+        
+        if (sortParam && ['alpha', 'reports'].includes(sortParam)) {
+            setSortOrder(sortParam);
         }
         
         setFilters(newFilters);
@@ -341,14 +349,33 @@ export function App() {
         // Remove agencies with no reports
         agencies = agencies.filter(agency => agency.total_reports > 0);
         
+        // Sort agencies
+        if (sortOrder === 'reports') {
+            agencies.sort((a, b) => b.total_reports - a.total_reports || (a.AgencyName || '').localeCompare(b.AgencyName || ''));
+        } else {
+            // Default: alphabetical
+            agencies.sort((a, b) => (a.AgencyName || '').localeCompare(b.AgencyName || ''));
+        }
+        
         setFilteredAgencies(agencies);
         setCurrentPage(1);
-    }, [allAgencies, filters]);
+    }, [allAgencies, filters, sortOrder]);
 
     // Filter change handlers
     const handleFilterChange = (key, value) => {
         setFilters(prev => ({ ...prev, [key]: value }));
         updateUrlWithFilters({ ...filters, [key]: value });
+    };
+
+    const handleSortChange = (newSortOrder) => {
+        setSortOrder(newSortOrder);
+        const url = new URL(window.location);
+        if (newSortOrder === 'alpha') {
+            url.searchParams.delete('sort');
+        } else {
+            url.searchParams.set('sort', newSortOrder);
+        }
+        window.history.pushState({}, '', url);
     };
 
     const handleKeywordSearch = (query) => {
@@ -571,6 +598,8 @@ export function App() {
                     uniqueZipCodes={uniqueZipCodes}
                     totalAgencies={totalAgencies}
                     totalReports={totalReports}
+                    sortOrder={sortOrder}
+                    onSortChange={handleSortChange}
                 />
                 
                 <AgencyList

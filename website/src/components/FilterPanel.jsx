@@ -71,6 +71,8 @@ const SEVERITY_LABELS = { low: 'Low', moderate: 'Moderate', severe: 'Severe', no
  * @param {Array} props.uniqueCounties - Available county options
  * @param {number} props.totalAgencies - Total agencies count
  * @param {number} props.totalReports - Total reports count
+ * @param {string} props.sortOrder - Current sort order ('alpha' or 'reports')
+ * @param {Function} props.onSortChange - Callback when sort order changes
  */
 export function FilterPanel({
     filters,
@@ -84,7 +86,9 @@ export function FilterPanel({
     uniqueCounties = [],
     uniqueZipCodes = [],
     totalAgencies,
-    totalReports
+    totalReports,
+    sortOrder = 'alpha',
+    onSortChange
 }) {
     const baseUrl = getBaseUrl();
     const [panelOpen, setPanelOpen] = useState(true);
@@ -469,9 +473,25 @@ export function FilterPanel({
                     </FilterSection>
                 </div>
 
-                {/* Results count bar */}
+                {/* Results count and sort bar */}
                 <div className="filter-results-bar">
-                    Showing <span className="filter-results-count">{totalAgencies}</span> {totalAgencies === 1 ? 'agency' : 'agencies'} with <span className="filter-results-count">{totalReports}</span> {totalReports === 1 ? 'document' : 'documents'}
+                    <span className="filter-results-summary">
+                        Showing <span className="filter-results-count">{totalAgencies}</span> {totalAgencies === 1 ? 'agency' : 'agencies'} with <span className="filter-results-count">{totalReports}</span> {totalReports === 1 ? 'document' : 'documents'}
+                    </span>
+                    {onSortChange && (
+                        <span className="filter-sort-controls">
+                            <label htmlFor="sort-order" className="filter-sort-label">Sort by:</label>
+                            <select
+                                id="sort-order"
+                                className="filter-sort-select"
+                                value={sortOrder}
+                                onChange={(e) => onSortChange(e.target.value)}
+                            >
+                                <option value="alpha">Name (A–Z)</option>
+                                <option value="reports">Most Reports</option>
+                            </select>
+                        </span>
+                    )}
                 </div>
             </div>
         </>
