@@ -1,8 +1,9 @@
 name: Run LLM
 
 on:
-  schedule:
-    - cron: '0 0 1,15 * *'   # Run at midnight UTC on the 1st and 15th of every month
+  workflow_run:
+    workflows: ["Run Download Pipeline"]
+    types: [completed]
   workflow_dispatch:
     inputs:
       max_docs:
@@ -17,6 +18,7 @@ permissions:
 jobs:
   run-llm:
     runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
