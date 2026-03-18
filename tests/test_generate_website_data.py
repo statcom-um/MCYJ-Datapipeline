@@ -91,3 +91,13 @@ class TestResolveAgencyDisplayName:
         """Empty strings should be treated like None."""
         assert resolve_agency_display_name("", "Some Agency") == "Some Agency"
         assert resolve_agency_display_name("Some Facility", "") == "Some Facility"
+
+    def test_same_name_prefers_mixed_case(self):
+        """When names are identical (case-insensitive), prefer mixed-case."""
+        result = resolve_agency_display_name("EAGLE VILLAGE ASHMUN-SHERK", "Eagle Village Ashmun-Sherk")
+        assert result == "Eagle Village Ashmun-Sherk"
+
+    def test_same_name_keeps_facility_if_already_mixed(self):
+        """When both are mixed-case, prefer facility (authoritative)."""
+        result = resolve_agency_display_name("Eagle Village - Hainley House", "Eagle Village - Hainley House")
+        assert result == "Eagle Village - Hainley House"

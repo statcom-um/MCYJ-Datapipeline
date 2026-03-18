@@ -217,6 +217,8 @@ def resolve_agency_display_name(facility_name, document_name):
     occasionally be wrong.
 
     Strategy:
+    * If both names are essentially the same (case-insensitive), prefer
+      whichever is mixed-case (more readable).
     * If the document name is a *more specific* version of the facility
       name (i.e. it starts with the facility name), prefer the document
       name because it adds useful detail.
@@ -230,6 +232,12 @@ def resolve_agency_display_name(facility_name, document_name):
 
     fac_lower = facility_name.lower().strip()
     doc_lower = document_name.lower().strip()
+
+    # Names are essentially the same – prefer the mixed-case version
+    if fac_lower == doc_lower:
+        if facility_name.isupper() and not document_name.isupper():
+            return document_name
+        return facility_name
 
     # Document name is a more-specific version of the facility name
     if doc_lower.startswith(fac_lower) and len(doc_lower) > len(fac_lower):
@@ -466,11 +474,18 @@ def generate_json_files(document_csv, output_dir, sir_summaries_csv=None, sir_vi
         # Get the best document-extracted name
         doc_name = agency_names.get(agency_id)
 
-        # Resolve against facility information for the front-facing name
+        # Resolve against facility information for the front-facing name.
+        # Prefer FacilityAgencyName (specific program name from state API,
+        # e.g. "Eagle Village - Hainley House") over LicenseeGroupOrganizationName
+        # (parent org, e.g. "Eagle Village Inc").
         fac_name = None
         if agency_id in facility_info:
             fac = facility_info[agency_id]
-            fac_name = fac.get('LicenseeGroupOrganizationName', '') or None
+            fac_name = (
+                fac.get('FacilityAgencyName', '')
+                or fac.get('LicenseeGroupOrganizationName', '')
+                or None
+            )
 
         agency_name = resolve_agency_display_name(fac_name, doc_name)
         
@@ -519,7 +534,11 @@ def generate_json_files(document_csv, output_dir, sir_summaries_csv=None, sir_vi
     if facility_info:
         facility_data = []
         for license_number, fac in facility_info.items():
-            fac_name = fac.get('LicenseeGroupOrganizationName', '') or None
+            fac_name = (
+                fac.get('FacilityAgencyName', '')
+                or fac.get('LicenseeGroupOrganizationName', '')
+                or None
+            )
             doc_name = agency_names.get(license_number)
             display_name = resolve_agency_display_name(fac_name, doc_name)
             facility_entry = {
