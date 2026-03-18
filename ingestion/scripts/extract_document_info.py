@@ -102,6 +102,84 @@ def _clean_agency_name(name: str) -> str:
     return name.strip()
 
 
+def _extract_cover_letter_name(header_text: str) -> Optional[str]:
+    """Try to extract the agency name from the cover-letter section.
+
+    Many documents start with a cover letter whose structure is::
+
+        <date>
+        <contact person>
+        <agency name>              ← what we want
+        <street address>
+        <city>, MI <zip>
+        RE: License #: CB…
+
+    The name also sometimes appears right after the ``RE: License #:``
+    line (older document format)::
+
+        RE: License #: CB130201519
+        Youth Guidance Foster Care   ← what we want
+        70 Calhoun Street
+        …
+
+    This function is used as a last-resort fallback when the structured
+    ``Agency Name:`` / ``Name of Facility:`` fields are not found.
+    """
+    # --- Pattern 1: name on the line immediately after "RE: License #: …" ---
+    m = re.search(
+        r'RE?:\s*License\s*#?\s*:\s*[A-Z0-9]+\n([A-Za-z][^\n]+)',
+        header_text,
+        re.IGNORECASE,
+    )
+    if m:
+        candidate = m.group(1).strip()
+        # Reject if it looks like "Dear …:" (greeting, not a name)
+        if not re.match(r'Dear\s', candidate, re.IGNORECASE):
+            name = _clean_agency_name(candidate)
+            if name:
+                return name
+
+    # --- Pattern 2: name on the line *before* "RE: License #:" ---
+    # Walk backwards from the RE: line through the address block to
+    # find the agency name (the first non-address, non-person line).
+    re_match = re.search(r'^RE?:\s*License', header_text, re.IGNORECASE | re.MULTILINE)
+    if re_match:
+        pre_text = header_text[:re_match.start()].rstrip()
+        lines = pre_text.split('\n')
+        # Scan from bottom up: skip blanks, address lines, person names
+        for line in reversed(lines):
+            line = line.strip()
+            if not line:
+                continue
+            # Skip lines that look like street addresses ("123 Main St")
+            if re.match(r'^\d+\s', line):
+                continue
+            # Skip lines that look like "City, MI 49085"
+            if re.match(r'^[A-Za-z ]+,\s*MI', line, re.IGNORECASE):
+                continue
+            # Skip lines that look like a person's name (first last)
+            # Heuristic: 2-3 short words, all title case, no org indicators
+            words = line.split()
+            if 1 < len(words) <= 4 and all(w[0].isupper() and w[1:].islower() for w in words if len(w) > 1):
+                # Likely a person name unless it contains org-ish words
+                if not re.search(r'(?:Center|Services|Village|County|Charities|Home|House|Youth|Children)', line, re.IGNORECASE):
+                    continue
+            # Skip header boilerplate
+            if re.search(r'GOVERNOR|DIRECTOR|LANSING|STATE OF MICHIGAN|DEPARTMENT|HEALTH|HUMAN', line, re.IGNORECASE):
+                continue
+            # Skip date lines
+            if re.match(r'(?:January|February|March|April|May|June|July|August|September|October|November|December)\s+\d', line, re.IGNORECASE):
+                continue
+            if re.match(r'\d{1,2}/\d{1,2}/\d{4}', line):
+                continue
+            # What remains should be the agency name
+            name = _clean_agency_name(line)
+            if name and len(name) > 2:
+                return name
+
+    return None
+
+
 def extract_agency_name(text: str) -> Optional[str]:
     """Extract agency name from document text.
 
@@ -114,6 +192,8 @@ def extract_agency_name(text: str) -> Optional[str]:
     3. ``Name of Facility:`` – the program/facility name (more specific
        than the licensee/parent-org name)
     4. ``Licensee Name:`` – the legal parent organisation (least specific)
+    5. Cover-letter addressee – fallback for documents without structured
+       fields
 
     After capture the name is checked for line-break truncation and
     cleaned of trailing artefacts.
@@ -121,6 +201,7 @@ def extract_agency_name(text: str) -> Optional[str]:
     # Limit to header region to avoid matching names from unrelated sections
     header_text = text[:5000]
 
+    # --- Structured field patterns (preferred) ---
     patterns = [
         r'Agency Name:\s*([^\n]+)',
         r'Name of Agency:\s*([^\n]+)',
@@ -136,7 +217,8 @@ def extract_agency_name(text: str) -> Optional[str]:
             if name:
                 return name
 
-    return None
+    # --- Cover-letter fallback ---
+    return _extract_cover_letter_name(header_text)
 
 
 def extract_document_title(text: str) -> Optional[str]:
