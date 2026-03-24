@@ -75,7 +75,7 @@ export function AgencyCard({ agency, isOpen = false, onToggle, onCopyDocumentLin
                     📋 {agency.total_reports} {agency.total_reports === 1 ? 'Report' : 'Reports'}
                     {agency.filtered_out_count > 0 && (
                         <span style={{ color: '#e67e22' }}>
-                            {' '}({agency.filtered_out_count} filtered out)
+                            {' '}{agency.filtered_out_count} not shown due to your filters.
                         </span>
                     )}
                 </span>
