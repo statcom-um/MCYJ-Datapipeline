@@ -170,7 +170,8 @@ def pick_best_name(names):
     Algorithm:
     1. Strip trailing connectors (``-``, ``&``, ``,``) that result from
        line-break truncation in older extractions.
-    2. Group names by a case-insensitive, whitespace-normalised key.
+    2. Group names by a case-insensitive, whitespace-normalised key
+       (dashes are normalised to `` - `` so spacing variants group together).
     3. Select the group that appears most often (majority vote).
     4. Within that group pick the **longest** variant.
     """
@@ -186,10 +187,14 @@ def pick_best_name(names):
     if not cleaned:
         return None
 
-    # Build groups keyed by lowercased, normalised form
+    # Build groups keyed by lowercased, normalised form.
+    # Normalise dashes so that "FOO- BAR", "FOO -BAR", "FOO -- BAR" etc.
+    # all produce the same key "foo - bar".
     groups = defaultdict(list)
     for name in cleaned:
-        key = ' '.join(name.lower().split())
+        key = name.lower()
+        key = re.sub(r'\s*-+\s*', ' - ', key)
+        key = ' '.join(key.split())
         groups[key].append(name)
 
     # Pick the most common group, break ties by longest key
@@ -244,7 +249,11 @@ def resolve_agency_display_name(facility_name, document_name):
             # Default: authoritative facility name
             result = facility_name
 
-    return result.upper()
+    result = result.upper()
+    # Normalise dash spacing for consistent display (e.g. "FOO- BAR" → "FOO - BAR")
+    result = re.sub(r'\s*-+\s*', ' - ', result)
+    result = ' '.join(result.split())
+    return result
 
 
 def load_document_info_csv(csv_path, sir_summaries=None, sir_violation_levels=None, staffing_summaries=None):
