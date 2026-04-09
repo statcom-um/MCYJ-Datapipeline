@@ -2060,6 +2060,7 @@ h1 {
 .map-main {
     flex: 1;
     min-width: 0;
+    position: relative;
 }
 
 .map-main .leaflet-container {
@@ -2307,6 +2308,71 @@ h1 {
     padding-top: 5px;
     border-top: 1px solid #e5e7eb;
     line-height: 1.35;
+}
+
+/* --- Region overlay controls --- */
+
+.map-overlay-controls {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 1000;
+    background: white;
+    padding: 6px 12px;
+    border-radius: 6px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+    font-size: 0.85em;
+}
+
+.map-overlay-toggle {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    color: #334155;
+    white-space: nowrap;
+    user-select: none;
+}
+
+.map-overlay-toggle input {
+    cursor: pointer;
+}
+
+.map-region-legend {
+    background: white;
+    padding: 10px 14px;
+    border-radius: 6px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+    font-size: 0.8em;
+    line-height: 1.6;
+    color: #334155;
+}
+
+.map-region-legend strong {
+    display: block;
+    margin-bottom: 4px;
+    font-size: 1.05em;
+}
+
+.map-region-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.map-region-legend-swatch {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border-radius: 3px;
+    flex-shrink: 0;
+    border: 1px solid rgba(0,0,0,0.1);
+}
+
+.map-region-tooltip {
+    font-size: 0.85em;
+    font-weight: 600;
+    padding: 4px 8px;
 }
 
 /* --- No data state --- */
