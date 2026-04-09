@@ -388,11 +388,12 @@ def parse_document(text_pages: List[str]) -> Dict[str, Any]:
     }
 
 
-def process_parquet_files(parquet_dir: str, output_csv: str) -> None:
-    """Process parquet files and append new records to CSV.
+def process_parquet_files(parquet_dir: str, output_csv: str, full: bool = False) -> None:
+    """Process parquet files and write records to CSV.
 
-    Only documents whose sha256 is not already in the output CSV are parsed
-    and appended.  Existing rows are never overwritten or removed.
+    By default, only documents whose sha256 is not already in the output CSV
+    are parsed and appended.  With ``full=True`` the existing CSV is removed
+    and every document is re-extracted from scratch.
     """
     parquet_path = Path(parquet_dir)
 
@@ -412,6 +413,9 @@ def process_parquet_files(parquet_dir: str, output_csv: str) -> None:
     # Load existing sha256s from the output CSV so we can skip them
     existing_sha256s: set = set()
     output_path = Path(output_csv)
+    if full and output_path.exists():
+        output_path.unlink()
+        logger.info("Full re-extraction: removed existing CSV")
     if output_path.exists():
         existing_df = pd.read_csv(output_csv, dtype=str, usecols=["sha256"])
         existing_sha256s = set(existing_df["sha256"].dropna())
@@ -493,20 +497,25 @@ def main():
         help="Output CSV file path (default: document_info.csv)"
     )
     parser.add_argument(
+        "--full",
+        action="store_true",
+        help="Re-extract all documents from scratch (ignore existing CSV)"
+    )
+    parser.add_argument(
         "--verbose",
         action="store_true",
         help="Enable verbose debug output"
     )
-    
+
     args = parser.parse_args()
-    
+
     # Configure logging
     logging.basicConfig(
         level=logging.DEBUG if args.verbose else logging.INFO,
         format='%(asctime)s - %(levelname)s - %(message)s'
     )
-    
-    process_parquet_files(args.parquet_dir, args.output)
+
+    process_parquet_files(args.parquet_dir, args.output, full=args.full)
 
 
 if __name__ == "__main__":
