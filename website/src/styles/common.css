@@ -1,4 +1,19 @@
 /* Common styles for MCYJ Dashboard */
+/* =============================================
+   MCYJ Color Theme Variables
+   ============================================= */
+:root {
+    --mcyj-purple: #7B4F9E;
+    --mcyj-blue:   #4AACD4;
+    --mcyj-orange: #F5A623;
+    --mcyj-green:  #4A9B6F;
+    --mcyj-teal:   #7BC4C4;
+    --mcyj-dark:   #1a1a2e;
+    --mcyj-purple-light: #f3eef8;
+    --mcyj-blue-light:   #e8f6fb;
+    --mcyj-orange-light: #fef6e7;
+    --mcyj-green-light:  #eaf4ef;
+}
 
 * {
     margin: 0;
@@ -1635,65 +1650,79 @@ h1 {
     overflow-y: auto;
 }
 
-/* ===========================
-   Navbar
-   =========================== */
-
+/* =============================================
+   Navbar — MCYJ themed
+   ============================================= */
 .navbar {
-    background: #1a252f;
+    background: var(--mcyj-dark);
+    color: white;
     padding: 0;
     position: sticky;
     top: 0;
-    z-index: 100;
+    z-index: 1000;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.18);
+    border-bottom: 3px solid transparent;
+    border-image: linear-gradient(
+        to right,
+        var(--mcyj-purple),
+        var(--mcyj-blue),
+        var(--mcyj-orange),
+        var(--mcyj-green)
+    ) 1;
 }
 
 .navbar-inner {
     max-width: 1400px;
     margin: 0 auto;
+    padding: 0 20px;
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    padding: 0 20px;
+    gap: 8px;
+    min-height: 58px;
 }
 
 .navbar-brand {
-    color: white;
+    font-size: 1.25rem;
+    font-weight: 800;
     text-decoration: none;
-    font-weight: 700;
-    font-size: 1.1em;
-    padding: 12px 0;
-    white-space: nowrap;
+    letter-spacing: -0.01em;
+    margin-right: 16px;
+    display: flex;
+    align-items: center;
 }
 
-.navbar-brand:hover {
-    color: #3498db;
-}
+.navbar-brand-m { color: var(--mcyj-purple); }
+.navbar-brand-c { color: var(--mcyj-blue); }
+.navbar-brand-y { color: var(--mcyj-orange); }
+.navbar-brand-j { color: var(--mcyj-green); }
+.navbar-brand-text { color: #fff; font-weight: 500; }
 
 .navbar-links {
     display: flex;
-    align-items: center;
     gap: 2px;
+    align-items: center;
+    flex: 1;
 }
 
 .navbar-link {
     color: rgba(255,255,255,0.75);
     text-decoration: none;
-    padding: 12px 14px;
-    font-size: 0.9em;
+    padding: 8px 13px;
+    border-radius: 6px;
+    font-size: 0.9rem;
     font-weight: 500;
-    border-radius: 4px;
-    transition: color 0.2s, background 0.2s;
+    transition: background 0.15s, color 0.15s;
     white-space: nowrap;
 }
 
 .navbar-link:hover {
-    color: white;
     background: rgba(255,255,255,0.1);
+    color: #fff;
 }
 
 .navbar-link.active {
-    color: white;
-    background: #3498db;
+    background: var(--mcyj-purple);
+    color: #fff;
 }
 
 .navbar-hamburger {
@@ -1702,34 +1731,87 @@ h1 {
     border: none;
     cursor: pointer;
     padding: 8px;
-    -webkit-tap-highlight-color: transparent;
+    margin-left: auto;
 }
 
 .hamburger-icon {
     display: flex;
     flex-direction: column;
     gap: 5px;
-    width: 24px;
 }
 
 .hamburger-icon span {
     display: block;
+    width: 22px;
     height: 2px;
     background: white;
-    border-radius: 1px;
-    transition: transform 0.3s, opacity 0.3s;
+    border-radius: 2px;
+    transition: transform 0.2s, opacity 0.2s;
 }
 
-.hamburger-icon.open span:nth-child(1) {
-    transform: translateY(7px) rotate(45deg);
+.hamburger-icon.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+.hamburger-icon.open span:nth-child(2) { opacity: 0; }
+.hamburger-icon.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+/* Also update the header background to use MCYJ purple */
+header {
+    background: linear-gradient(135deg, var(--mcyj-purple) 0%, #5a3780 100%);
+    color: white;
+    padding: 28px 0;
+    margin-bottom: 30px;
 }
 
-.hamburger-icon.open span:nth-child(2) {
-    opacity: 0;
+/* Update stat numbers to use MCYJ blue */
+.stat-number {
+    font-size: 2em;
+    font-weight: bold;
+    color: var(--mcyj-blue);
 }
 
-.hamburger-icon.open span:nth-child(3) {
-    transform: translateY(-7px) rotate(-45deg);
+/* Update agency type badge */
+.agency-type {
+    background: var(--mcyj-blue);
+    color: white;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 0.85em;
+}
+
+/* Update document/violation item accent */
+.violation-item, .document-item {
+    background: #f8f9fa;
+    padding: 10px;
+    margin-bottom: 8px;
+    border-radius: 4px;
+    border-left: 3px solid var(--mcyj-blue);
+}
+
+/* Update view document button */
+.view-document-btn {
+    background: var(--mcyj-purple);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-top: 8px;
+    font-size: 0.9em;
+    transition: background 0.2s;
+}
+
+.view-document-btn:hover {
+    background: #6a3d8a;
+}
+
+/* Update back link color */
+.back-link {
+    color: var(--mcyj-purple);
+}
+
+/* Map search result selected state — MCYJ purple */
+.map-search-result.selected {
+    background: var(--mcyj-purple-light);
+    border-left: 3px solid var(--mcyj-purple);
 }
 
 /* ===========================
@@ -2337,13 +2419,20 @@ h1 {
     }
 
     .navbar-inner {
-        flex-wrap: wrap;
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 0 28px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        min-height: 72px;
     }
 
-    .navbar-link {
-        padding: 10px 14px;
-        width: 100%;
-        border-radius: 0;
+    .navbar-links {
+        display: flex;
+        gap: 4px;
+        align-items: center;
+        margin-left: auto;
     }
 
     /* Documents page responsive */
