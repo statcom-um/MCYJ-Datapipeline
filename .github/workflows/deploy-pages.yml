@@ -68,6 +68,11 @@ jobs:
             --keyword-reduction-csv ../llm_analysis/data/violation_curation_keyword_reduction.csv \
             --staffing-summaries-csv ../llm_analysis/data/staffing_summaries.csv
 
+      - name: Generate AI methodology data
+        run: |
+          cd website
+          uv run python generate_ai_methodology.py
+
       - name: Build website
         run: |
           cd website
