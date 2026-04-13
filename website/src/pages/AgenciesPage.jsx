@@ -515,9 +515,9 @@ export function AgenciesPage() {
 
     return (
         <>
-            <Header 
-                title="Michigan Child Welfare Licensing Dashboard" 
-                subtitle="Agency Documents and Reports" 
+            <Header
+                title="Agency View"
+                subtitle="Browse and filter Michigan licensed child welfare agencies and their investigation reports"
             />
             <div className="container">
                 <AboutSection />
