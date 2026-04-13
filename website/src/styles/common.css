@@ -1394,11 +1394,11 @@ h1 {
 }
 
 .about-methodology-link {
-    display: inline-block;
+    display: block;
     color: #3498db;
     text-decoration: none;
     font-weight: 600;
-    margin-left: 6px;
+    margin-top: 12px;
     transition: color 0.2s;
 }
 

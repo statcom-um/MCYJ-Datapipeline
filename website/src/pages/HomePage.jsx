@@ -141,34 +141,51 @@ export function HomePage() {
                         </p>
                     </div>
 
-                    <div style={{ background: 'white', border: '1px solid #eee', borderRadius: '16px', padding: '32px', boxShadow: '0 4px 24px rgba(0,0,0,0.06)' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
-                            <span style={{ fontSize: '2rem' }}>⚖️</span>
-                            <strong style={{ color: 'var(--text-dark)', fontSize: '1.05rem' }}>Michigan Center for Youth Justice</strong>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                        <div style={{ background: 'white', border: '1px solid #eee', borderRadius: '16px', padding: '28px', boxShadow: '0 4px 24px rgba(0,0,0,0.06)' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
+                                <span style={{ fontSize: '2rem' }}>🏛️</span>
+                                <strong style={{ color: 'var(--text-dark)', fontSize: '1.05rem' }}>Michigan Department of Health and Human Services</strong>
+                            </div>
+                            <p style={{ color: '#555', lineHeight: 1.7, marginBottom: '12px', fontSize: '0.97rem' }}>
+                                MDHHS oversees the licensing of child welfare agencies in Michigan.
+                                Licensing documents and special investigation reports are public record.
+                            </p>
+                            <a href="https://michildwelfarepubliclicensingsearch.michigan.gov/licagencysrch/" target="_blank" rel="noopener noreferrer"
+                                style={{ color: 'var(--accent)', fontWeight: 600, fontSize: '0.92rem', textDecoration: 'none' }}>
+                                Public Licensing Search →
+                            </a>
                         </div>
-                        <p style={{ color: '#555', lineHeight: 1.7, marginBottom: '12px', fontSize: '0.97rem' }}>
-                            MCYJ works to transform Michigan's youth justice system by advocating for
-                            evidence-based policies and supporting system-involved youth and their families.
-                        </p>
-                        <a href="https://www.miyouthjustice.org/" target="_blank" rel="noopener noreferrer"
-                            style={{ color: 'var(--accent)', fontWeight: 600, fontSize: '0.92rem', textDecoration: 'none' }}>
-                            Visit MCYJ Website →
-                        </a>
 
-                        <hr style={{ border: 'none', borderTop: '1px solid #eee', margin: '24px 0' }} />
-
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
-                            <span style={{ fontSize: '2rem' }}>🎓</span>
-                            <strong style={{ color: 'var(--text-dark)', fontSize: '1.05rem' }}>STATCOM — University of Michigan</strong>
+                        <div style={{ background: 'white', border: '1px solid #eee', borderRadius: '16px', padding: '28px', boxShadow: '0 4px 24px rgba(0,0,0,0.06)' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
+                                <span style={{ fontSize: '2rem' }}>⚖️</span>
+                                <strong style={{ color: 'var(--text-dark)', fontSize: '1.05rem' }}>Michigan Center for Youth Justice</strong>
+                            </div>
+                            <p style={{ color: '#555', lineHeight: 1.7, marginBottom: '12px', fontSize: '0.97rem' }}>
+                                MCYJ works to transform Michigan's youth justice system by advocating for
+                                evidence-based policies and supporting system-involved youth and their families.
+                            </p>
+                            <a href="https://www.miyouthjustice.org/" target="_blank" rel="noopener noreferrer"
+                                style={{ color: 'var(--accent)', fontWeight: 600, fontSize: '0.92rem', textDecoration: 'none' }}>
+                                Visit MCYJ Website →
+                            </a>
                         </div>
-                        <p style={{ color: '#555', lineHeight: 1.7, marginBottom: '12px', fontSize: '0.97rem' }}>
-                            Statistics in the Community (STATCOM) is a student-led consulting group
-                            providing pro bono statistical analysis to nonprofits and government agencies.
-                        </p>
-                        <a href="https://sph.umich.edu/biostat/statcom/" target="_blank" rel="noopener noreferrer"
-                            style={{ color: 'var(--accent)', fontWeight: 600, fontSize: '0.92rem', textDecoration: 'none' }}>
-                            Visit STATCOM Website →
-                        </a>
+
+                        <div style={{ background: 'white', border: '1px solid #eee', borderRadius: '16px', padding: '28px', boxShadow: '0 4px 24px rgba(0,0,0,0.06)' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
+                                <span style={{ fontSize: '2rem' }}>🎓</span>
+                                <strong style={{ color: 'var(--text-dark)', fontSize: '1.05rem' }}>STATCOM — University of Michigan</strong>
+                            </div>
+                            <p style={{ color: '#555', lineHeight: 1.7, marginBottom: '12px', fontSize: '0.97rem' }}>
+                                Statistics in the Community (STATCOM) is a student-led consulting group
+                                providing pro bono statistical analysis to nonprofits and government agencies.
+                            </p>
+                            <a href="https://sph.umich.edu/biostat/statcom/" target="_blank" rel="noopener noreferrer"
+                                style={{ color: 'var(--accent)', fontWeight: 600, fontSize: '0.92rem', textDecoration: 'none' }}>
+                                Visit STATCOM Website →
+                            </a>
+                        </div>
                     </div>
                 </div>
             </section>
