@@ -316,7 +316,7 @@ export function FilterPanel({
                             onToggle={toggleSection}
                         >
                             <p className="filter-note" style={{ marginTop: 0, marginBottom: '10px' }}>
-                                Filter by how confident the analysis is that staffing was a factor.
+                                Filter by how confident the analysis is that staffing was a factor in a substantiated violation.
                             </p>
                             <select
                                 id="filterStaffingConfidence"

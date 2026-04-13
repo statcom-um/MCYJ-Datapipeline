@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Header, FilterPanel, AgencyList, Loading, Error, Pagination } from '../components/index.js';
 import { AutocompleteInput } from '../components/AutocompleteInput.jsx';
-import { AiCaution } from '../components/AiCaution.jsx';
+import { AboutSection } from '../components/AboutSection.jsx';
 import { Trie } from '../trie.js';
 import { getBaseUrl, ACTIVE_LICENSE_STATUSES, ALL_SEVERITY_LEVELS, copyToClipboard } from '../utils/helpers.js';
 
@@ -9,9 +9,9 @@ const BASE_URL = getBaseUrl();
 const DOM_READY_DELAY = 100;
 
 /**
- * Main App component for the dashboard
+ * AgenciesPage — browse and filter agencies and their reports
  */
-export function App() {
+export function AgenciesPage() {
     // State
     const [allAgencies, setAllAgencies] = useState([]);
     const [filteredAgencies, setFilteredAgencies] = useState([]);
@@ -489,8 +489,8 @@ export function App() {
         return (
             <>
                 <Header 
-                    title="Michigan Child Welfare Licensing Dashboard" 
-                    subtitle="Agency Documents and Reports" 
+                    title="Agency View"
+                    subtitle="Browse and filter Michigan licensed child welfare agencies and their investigation reports" 
                 />
                 <div className="container">
                     <Loading message="Loading data..." />
@@ -503,8 +503,8 @@ export function App() {
         return (
             <>
                 <Header 
-                    title="Michigan Child Welfare Licensing Dashboard" 
-                    subtitle="Agency Documents and Reports" 
+                    title="Agency View"
+                    subtitle="Browse and filter Michigan licensed child welfare agencies and their investigation reports" 
                 />
                 <div className="container">
                     <Error message={error} />
@@ -520,6 +520,7 @@ export function App() {
                 subtitle="Agency Documents and Reports" 
             />
             <div className="container">
+                <AboutSection />
 
                 {/* Agency Search — redirects to dedicated agency page */}
                 <div className="agency-search-bar">
@@ -578,4 +579,4 @@ export function App() {
     );
 }
 
-export default App;
+export default AgenciesPage;

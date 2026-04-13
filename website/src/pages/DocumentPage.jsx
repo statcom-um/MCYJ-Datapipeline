@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Header, Loading, Error } from '../components/index.js';
 import { KeywordBadgeList } from '../components/KeywordBadge.jsx';
 import { AiCaution } from '../components/AiCaution.jsx';
+import { AboutSection } from '../components/AboutSection.jsx';
 import { getBaseUrl, copyToClipboard, escapeHtml } from '../utils/helpers.js';
 
 const BASE_URL = getBaseUrl();
@@ -262,7 +263,8 @@ export function DocumentPage() {
                 subtitle="Michigan Child Welfare Licensing Dashboard" 
             />
             <div className="container">
-                
+                <AboutSection />
+
                 {error && <Error message={error} />}
                 
                 {showSearch && (

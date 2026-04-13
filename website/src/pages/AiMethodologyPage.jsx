@@ -194,6 +194,19 @@ export function AiMethodologyPage() {
                             All documents analyzed come from the Michigan Department of Licensing and Regulatory Affairs
                             (LARA) public API. Raw documents are available for verification on the individual document pages.
                         </p>
+                        <p>
+                            Source documents can also be found through the{' '}
+                            <a href="https://michildwelfarepubliclicensingsearch.michigan.gov/licagencysrch/" target="_blank" rel="noopener noreferrer">
+                                Michigan Child Welfare Public Licensing Search
+                            </a>.
+                        </p>
+                        <p>
+                            The full source code for this project — including the data pipeline, LLM analysis,
+                            and this website — is available on{' '}
+                            <a href="https://github.com/statcom-um/MCYJ-Datapipeline" target="_blank" rel="noopener noreferrer">
+                                GitHub
+                            </a>.
+                        </p>
                     </div>
                 </div>
             </div>

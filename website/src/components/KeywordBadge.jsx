@@ -66,8 +66,8 @@ export function KeywordBadgeList({ keywords, onRemove, maxDisplay = 5, small = f
                 <span style={{ fontSize: '0.8em', color: '#666', marginRight: '4px' }}>🏷️</span>
             )}
             {displayKeywords.map((keyword, index) => (
-                <KeywordBadge 
-                    key={keyword || index}
+                <KeywordBadge
+                    key={`${keyword}-${index}`}
                     keyword={keyword}
                     onRemove={onRemove}
                     small={small}

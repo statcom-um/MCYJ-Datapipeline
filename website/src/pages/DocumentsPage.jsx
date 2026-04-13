@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Header, Loading, Error, Pagination } from '../components/index.js';
 import { AiCaution } from '../components/AiCaution.jsx';
+import { AboutSection } from '../components/AboutSection.jsx';
 import { getBaseUrl, ALL_SEVERITY_LEVELS } from '../utils/helpers.js';
 
 const BASE_URL = getBaseUrl();
@@ -172,6 +173,8 @@ export function DocumentsPage() {
         <>
             <Header title="All Documents" subtitle="Browse all documents across agencies" />
             <div className="container">
+                <AboutSection />
+
                 <div className="documents-page-container">
                     <div className="documents-filters">
                         <div className="documents-filter-row">
