@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, GeoJSON, useMap } from 'react-leaflet';
 import MarkerClusterGroup from 'react-leaflet-cluster';
 import L from 'leaflet';
 import { Header, Loading, Error } from '../components/index.js';
@@ -8,6 +8,19 @@ import { getBaseUrl } from '../utils/helpers.js';
 const BASE_URL = getBaseUrl();
 
 const FLY_ANIMATION_MS = 900;
+
+const REGION_COLORS = {
+    1:  '#2196F3',  // UP – blue
+    2:  '#8BC34A',  // NW – light green
+    3:  '#FF9800',  // NE – orange
+    4:  '#9C27B0',  // West – purple
+    5:  '#00BCD4',  // East Central – cyan
+    6:  '#FF5722',  // East – deep orange
+    7:  '#4CAF50',  // South Central – green
+    8:  '#F44336',  // SW – red
+    9:  '#FFEB3B',  // SE – yellow
+    10: '#E91E63',  // Detroit Metro – pink
+};
 
 function getSearchPlaceholder(field) {
     if (field === 'zip') return 'Enter zip code…';
@@ -94,6 +107,39 @@ function groupByZip(facilities) {
     return Array.from(groups.values());
 }
 
+const REGION_NAMES = {
+    1: 'Upper Peninsula',
+    2: 'Northwest',
+    3: 'Northeast',
+    4: 'West Michigan',
+    5: 'East Central',
+    6: 'East Michigan',
+    7: 'South Central',
+    8: 'Southwest',
+    9: 'Southeast',
+    10: 'Detroit Metro',
+};
+
+function RegionLegend() {
+    const map = useMap();
+    useEffect(() => {
+        const legend = L.control({ position: 'bottomright' });
+        legend.onAdd = () => {
+            const div = L.DomUtil.create('div', 'map-region-legend');
+            div.innerHTML = '<strong>Prosperity Regions</strong>' +
+                Object.entries(REGION_NAMES).map(([num, name]) =>
+                    `<div class="map-region-legend-item">` +
+                    `<span class="map-region-legend-swatch" style="background:${REGION_COLORS[num]}"></span>` +
+                    `${num}. ${name}</div>`
+                ).join('');
+            return div;
+        };
+        legend.addTo(map);
+        return () => legend.remove();
+    }, [map]);
+    return null;
+}
+
 export function MapPage() {
     const [facilities, setFacilities] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -102,11 +148,22 @@ export function MapPage() {
     const [searchField, setSearchField] = useState('all');
     const [selectedId, setSelectedId] = useState(null);
     const [flyTarget, setFlyTarget] = useState(null);
+    const [showRegions, setShowRegions] = useState(false);
+    const [regionsGeoJSON, setRegionsGeoJSON] = useState(null);
     const markerRefs = useRef({});
 
     useEffect(() => {
         loadData();
     }, []);
+
+    useEffect(() => {
+        if (showRegions && !regionsGeoJSON) {
+            fetch(`${BASE_URL}data/prosperity_regions.geojson`)
+                .then(r => r.ok ? r.json() : null)
+                .then(data => { if (data) setRegionsGeoJSON(data); })
+                .catch(() => {});
+        }
+    }, [showRegions, regionsGeoJSON]);
 
     const loadData = async () => {
         try {
@@ -272,6 +329,16 @@ export function MapPage() {
 
                     {/* Map */}
                     <div className="map-main">
+                        <div className="map-overlay-controls">
+                            <label className="map-overlay-toggle">
+                                <input
+                                    type="checkbox"
+                                    checked={showRegions}
+                                    onChange={(e) => setShowRegions(e.target.checked)}
+                                />
+                                Show Prosperity Regions
+                            </label>
+                        </div>
                         <MapContainer
                             center={[44.3148, -85.6024]}
                             zoom={7}
@@ -281,6 +348,26 @@ export function MapPage() {
                                 attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &amp; <a href="https://carto.com/">CARTO</a>'
                                 url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
                             />
+                            {showRegions && regionsGeoJSON && (
+                                <GeoJSON
+                                    key="prosperity-regions"
+                                    data={regionsGeoJSON}
+                                    style={(feature) => ({
+                                        fillColor: REGION_COLORS[feature.properties.region_number] || '#ccc',
+                                        fillOpacity: 0.25,
+                                        color: '#555',
+                                        weight: 1.5,
+                                    })}
+                                    onEachFeature={(feature, layer) => {
+                                        layer.bindTooltip(feature.properties.region_name, {
+                                            permanent: false,
+                                            direction: 'center',
+                                            className: 'map-region-tooltip',
+                                        });
+                                    }}
+                                />
+                            )}
+                            {showRegions && regionsGeoJSON && <RegionLegend />}
                             {flyTarget && <FlyTo position={flyTarget.position} zoom={flyTarget.zoom} />}
                             <MarkerClusterGroup
                                 chunkedLoading
