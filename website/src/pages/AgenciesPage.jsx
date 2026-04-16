@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Header, FilterPanel, AgencyList, Loading, Error, Pagination } from '../components/index.js';
 import { AutocompleteInput } from '../components/AutocompleteInput.jsx';
-import { AiCaution } from '../components/AiCaution.jsx';
+import { AboutSection } from '../components/AboutSection.jsx';
 import { Trie } from '../trie.js';
 import { getBaseUrl, ACTIVE_LICENSE_STATUSES, ALL_SEVERITY_LEVELS, copyToClipboard } from '../utils/helpers.js';
 
@@ -9,9 +9,9 @@ const BASE_URL = getBaseUrl();
 const DOM_READY_DELAY = 100;
 
 /**
- * Main App component for the dashboard
+ * AgenciesPage — browse and filter agencies and their reports
  */
-export function App() {
+export function AgenciesPage() {
     // State
     const [allAgencies, setAllAgencies] = useState([]);
     const [filteredAgencies, setFilteredAgencies] = useState([]);
@@ -176,7 +176,6 @@ export function App() {
         const newFilters = { ...filters };
         
         if (agencyId) {
-            // Redirect to the dedicated agency page
             window.location.href = `${BASE_URL}agency.html?id=${encodeURIComponent(agencyId)}`;
             return;
         }
@@ -236,7 +235,6 @@ export function App() {
     const applyFilters = useCallback(() => {
         let agencies = JSON.parse(JSON.stringify(allAgencies));
         
-        // Calculate cutoff date for lastNMonths filter
         let cutoffDate = null;
         if (filters.lastNMonths) {
             const now = new Date();
@@ -244,7 +242,6 @@ export function App() {
             cutoffDate.setMonth(cutoffDate.getMonth() - filters.lastNMonths);
         }
         
-        // Apply facility-level filters
         agencies = agencies.filter(agency => {
             const facility = agency.facility;
             
@@ -282,7 +279,6 @@ export function App() {
             return true;
         });
         
-        // Apply document-level filters
         agencies = agencies.map(agency => {
             if (!agency.documents || !Array.isArray(agency.documents)) {
                 return agency;
@@ -295,7 +291,6 @@ export function App() {
                     return false;
                 }
                 
-                // Filter by last N months using date_iso field
                 if (cutoffDate && d.date_iso) {
                     const docDate = new Date(d.date_iso);
                     if (docDate < cutoffDate) {
@@ -303,8 +298,6 @@ export function App() {
                     }
                 }
                 
-                // Filter by severity levels (only applies when sirOnly is true)
-                // Only filter when not all levels are selected (i.e. user unchecked something)
                 if (filters.sirOnly && filters.severityLevels.length < ALL_SEVERITY_LEVELS.length) {
                     const docLevel = d.sir_violation_level?.level?.toLowerCase();
                     const effectiveLevel = docLevel || 'none';
@@ -313,7 +306,6 @@ export function App() {
                     }
                 }
                 
-                // Filter by staffing confidence
                 if (filters.staffingConfidence && filters.sirOnly) {
                     const staffing = d.staffing_summary;
                     if (!staffing) return false;
@@ -346,14 +338,11 @@ export function App() {
             };
         });
         
-        // Remove agencies with no reports
         agencies = agencies.filter(agency => agency.total_reports > 0);
         
-        // Sort agencies
         if (sortOrder === 'reports') {
             agencies.sort((a, b) => b.total_reports - a.total_reports || (a.AgencyName || '').localeCompare(b.AgencyName || ''));
         } else {
-            // Default: alphabetical
             agencies.sort((a, b) => (a.AgencyName || '').localeCompare(b.AgencyName || ''));
         }
         
@@ -361,7 +350,6 @@ export function App() {
         setCurrentPage(1);
     }, [allAgencies, filters, sortOrder]);
 
-    // Filter change handlers
     const handleFilterChange = (key, value) => {
         setFilters(prev => ({ ...prev, [key]: value }));
         updateUrlWithFilters({ ...filters, [key]: value });
@@ -408,17 +396,10 @@ export function App() {
 
     const handleAgencySelect = (suggestion) => {
         const agencyId = agencyIdMapRef.current.get(suggestion.keyword.toLowerCase()) || '';
-        // Redirect to the dedicated agency page
         window.location.href = `${BASE_URL}agency.html?id=${encodeURIComponent(agencyId)}`;
     };
 
-    const handleAgencyRemove = () => {
-        // No longer used for filtering — agency search redirects to agency page
-    };
-
     const handleToggleAgency = (agencyId) => {
-        // Only open a new agency card, don't close an already open one by clicking it
-        // Cards are closed only by opening a different card or changing filters
         if (openAgencyId !== agencyId) {
             setOpenAgencyId(agencyId);
         }
@@ -448,17 +429,14 @@ export function App() {
     const updateUrlWithFilters = (newFilters) => {
         const url = new URL(window.location);
         
-        // Update keywords
         url.searchParams.delete('keyword');
         url.searchParams.delete('keywords');
         if (newFilters.keywords.length > 0) {
             url.searchParams.set('keywords', newFilters.keywords.join(','));
         }
         
-        // Agency is now handled by separate page, remove from URL
         url.searchParams.delete('agency');
         
-        // Update facility filters
         if (newFilters.licenseStatus) {
             url.searchParams.set('licensestatus', newFilters.licenseStatus);
         } else {
@@ -483,21 +461,18 @@ export function App() {
             url.searchParams.delete('zip');
         }
         
-        // Update lastNMonths filter
         if (newFilters.lastNMonths) {
             url.searchParams.set('months', newFilters.lastNMonths.toString());
         } else {
             url.searchParams.delete('months');
         }
         
-        // Update severity levels filter (only set URL param when not all are selected)
         if (newFilters.severityLevels && newFilters.severityLevels.length > 0 && newFilters.severityLevels.length < ALL_SEVERITY_LEVELS.length) {
             url.searchParams.set('severity', newFilters.severityLevels.join(','));
         } else {
             url.searchParams.delete('severity');
         }
         
-        // Update staffing confidence filter
         if (newFilters.staffingConfidence) {
             url.searchParams.set('staffing', newFilters.staffingConfidence);
         } else {
@@ -507,7 +482,6 @@ export function App() {
         window.history.pushState({}, '', url);
     };
 
-    // Calculate stats
     const totalAgencies = filteredAgencies.length;
     const totalReports = filteredAgencies.reduce((sum, a) => sum + a.total_reports, 0);
 
@@ -515,8 +489,8 @@ export function App() {
         return (
             <>
                 <Header 
-                    title="Michigan Child Welfare Licensing Dashboard" 
-                    subtitle="Agency Documents and Reports" 
+                    title="Agency View"
+                    subtitle="Browse and filter Michigan licensed child welfare agencies and their investigation reports" 
                 />
                 <div className="container">
                     <Loading message="Loading data..." />
@@ -529,8 +503,8 @@ export function App() {
         return (
             <>
                 <Header 
-                    title="Michigan Child Welfare Licensing Dashboard" 
-                    subtitle="Agency Documents and Reports" 
+                    title="Agency View"
+                    subtitle="Browse and filter Michigan licensed child welfare agencies and their investigation reports" 
                 />
                 <div className="container">
                     <Error message={error} />
@@ -541,33 +515,12 @@ export function App() {
 
     return (
         <>
-            <Header 
-                title="Michigan Child Welfare Licensing Dashboard" 
-                subtitle="Agency Documents and Reports" 
+            <Header
+                title="Agency View"
+                subtitle="Browse and filter Michigan licensed child welfare agencies and their investigation reports"
             />
             <div className="container">
-                {/* About Section */}
-                <div className="about-section">
-                    <h2>About This Dashboard</h2>
-                    <p>
-                        This dashboard aggregates publicly available child welfare licensing documents
-                        from the Michigan Department of Licensing and Regulatory Affairs (LARA).
-                        It is designed for advocates, researchers, and journalists who want to
-                        explore trends and surface potential patterns across facilities. While utilizing
-                        this tool, it is important to remember that licensing investigations reflect
-                        findings at a specific point in time and do not alone indicate current quality of care.
-                    </p>
-                    <p>
-                        <AiCaution label="AI is used on this site" />{' '}
-                        Some content on this dashboard — including document summaries, severity classifications,
-                        and staffing analysis — is generated by artificial intelligence.
-                        Wherever you see the <AiCaution /> symbol, AI was involved.
-                        Always refer to the full report document that is linked.
-                        <a href={`${BASE_URL}ai-methodology.html`} className="about-methodology-link">
-                            Learn about our AI methodology →
-                        </a>
-                    </p>
-                </div>
+                <AboutSection />
 
                 {/* Agency Search — redirects to dedicated agency page */}
                 <div className="agency-search-bar">
@@ -626,4 +579,4 @@ export function App() {
     );
 }
 
-export default App;
+export default AgenciesPage;

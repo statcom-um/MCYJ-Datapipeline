@@ -1,6 +1,6 @@
 # Michigan Child Welfare Licensing Dashboard
 
-A lightweight web dashboard built with Vite + React to display Michigan child welfare agency documents and reports. Main is live [here](https://statcom-um.github.io/MCYJ-Datapipeline/) and production is live [here](https://statcom-mcyj-datapipeline.netlify.app/).
+A lightweight web dashboard built with Vite + React to display Michigan child welfare agency documents and reports. The site includes a Home/About page and an interactive agency dashboard with maps, keyword analysis, and document tracking. Main is live [here](https://statcom-um.github.io/MCYJ-Datapipeline/) and production is live [here](https://statcom-mcyj-datapipeline.netlify.app/).
 
 ## Features
 
@@ -95,7 +95,8 @@ The dashboard reads data from the upstream pipeline directories:
 
 ```
 website/
-├── index.html               # Main HTML file (agency directory)
+├── index.html               # Home / About page
+├── dashboard.html           # Agency list dashboard
 ├── document.html            # Document detail page
 ├── facilities.html          # Facility detail page
 ├── keywords.html            # Keywords analysis page

@@ -1,7 +1,5 @@
 // Export all page components
-export { App } from './App.jsx';
-export { FacilitiesPage } from './FacilitiesPage.jsx';
-export { KeywordsPage } from './KeywordsPage.jsx';
+export { AgenciesPage } from './AgenciesPage.jsx';
 export { DocumentPage } from './DocumentPage.jsx';
 export { DocumentsPage } from './DocumentsPage.jsx';
 export { MapPage } from './MapPage.jsx';

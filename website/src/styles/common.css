@@ -1,5 +1,16 @@
 /* Common styles for MCYJ Dashboard */
 
+:root {
+    --accent: #3498db;
+    --accent-dark: #2c3e50;
+    --accent-muted: #5a7a94;
+    --accent-light: #eaf2f8;
+    --text-dark: #2c3e50;
+    --text-muted: #666;
+    --warning: #c8850e;
+    --warning-bg: #fff8e1;
+}
+
 * {
     margin: 0;
     padding: 0;
@@ -1383,11 +1394,11 @@ h1 {
 }
 
 .about-methodology-link {
-    display: inline-block;
+    display: block;
     color: #3498db;
     text-decoration: none;
     font-weight: 600;
-    margin-left: 6px;
+    margin-top: 12px;
     transition: color 0.2s;
 }
 
@@ -2318,9 +2329,8 @@ h1 {
     font-size: 1.1em;
 }
 
-/* Mobile adjustments for new components */
-@media (max-width: 768px) {
-    /* Navbar responsive */
+/* Navbar collapse — kick in before links overflow */
+@media (max-width: 1100px) {
     .navbar-hamburger {
         display: block;
     }
@@ -2345,6 +2355,10 @@ h1 {
         width: 100%;
         border-radius: 0;
     }
+}
+
+/* Mobile adjustments for new components */
+@media (max-width: 768px) {
 
     /* Documents page responsive */
     .documents-filter-row {
