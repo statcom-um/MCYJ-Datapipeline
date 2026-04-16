@@ -44,12 +44,13 @@ jobs:
 
           git add llm_analysis/data/sir_summaries.csv \
                   llm_analysis/data/sir_violation_levels.csv \
-                  llm_analysis/data/staffing_summaries.csv || true
+                  llm_analysis/data/staffing_summaries.csv \
+                  llm_analysis/data/keyword_labels.csv || true
 
           if git diff --cached --quiet; then
             echo "No LLM output changes to commit."
             exit 0
           fi
 
-          git commit -m "Update SIR summaries, violation levels, and staffing summaries"
+          git commit -m "Update SIR summaries, violation levels, staffing summaries, and keyword labels"
           git push origin "HEAD:${GITHUB_REF_NAME}"

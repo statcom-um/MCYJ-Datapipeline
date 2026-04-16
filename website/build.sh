@@ -13,7 +13,7 @@ python3 generate_website_data.py \
   --document-csv ../ingestion/data/document_info.csv \
   --sir-summaries-csv ../llm_analysis/data/sir_summaries.csv \
   --sir-violation-levels-csv ../llm_analysis/data/sir_violation_levels.csv \
-  --keyword-reduction-csv ../llm_analysis/data/violation_curation_keyword_reduction.csv \
+  --keyword-labels-csv ../llm_analysis/data/keyword_labels.csv \
   --facility-info-csv ../ingestion/data/facility_information.csv \
   --staffing-summaries-csv ../llm_analysis/data/staffing_summaries.csv \
   --gazetteer-zip ../public/2025_Gaz_zcta_national.zip \
@@ -27,7 +27,7 @@ python3 export_parquet_to_json.py \
   --document-csv ../ingestion/data/document_info.csv \
   --sir-summaries-csv ../llm_analysis/data/sir_summaries.csv \
   --sir-violation-levels-csv ../llm_analysis/data/sir_violation_levels.csv \
-  --keyword-reduction-csv ../llm_analysis/data/violation_curation_keyword_reduction.csv \
+  --keyword-labels-csv ../llm_analysis/data/keyword_labels.csv \
   --staffing-summaries-csv ../llm_analysis/data/staffing_summaries.csv
 
 echo ""

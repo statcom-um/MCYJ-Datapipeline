@@ -10,7 +10,8 @@ const BASE_URL = getBaseUrl();
  */
 const THEMING_DISPLAY_NAMES = {
     sir_theming: 'SIR Severity Classification Criteria',
-    staffing_theming: 'Staffing Violation Analysis Prompt'
+    staffing_theming: 'Staffing Violation Analysis Prompt',
+    keywords: 'Keyword Labeling Prompt'
 };
 
 const QUERY_DISPLAY_NAMES = {
@@ -148,6 +149,15 @@ export function AiMethodologyPage() {
                                 <p>
                                     AI determines whether violations were primarily caused by staffing issues
                                     such as understaffing, ratio gaps, or coverage failures, with a confidence rating.
+                                </p>
+                            </div>
+                            <div className="methodology-task-card">
+                                <h4>4. Keyword Labeling</h4>
+                                <p>
+                                    For SIRs with substantiated violations, AI evaluates a fixed list of violation
+                                    categories (e.g. restraint, seclusion, medical neglect, youth-on-youth violence)
+                                    and labels each as applying, not applying, or uncertain — with supporting citations
+                                    from the report.
                                 </p>
                             </div>
                         </div>

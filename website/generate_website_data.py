@@ -18,7 +18,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, Optional
 
-from keyword_reduction import load_keyword_reduction_map, apply_keyword_reduction
+from keyword_labels import load_effective_keywords
 
 
 def parse_document_date(date_str: str) -> Optional[str]:
@@ -86,41 +86,35 @@ def load_sir_summaries_csv(csv_path):
     return summaries_by_sha
 
 
-def load_sir_violation_levels_csv(csv_path, keyword_map: Optional[Dict[str, str]] = None):
-    """Load SIR violation levels CSV and create a lookup by SHA256."""
+def load_sir_violation_levels_csv(csv_path, effective_keywords: Optional[Dict[str, list]] = None):
+    """Load SIR violation levels CSV and create a lookup by SHA256.
+
+    The ``keywords`` field is populated from ``effective_keywords`` (built from
+    keyword_labels.csv + staffing_summaries.csv). The ``keywords`` column in
+    sir_violation_levels.csv itself is intentionally ignored.
+    """
     levels_by_sha = {}
-    
+
     if not os.path.exists(csv_path):
         print(f"Warning: SIR violation levels file not found: {csv_path}")
         return levels_by_sha
-    
+
+    if effective_keywords is None:
+        effective_keywords = {}
+
     with open(csv_path, 'r', encoding='utf-8') as f:
         reader = csv.DictReader(f)
         for row in reader:
             sha256 = row.get('sha256', '').strip()
             if not sha256:
                 continue
-            
-            # Parse keywords from JSON string if present
-            keywords_str = row.get('keywords', '')
-            keywords = []
-            if keywords_str:
-                try:
-                    keywords = json.loads(keywords_str)
-                except (json.JSONDecodeError, ValueError):
-                    print(f"Warning: Failed to parse keywords for {sha256}")
-                    keywords = []
-            
-            # Apply keyword reduction if map is provided
-            if keyword_map:
-                keywords = apply_keyword_reduction(keywords, keyword_map)
-            
+
             levels_by_sha[sha256] = {
                 'level': row.get('level', ''),
                 'justification': row.get('justification', ''),
-                'keywords': keywords
+                'keywords': effective_keywords.get(sha256, [])
             }
-    
+
     return levels_by_sha
 
 
@@ -409,30 +403,29 @@ def load_zip_geocodes(gazetteer_path):
     return geocodes
 
 
-def generate_json_files(document_csv, output_dir, sir_summaries_csv=None, sir_violation_levels_csv=None, keyword_reduction_csv=None, facility_info_csv=None, staffing_summaries_csv=None, gazetteer_path=None):
+def generate_json_files(document_csv, output_dir, sir_summaries_csv=None, sir_violation_levels_csv=None, keyword_labels_csv=None, facility_info_csv=None, staffing_summaries_csv=None, gazetteer_path=None):
     """Generate JSON files for the website."""
-    
+
     # Create output directory
     os.makedirs(output_dir, exist_ok=True)
-    
-    # Load keyword reduction map if provided
-    keyword_map = {}
-    if keyword_reduction_csv:
-        print("Loading keyword reduction mappings...")
-        keyword_map = load_keyword_reduction_map(keyword_reduction_csv)
-    
+
+    # Build effective per-sha keyword list from keyword_labels + staffing summaries
+    print("Building effective keyword list...")
+    effective_keywords = load_effective_keywords(keyword_labels_csv, staffing_summaries_csv)
+    print(f"Built keyword lists for {len(effective_keywords)} documents")
+
     # Load SIR summaries if provided
     sir_summaries = {}
     if sir_summaries_csv:
         print("Loading SIR summaries data...")
         sir_summaries = load_sir_summaries_csv(sir_summaries_csv)
         print(f"Loaded {len(sir_summaries)} SIR summaries")
-    
+
     # Load SIR violation levels if provided
     sir_violation_levels = {}
     if sir_violation_levels_csv:
         print("Loading SIR violation levels data...")
-        sir_violation_levels = load_sir_violation_levels_csv(sir_violation_levels_csv, keyword_map)
+        sir_violation_levels = load_sir_violation_levels_csv(sir_violation_levels_csv, effective_keywords)
         print(f"Loaded {len(sir_violation_levels)} SIR violation levels")
     
     # Load facility information if provided
@@ -582,8 +575,8 @@ def main():
         help="Path to SIR violation levels CSV file (optional)"
     )
     parser.add_argument(
-        "--keyword-reduction-csv",
-        help="Path to keyword reduction CSV file (optional)"
+        "--keyword-labels-csv",
+        help="Path to keyword_labels.csv (per-keyword AI labels, optional)"
     )
     parser.add_argument(
         "--facility-info-csv",
@@ -615,7 +608,7 @@ def main():
         args.output_dir,
         args.sir_summaries_csv,
         args.sir_violation_levels_csv,
-        args.keyword_reduction_csv,
+        args.keyword_labels_csv,
         args.facility_info_csv,
         args.staffing_summaries_csv,
         args.gazetteer_zip
