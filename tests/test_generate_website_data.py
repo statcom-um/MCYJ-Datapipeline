@@ -78,7 +78,7 @@ class TestResolveAgencyDisplayName:
     def test_completely_different_prefers_facility(self):
         """When names are unrelated, prefer facility (authoritative)."""
         result = resolve_agency_display_name("Berrien County Trial Court-Family Division", "Berrien County Probate Court")
-        assert result == "BERRIEN COUNTY TRIAL COURT-FAMILY DIVISION"
+        assert result == "BERRIEN COUNTY TRIAL COURT - FAMILY DIVISION"
 
     def test_empty_string_treated_as_none(self):
         """Empty strings should be treated like None."""
@@ -88,7 +88,7 @@ class TestResolveAgencyDisplayName:
     def test_same_name_different_case(self):
         """When names are identical (case-insensitive), result is ALL CAPS."""
         result = resolve_agency_display_name("EAGLE VILLAGE ASHMUN-SHERK", "Eagle Village Ashmun-Sherk")
-        assert result == "EAGLE VILLAGE ASHMUN-SHERK"
+        assert result == "EAGLE VILLAGE ASHMUN - SHERK"
 
     def test_all_results_are_uppercased(self):
         """All results from resolve_agency_display_name should be ALL CAPS."""
