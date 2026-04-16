@@ -158,7 +158,7 @@ export function MapPage() {
 
     useEffect(() => {
         if (showRegions && !regionsGeoJSON) {
-            fetch(`${BASE_URL}data/prosperity_regions.geojson`)
+            fetch(`${BASE_URL}geo/prosperity_regions.geojson`)
                 .then(r => r.ok ? r.json() : null)
                 .then(data => { if (data) setRegionsGeoJSON(data); })
                 .catch(() => {});
