@@ -35,7 +35,11 @@ echo "==> Step 3: Generating AI methodology data from theming prompts..."
 python3 generate_ai_methodology.py
 
 echo ""
-echo "==> Step 4: Building website with Vite..."
+echo "==> Step 4: Generating prosperity regions GeoJSON..."
+python3 generate_prosperity_regions.py --output-dir public/data
+
+echo ""
+echo "==> Step 5: Building website with Vite..."
 npm run build
 
 echo ""
