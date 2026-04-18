@@ -36,6 +36,12 @@ def main():
         check=True,
     )
 
+    # Step 4: Update keyword labels
+    subprocess.run(
+        [sys.executable, "llm_analysis/scripts/update_keyword_labels.py", "--max-count", count],
+        check=True,
+    )
+
 
 if __name__ == "__main__":
     main()

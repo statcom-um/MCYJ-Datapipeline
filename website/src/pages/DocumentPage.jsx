@@ -18,6 +18,7 @@ export function DocumentPage() {
     const [showSearch, setShowSearch] = useState(false);
     const [searchSha, setSearchSha] = useState('');
     const [copyFeedback, setCopyFeedback] = useState({ link: false, text: false });
+    const [showKeywordDetails, setShowKeywordDetails] = useState(false);
 
     useEffect(() => {
         const urlParams = new URLSearchParams(window.location.search);
@@ -151,27 +152,107 @@ export function DocumentPage() {
                         </span>
                     )}
                 </h3>
-                <div style={{ marginBottom: documentData.sir_violation_level?.justification || documentData.sir_violation_level?.keywords?.length > 0 ? '15px' : '0' }}>
+                <div style={{ marginBottom: documentData.sir_violation_level?.justification ? '15px' : '0' }}>
                     <strong style={{ color: '#2c3e50' }}>Summary:</strong>
                     <div style={{ marginTop: '8px' }}>{documentData.sir_summary.summary}</div>
                 </div>
-                {documentData.sir_violation_level?.keywords?.length > 0 && (
-                    <div style={{ paddingTop: '15px', borderTop: '1px solid #ecf0f1', marginBottom: documentData.sir_violation_level?.justification ? '15px' : '0' }}>
-                        <strong style={{ color: '#2c3e50' }}>Keywords:</strong>
-                        <div style={{ marginTop: '8px' }}>
-                            <KeywordBadgeList 
-                                keywords={documentData.sir_violation_level.keywords}
-                                maxDisplay={null}
-                                small
-                            />
-                        </div>
-                    </div>
-                )}
                 {documentData.sir_violation_level?.justification && (
                     <div style={{ paddingTop: '15px', borderTop: '1px solid #ecf0f1' }}>
                         <strong style={{ color: '#2c3e50' }}>Severity Justification:</strong>
                         <div style={{ marginTop: '8px' }}>{documentData.sir_violation_level.justification}</div>
                     </div>
+                )}
+            </div>
+        );
+    };
+
+    const renderKeywordsCard = () => {
+        const summaryKeywords = documentData?.sir_violation_level?.keywords || [];
+        const rawEntries = documentData?.keyword_labels || [];
+        if (!summaryKeywords.length && !rawEntries.length) return null;
+
+        const appliesStyle = (applies) => {
+            if (applies === 'yes') return { color: '#e74c3c', fontWeight: 600 };
+            if (applies === 'uncertain') return { color: '#e67e22', fontWeight: 600 };
+            return { color: '#7f8c8d' };
+        };
+
+        return (
+            <div className="sir-summary" style={{ borderLeftColor: '#8e44ad' }}>
+                <h3>
+                    🏷️ Keywords <AiCaution />
+                </h3>
+                {summaryKeywords.length > 0 ? (
+                    <div style={{ marginBottom: '12px' }}>
+                        <KeywordBadgeList keywords={summaryKeywords} maxDisplay={null} small />
+                    </div>
+                ) : (
+                    <div style={{ color: '#7f8c8d', fontStyle: 'italic', marginBottom: '12px' }}>
+                        No keywords apply to this document.
+                    </div>
+                )}
+
+                {rawEntries.length > 0 && (
+                    <>
+                        <button
+                            onClick={() => setShowKeywordDetails(v => !v)}
+                            style={{
+                                background: 'none',
+                                border: '1px solid #bdc3c7',
+                                color: '#2c3e50',
+                                padding: '6px 12px',
+                                borderRadius: '4px',
+                                cursor: 'pointer',
+                                fontSize: '0.9em'
+                            }}
+                        >
+                            {showKeywordDetails ? '▾ Hide details' : '▸ Show details'}
+                        </button>
+
+                        {showKeywordDetails && (
+                            <div style={{ marginTop: '12px', borderTop: '1px solid #ecf0f1', paddingTop: '12px' }}>
+                                {rawEntries.map((entry, i) => (
+                                    <div
+                                        key={i}
+                                        style={{
+                                            padding: '10px 0',
+                                            borderBottom: i < rawEntries.length - 1 ? '1px solid #ecf0f1' : 'none'
+                                        }}
+                                    >
+                                        <div style={{ display: 'flex', alignItems: 'baseline', gap: '10px', flexWrap: 'wrap' }}>
+                                            <strong style={{ color: '#2c3e50' }}>{entry.keyword}</strong>
+                                            <span style={appliesStyle(entry.applies)}>applies: {entry.applies}</span>
+                                            <span style={{ color: '#7f8c8d', fontSize: '0.9em' }}>
+                                                confidence: {entry.confidence}
+                                            </span>
+                                        </div>
+                                        {entry.explanation && (
+                                            <div style={{ marginTop: '6px', fontSize: '0.95em', lineHeight: 1.5 }}>
+                                                {entry.explanation}
+                                            </div>
+                                        )}
+                                        {Array.isArray(entry.citations) && entry.citations.length > 0 && (
+                                            <ul style={{ marginTop: '6px', paddingLeft: '20px', fontSize: '0.9em', color: '#555' }}>
+                                                {entry.citations.map((c, j) => (
+                                                    <li key={j} style={{ marginBottom: '4px' }}>
+                                                        <em>"{c.text}"</em>
+                                                        {c.location && (
+                                                            <span style={{ color: '#95a5a6' }}> — {c.location}</span>
+                                                        )}
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        )}
+                                    </div>
+                                ))}
+                                {rawEntries.some(e => e.keyword === 'Staffing') && (
+                                    <div style={{ marginTop: '10px', fontSize: '0.85em', color: '#7f8c8d', fontStyle: 'italic' }}>
+                                        Note: the "Staffing" summary tag above comes from the dedicated Staffing Violation Analysis below, not from this keyword entry.
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </>
                 )}
             </div>
         );
@@ -327,6 +408,7 @@ export function DocumentPage() {
                         </div>
                         
                         {renderSirSummary()}
+                        {renderKeywordsCard()}
                         {renderStaffingSummary()}
                         
                         <div className="document-pages">

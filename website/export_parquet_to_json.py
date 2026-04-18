@@ -18,7 +18,7 @@ from typing import Dict, Optional
 
 import pandas as pd
 
-from keyword_reduction import load_keyword_reduction_map, apply_keyword_reduction
+from keyword_labels import load_effective_keywords, load_raw_keyword_entries
 
 # Set up logger
 logger = logging.getLogger(__name__)
@@ -48,41 +48,35 @@ def load_sir_summaries(sir_summaries_csv: str) -> Dict[str, Dict]:
     return summaries_by_sha
 
 
-def load_sir_violation_levels(sir_violation_levels_csv: str, keyword_map: Optional[Dict[str, str]] = None) -> Dict[str, Dict]:
-    """Load SIR violation levels CSV and create a lookup by SHA256."""
+def load_sir_violation_levels(sir_violation_levels_csv: str, effective_keywords: Optional[Dict[str, list]] = None) -> Dict[str, Dict]:
+    """Load SIR violation levels CSV and create a lookup by SHA256.
+
+    The ``keywords`` field is populated from ``effective_keywords`` (built from
+    keyword_labels.csv + staffing_summaries.csv). The ``keywords`` column in
+    sir_violation_levels.csv itself is intentionally ignored.
+    """
     levels_by_sha = {}
-    
+
     if not sir_violation_levels_csv or not Path(sir_violation_levels_csv).exists():
         logger.warning(f"SIR violation levels CSV not found: {sir_violation_levels_csv}")
         return levels_by_sha
-    
+
+    if effective_keywords is None:
+        effective_keywords = {}
+
     with open(sir_violation_levels_csv, 'r', encoding='utf-8') as f:
         reader = csv.DictReader(f)
         for row in reader:
             sha256 = row.get('sha256', '').strip()
             if not sha256:
                 continue
-            
-            # Parse keywords from JSON string if present
-            keywords_str = row.get('keywords', '')
-            keywords = []
-            if keywords_str:
-                try:
-                    keywords = json.loads(keywords_str)
-                except (json.JSONDecodeError, ValueError):
-                    logger.warning(f"Failed to parse keywords for {sha256}: {keywords_str}")
-                    keywords = []
-            
-            # Apply keyword reduction if map is provided
-            if keyword_map:
-                keywords = apply_keyword_reduction(keywords, keyword_map)
-            
+
             levels_by_sha[sha256] = {
                 'level': row.get('level', ''),
                 'justification': row.get('justification', ''),
-                'keywords': keywords
+                'keywords': effective_keywords.get(sha256, [])
             }
-    
+
     logger.info(f"Loaded {len(levels_by_sha)} SIR violation levels")
     return levels_by_sha
 
@@ -152,33 +146,36 @@ def load_document_metadata(document_csv: str) -> Dict[str, Dict]:
     return metadata_by_sha
 
 
-def export_parquet_to_json(parquet_dir: str, output_dir: str, document_csv: Optional[str] = None, sir_summaries_csv: Optional[str] = None, sir_violation_levels_csv: Optional[str] = None, keyword_reduction_csv: Optional[str] = None, staffing_summaries_csv: Optional[str] = None) -> None:
+def export_parquet_to_json(parquet_dir: str, output_dir: str, document_csv: Optional[str] = None, sir_summaries_csv: Optional[str] = None, sir_violation_levels_csv: Optional[str] = None, keyword_labels_csv: Optional[str] = None, staffing_summaries_csv: Optional[str] = None) -> None:
     """Export each parquet row to a separate JSON file."""
     parquet_path = Path(parquet_dir)
     output_path = Path(output_dir)
-    
+
     if not parquet_path.exists():
         logger.error(f"Directory '{parquet_dir}' does not exist")
         sys.exit(1)
-    
+
     # Create output directory
     output_path.mkdir(parents=True, exist_ok=True)
-    
-    # Load keyword reduction map if provided
-    keyword_map = {}
-    if keyword_reduction_csv:
-        logger.info("Loading keyword reduction mappings...")
-        keyword_map = load_keyword_reduction_map(keyword_reduction_csv)
-    
+
+    # Build effective per-sha keyword list from keyword_labels + staffing summaries
+    logger.info("Building effective keyword list...")
+    effective_keywords = load_effective_keywords(keyword_labels_csv, staffing_summaries_csv)
+    logger.info(f"Built keyword lists for {len(effective_keywords)} documents")
+
+    # Load raw per-keyword details for the document detail view
+    raw_keyword_entries = load_raw_keyword_entries(keyword_labels_csv)
+    logger.info(f"Loaded raw keyword entries for {len(raw_keyword_entries)} documents")
+
     # Load document metadata if provided
     document_metadata = load_document_metadata(document_csv) if document_csv else {}
-    
+
     # Load SIR summaries if provided
     sir_summaries = load_sir_summaries(sir_summaries_csv) if sir_summaries_csv else {}
-    
-    # Load SIR violation levels if provided (with keyword reduction)
-    sir_violation_levels = load_sir_violation_levels(sir_violation_levels_csv, keyword_map) if sir_violation_levels_csv else {}
-    
+
+    # Load SIR violation levels if provided
+    sir_violation_levels = load_sir_violation_levels(sir_violation_levels_csv, effective_keywords) if sir_violation_levels_csv else {}
+
     # Load staffing summaries if provided
     staffing_summaries = load_staffing_summaries(staffing_summaries_csv) if staffing_summaries_csv else {}
     
@@ -260,7 +257,11 @@ def export_parquet_to_json(parquet_dir: str, output_dir: str, document_csv: Opti
                         'justification': level_data['justification'],
                         'keywords': level_data.get('keywords', [])
                     }
-                
+
+                # Add raw keyword label details (all 13 keywords w/ citations) if available
+                if sha256 in raw_keyword_entries:
+                    document['keyword_labels'] = raw_keyword_entries[sha256]
+
                 # Add staffing summary if available
                 if sha256 in staffing_summaries:
                     document['staffing_summary'] = staffing_summaries[sha256]
@@ -316,9 +317,9 @@ def main():
         help="Path to SIR violation levels CSV file (default: ../llm_analysis/data/sir_violation_levels.csv)"
     )
     parser.add_argument(
-        "--keyword-reduction-csv",
-        default=str(script_dir / "../llm_analysis/data/violation_curation_keyword_reduction.csv"),
-        help="Path to keyword reduction CSV file (default: ../llm_analysis/data/violation_curation_keyword_reduction.csv)"
+        "--keyword-labels-csv",
+        default=str(script_dir / "../llm_analysis/data/keyword_labels.csv"),
+        help="Path to keyword_labels.csv (default: ../llm_analysis/data/keyword_labels.csv)"
     )
     parser.add_argument(
         "--staffing-summaries-csv",
@@ -339,7 +340,7 @@ def main():
         format='%(asctime)s - %(levelname)s - %(message)s'
     )
     
-    export_parquet_to_json(args.parquet_dir, args.output_dir, args.document_csv, args.sir_summaries_csv, args.sir_violation_levels_csv, args.keyword_reduction_csv, args.staffing_summaries_csv)
+    export_parquet_to_json(args.parquet_dir, args.output_dir, args.document_csv, args.sir_summaries_csv, args.sir_violation_levels_csv, args.keyword_labels_csv, args.staffing_summaries_csv)
 
 
 if __name__ == "__main__":

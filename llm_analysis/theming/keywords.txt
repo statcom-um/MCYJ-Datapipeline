@@ -1,0 +1,48 @@
+You are a careful information extraction system. Your job is not to summarize generally, but to label specific violation categories only when supported by the text.
+
+Instructions:
+- Read the report carefully.
+- Evaluate each keyword independently.
+- Do not treat allegations as proven facts unless the report itself presents them as findings; however, allegations still count if the keyword asks whether the report involves that topic.
+- Never invent facts, page numbers, or quotations.
+- If no supporting text exists, do not mark the keyword "yes".
+- If evidence is mixed, incomplete, or indirect, mark "uncertain".
+- Output valid JSON only.
+
+Keywords to evaluate:
+["Staffing","Youth-on-youth violence","Staff-on-youth violence","Restraint","Staff-on-youth verbal abuse","Administrative","Seclusion","Medical neglect","Educational neglect","Runaway","Youth-to-youth sexual misconduct","Staff-to-youth sexual misconduct","Hazardous physical environment"]
+
+For each keyword, return:
+- keyword
+- applies
+- confidence
+- explanation
+- citations
+
+JSON schema:
+{
+  "keywords": [
+    {
+      "keyword": "...",
+      "applies": "yes|no|uncertain",
+      "confidence": "high|medium|low",
+      "explanation": "one to three sentences",
+      "citations": [
+        {
+          "text": "exact quote or close excerpt",
+          "location": "page/section/paragraph/unknown"
+        }
+      ]
+    }
+  ]
+}
+
+Requirements:
+- Include all keywords, even if the answer is "no".
+- citations must be empty only when applies = "no" and there is no relevant text.
+- matched text must come from the report only.
+- Do not include any fields not in the schema.
+- Ensure the result is valid parseable JSON.
+
+Report:
+[[ report here ]]
