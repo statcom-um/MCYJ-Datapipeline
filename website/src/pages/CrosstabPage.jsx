@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Header, Loading, Error } from '../components/index.js';
+import { Header, Loading, Error as ErrorDisplay } from '../components/index.js';
 import { AiCaution } from '../components/AiCaution.jsx';
 import { AboutSection } from '../components/AboutSection.jsx';
 import { getBaseUrl, ACTIVE_LICENSE_STATUSES, ALL_SEVERITY_LEVELS } from '../utils/helpers.js';
@@ -101,7 +101,7 @@ export function CrosstabPage() {
                 fetch(`${BASE_URL}geo/michigan_prosperity_regions.csv`),
             ]);
 
-            if (!agenciesRes.ok) throw new window.Error(`Failed to load agencies data: ${agenciesRes.statusText}`);
+            if (!agenciesRes.ok) throw new Error(`Failed to load agencies data: ${agenciesRes.statusText}`);
 
             const agencies = await agenciesRes.json();
             setAllAgencies(agencies);
@@ -281,7 +281,7 @@ export function CrosstabPage() {
         return (
             <>
                 <Header title="Crosstab Analysis" subtitle="Keyword co-occurrence across regions, agency types, and keywords" />
-                <div className="container"><Error message={error} /></div>
+                <div className="container"><ErrorDisplay message={error} /></div>
             </>
         );
     }
