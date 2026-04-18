@@ -2761,6 +2761,16 @@ h1 {
     font-weight: 600;
     font-size: 0.95em;
     color: var(--text-dark);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    cursor: pointer;
+    min-width: 0;
+}
+
+.crosstab-card-label.expanded {
+    white-space: normal;
+    word-break: break-word;
 }
 
 .crosstab-card-n {
@@ -2791,6 +2801,12 @@ h1 {
     white-space: nowrap;
     color: var(--text-dark);
     font-weight: 500;
+    cursor: pointer;
+}
+
+.crosstab-card-bar-label.expanded {
+    white-space: normal;
+    word-break: break-word;
 }
 
 .crosstab-card-bar-track {

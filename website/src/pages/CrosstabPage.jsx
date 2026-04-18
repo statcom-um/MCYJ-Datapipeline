@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Header, Loading, Error as ErrorDisplay } from '../components/index.js';
 import { AiCaution } from '../components/AiCaution.jsx';
 import { AboutSection } from '../components/AboutSection.jsx';
@@ -385,6 +385,27 @@ export function CrosstabPage() {
 // ── Sub-components ─────────────────────────────────────────────────────
 
 /**
+ * A label that can be tapped to expand when truncated.
+ * On first tap it expands to show full text; on second tap it collapses.
+ */
+function TappableLabel({ text, className }) {
+    const [expanded, setExpanded] = useState(false);
+    const toggle = useCallback(() => setExpanded(prev => !prev), []);
+    return (
+        <span
+            className={`${className}${expanded ? ' expanded' : ''}`}
+            title={text}
+            onClick={toggle}
+            role="button"
+            tabIndex={0}
+            onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') toggle(); }}
+        >
+            {text}
+        </span>
+    );
+}
+
+/**
  * Mobile-friendly card list that transposes a crosstab row into a vertical card.
  * Each card shows the row label, N, and keyword → percentage pairs as a mini bar.
  */
@@ -395,7 +416,7 @@ function CrosstabCards({ rows, keywords, description }) {
             {rows.map(({ key, label, total, getCounts }) => (
                 <div key={key} className="crosstab-card">
                     <div className="crosstab-card-header">
-                        <span className="crosstab-card-label">{label}</span>
+                        <TappableLabel text={label} className="crosstab-card-label" />
                         <span className="crosstab-card-n">N={total}</span>
                     </div>
                     <div className="crosstab-card-bars">
@@ -404,7 +425,7 @@ function CrosstabCards({ rows, keywords, description }) {
                             const ratio = total ? count / total : 0;
                             return (
                                 <div key={kw} className="crosstab-card-bar-row">
-                                    <span className="crosstab-card-bar-label">{kw}</span>
+                                    <TappableLabel text={kw} className="crosstab-card-bar-label" />
                                     <div className="crosstab-card-bar-track">
                                         <div
                                             className="crosstab-card-bar-fill"
@@ -569,7 +590,7 @@ function KeywordKeywordTable({ keywords, data }) {
                         return (
                             <div key={rowKw} className="crosstab-card">
                                 <div className="crosstab-card-header">
-                                    <span className="crosstab-card-label">{rowKw}</span>
+                                    <TappableLabel text={rowKw} className="crosstab-card-label" />
                                     <span className="crosstab-card-n">N={total}</span>
                                 </div>
                                 <div className="crosstab-card-bars">
@@ -578,7 +599,7 @@ function KeywordKeywordTable({ keywords, data }) {
                                         const ratio = total ? count / total : 0;
                                         return (
                                             <div key={colKw} className="crosstab-card-bar-row">
-                                                <span className="crosstab-card-bar-label">{colKw}</span>
+                                                <TappableLabel text={colKw} className="crosstab-card-bar-label" />
                                                 <div className="crosstab-card-bar-track">
                                                     <div
                                                         className="crosstab-card-bar-fill"
