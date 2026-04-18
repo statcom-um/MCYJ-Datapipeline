@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Header, Loading, Error as ErrorDisplay } from '../components/index.js';
 import { AiCaution } from '../components/AiCaution.jsx';
 import { AboutSection } from '../components/AboutSection.jsx';
-import { getBaseUrl, ACTIVE_LICENSE_STATUSES, ALL_SEVERITY_LEVELS } from '../utils/helpers.js';
+import { getBaseUrl, ACTIVE_LICENSE_STATUSES } from '../utils/helpers.js';
 
 const BASE_URL = getBaseUrl();
 
@@ -19,8 +19,11 @@ const REGION_NAMES = {
     10: 'Detroit Metro',
 };
 
-const SEVERITY_LABELS = { low: 'Low', moderate: 'Moderate', severe: 'Severe', none: 'None identified' };
-const SEVERITY_COLORS = { low: '#f39c12', moderate: '#e67e22', severe: '#e74c3c', none: '#95a5a6' };
+// Only violation-severity levels that make sense for substantiated violations.
+// "none" is excluded — every substantiated violation has been assigned a severity.
+const CROSSTAB_SEVERITY_LEVELS = ['low', 'moderate', 'severe'];
+const SEVERITY_LABELS = { low: 'Low', moderate: 'Moderate', severe: 'Severe' };
+const SEVERITY_COLORS = { low: '#f39c12', moderate: '#e67e22', severe: '#e74c3c' };
 
 const TAB_IDS = ['region-keyword', 'keyword-keyword', 'agencytype-keyword'];
 const TAB_LABELS = {
@@ -87,7 +90,7 @@ export function CrosstabPage() {
     const [activeTab, setActiveTab] = useState('region-keyword');
 
     // Filters
-    const [severityLevels, setSeverityLevels] = useState([...ALL_SEVERITY_LEVELS]);
+    const [severityLevels, setSeverityLevels] = useState([...CROSSTAB_SEVERITY_LEVELS]);
     const [activeLicenseOnly, setActiveLicenseOnly] = useState(true);
 
     useEffect(() => {
@@ -151,7 +154,7 @@ export function CrosstabPage() {
 
                 // Severity filter
                 const docLevel = (doc.sir_violation_level?.level || '').toLowerCase() || 'none';
-                if (severityLevels.length < ALL_SEVERITY_LEVELS.length) {
+                if (severityLevels.length < CROSSTAB_SEVERITY_LEVELS.length) {
                     if (!severityLevels.includes(docLevel)) continue;
                 }
 
@@ -299,7 +302,7 @@ export function CrosstabPage() {
                     <div className="crosstab-filter-group">
                         <span className="crosstab-filter-label">Severity: <AiCaution /></span>
                         <div className="crosstab-severity-checks">
-                            {ALL_SEVERITY_LEVELS.map(level => (
+                            {CROSSTAB_SEVERITY_LEVELS.map(level => (
                                 <label key={level} className="crosstab-severity-check">
                                     <input
                                         type="checkbox"
@@ -381,55 +384,110 @@ export function CrosstabPage() {
 
 // ── Sub-components ─────────────────────────────────────────────────────
 
+/**
+ * Mobile-friendly card list that transposes a crosstab row into a vertical card.
+ * Each card shows the row label, N, and keyword → percentage pairs as a mini bar.
+ */
+function CrosstabCards({ rows, keywords, description }) {
+    return (
+        <div className="crosstab-cards">
+            <p className="crosstab-table-description">{description}</p>
+            {rows.map(({ key, label, total, getCounts }) => (
+                <div key={key} className="crosstab-card">
+                    <div className="crosstab-card-header">
+                        <span className="crosstab-card-label">{label}</span>
+                        <span className="crosstab-card-n">N={total}</span>
+                    </div>
+                    <div className="crosstab-card-bars">
+                        {keywords.map(kw => {
+                            const count = getCounts(kw);
+                            const ratio = total ? count / total : 0;
+                            return (
+                                <div key={kw} className="crosstab-card-bar-row">
+                                    <span className="crosstab-card-bar-label">{kw}</span>
+                                    <div className="crosstab-card-bar-track">
+                                        <div
+                                            className="crosstab-card-bar-fill"
+                                            style={{ width: `${Math.min(ratio * 100, 100)}%` }}
+                                        />
+                                    </div>
+                                    <span className="crosstab-card-bar-pct">{pct(count, total)}</span>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+            ))}
+        </div>
+    );
+}
+
 function RegionKeywordTable({ regions, keywords, data }) {
     const { regionTotals, regionKeywordCounts } = data;
 
     if (keywords.length === 0) return null;
 
+    const description = 'For each prosperity region, the percentage of substantiated-violation reports that mention each keyword.';
+
+    const cardRows = regions.map(r => ({
+        key: r,
+        label: `${r}. ${REGION_NAMES[r]}`,
+        total: regionTotals[r] || 0,
+        getCounts: kw => regionKeywordCounts[r]?.[kw] || 0,
+    }));
+
     return (
-        <div className="crosstab-table-wrapper">
-            <p className="crosstab-table-description">
-                For each prosperity region, the percentage of substantiated-violation reports that mention each keyword.
-                The <strong>N</strong> column shows the total number of substantiated-violation reports in that region.
-            </p>
-            <table className="crosstab-table">
-                <thead>
-                    <tr>
-                        <th className="crosstab-row-header">Prosperity Region</th>
-                        <th className="crosstab-n-col">N</th>
-                        {keywords.map(kw => (
-                            <th key={kw} className="crosstab-col-header">
-                                <span className="crosstab-col-header-text">{kw}</span>
-                            </th>
-                        ))}
-                    </tr>
-                </thead>
-                <tbody>
-                    {regions.map(r => {
-                        const total = regionTotals[r] || 0;
-                        return (
-                            <tr key={r}>
-                                <td className="crosstab-row-label">{r}. {REGION_NAMES[r]}</td>
-                                <td className="crosstab-n-cell">{total}</td>
-                                {keywords.map(kw => {
-                                    const count = regionKeywordCounts[r]?.[kw] || 0;
-                                    return (
-                                        <td
-                                            key={kw}
-                                            className="crosstab-cell"
-                                            style={heatStyle(count, total)}
-                                            title={`${count} of ${total} reports`}
-                                        >
-                                            {pct(count, total)}
-                                        </td>
-                                    );
-                                })}
-                            </tr>
-                        );
-                    })}
-                </tbody>
-            </table>
-        </div>
+        <>
+            {/* Desktop table */}
+            <div className="crosstab-table-wrapper crosstab-desktop-only">
+                <p className="crosstab-table-description">
+                    {description}{' '}
+                    The <strong>N</strong> column shows the total number of substantiated-violation reports in that region.
+                </p>
+                <table className="crosstab-table">
+                    <thead>
+                        <tr>
+                            <th className="crosstab-row-header">Prosperity Region</th>
+                            <th className="crosstab-n-col">N</th>
+                            {keywords.map(kw => (
+                                <th key={kw} className="crosstab-col-header">
+                                    <span className="crosstab-col-header-text">{kw}</span>
+                                </th>
+                            ))}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {regions.map(r => {
+                            const total = regionTotals[r] || 0;
+                            return (
+                                <tr key={r}>
+                                    <td className="crosstab-row-label">{r}. {REGION_NAMES[r]}</td>
+                                    <td className="crosstab-n-cell">{total}</td>
+                                    {keywords.map(kw => {
+                                        const count = regionKeywordCounts[r]?.[kw] || 0;
+                                        return (
+                                            <td
+                                                key={kw}
+                                                className="crosstab-cell"
+                                                style={heatStyle(count, total)}
+                                                title={`${count} of ${total} reports`}
+                                            >
+                                                {pct(count, total)}
+                                            </td>
+                                        );
+                                    })}
+                                </tr>
+                            );
+                        })}
+                    </tbody>
+                </table>
+            </div>
+
+            {/* Mobile cards */}
+            <div className="crosstab-mobile-only">
+                <CrosstabCards rows={cardRows} keywords={keywords} description={description} />
+            </div>
+        </>
     );
 }
 
@@ -438,52 +496,104 @@ function KeywordKeywordTable({ keywords, data }) {
 
     if (keywords.length === 0) return null;
 
+    const description = 'For each keyword, the percentage of its substantiated-violation reports that also mention each other keyword.';
+
+    const cardRows = keywords.map(rowKw => ({
+        key: rowKw,
+        label: rowKw,
+        total: kwTotals[rowKw] || 0,
+        getCounts: colKw => rowKw === colKw ? 0 : (kwPairCounts[rowKw]?.[colKw] || 0),
+    }));
+
+    // For mobile cards, exclude self-co-occurrence
+    const mobileKeywordsFor = (rowKw) => keywords.filter(kw => kw !== rowKw);
+
     return (
-        <div className="crosstab-table-wrapper">
-            <p className="crosstab-table-description">
-                For each keyword (row), the percentage of substantiated-violation reports with that keyword
-                that also mention each other keyword (column). Diagonal cells show 100% (self-co-occurrence).
-                The <strong>N</strong> column shows the total number of reports with the row keyword.
-            </p>
-            <table className="crosstab-table">
-                <thead>
-                    <tr>
-                        <th className="crosstab-row-header">Keyword</th>
-                        <th className="crosstab-n-col">N</th>
-                        {keywords.map(kw => (
-                            <th key={kw} className="crosstab-col-header">
-                                <span className="crosstab-col-header-text">{kw}</span>
-                            </th>
-                        ))}
-                    </tr>
-                </thead>
-                <tbody>
+        <>
+            {/* Desktop table */}
+            <div className="crosstab-table-wrapper crosstab-desktop-only">
+                <p className="crosstab-table-description">
+                    {description}{' '}
+                    Diagonal cells show 100% (self-co-occurrence).
+                    The <strong>N</strong> column shows the total number of reports with the row keyword.
+                </p>
+                <table className="crosstab-table">
+                    <thead>
+                        <tr>
+                            <th className="crosstab-row-header">Keyword</th>
+                            <th className="crosstab-n-col">N</th>
+                            {keywords.map(kw => (
+                                <th key={kw} className="crosstab-col-header">
+                                    <span className="crosstab-col-header-text">{kw}</span>
+                                </th>
+                            ))}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {keywords.map(rowKw => {
+                            const total = kwTotals[rowKw] || 0;
+                            return (
+                                <tr key={rowKw}>
+                                    <td className="crosstab-row-label">{rowKw}</td>
+                                    <td className="crosstab-n-cell">{total}</td>
+                                    {keywords.map(colKw => {
+                                        const count = kwPairCounts[rowKw]?.[colKw] || 0;
+                                        const isDiagonal = rowKw === colKw;
+                                        return (
+                                            <td
+                                                key={colKw}
+                                                className={`crosstab-cell ${isDiagonal ? 'crosstab-diagonal' : ''}`}
+                                                style={isDiagonal ? {} : heatStyle(count, total)}
+                                                title={`${count} of ${total} reports`}
+                                            >
+                                                {pct(count, total)}
+                                            </td>
+                                        );
+                                    })}
+                                </tr>
+                            );
+                        })}
+                    </tbody>
+                </table>
+            </div>
+
+            {/* Mobile cards — omit self-co-occurrence rows */}
+            <div className="crosstab-mobile-only">
+                <div className="crosstab-cards">
+                    <p className="crosstab-table-description">{description}</p>
                     {keywords.map(rowKw => {
                         const total = kwTotals[rowKw] || 0;
+                        const others = mobileKeywordsFor(rowKw);
                         return (
-                            <tr key={rowKw}>
-                                <td className="crosstab-row-label">{rowKw}</td>
-                                <td className="crosstab-n-cell">{total}</td>
-                                {keywords.map(colKw => {
-                                    const count = kwPairCounts[rowKw]?.[colKw] || 0;
-                                    const isDiagonal = rowKw === colKw;
-                                    return (
-                                        <td
-                                            key={colKw}
-                                            className={`crosstab-cell ${isDiagonal ? 'crosstab-diagonal' : ''}`}
-                                            style={isDiagonal ? {} : heatStyle(count, total)}
-                                            title={`${count} of ${total} reports`}
-                                        >
-                                            {pct(count, total)}
-                                        </td>
-                                    );
-                                })}
-                            </tr>
+                            <div key={rowKw} className="crosstab-card">
+                                <div className="crosstab-card-header">
+                                    <span className="crosstab-card-label">{rowKw}</span>
+                                    <span className="crosstab-card-n">N={total}</span>
+                                </div>
+                                <div className="crosstab-card-bars">
+                                    {others.map(colKw => {
+                                        const count = kwPairCounts[rowKw]?.[colKw] || 0;
+                                        const ratio = total ? count / total : 0;
+                                        return (
+                                            <div key={colKw} className="crosstab-card-bar-row">
+                                                <span className="crosstab-card-bar-label">{colKw}</span>
+                                                <div className="crosstab-card-bar-track">
+                                                    <div
+                                                        className="crosstab-card-bar-fill"
+                                                        style={{ width: `${Math.min(ratio * 100, 100)}%` }}
+                                                    />
+                                                </div>
+                                                <span className="crosstab-card-bar-pct">{pct(count, total)}</span>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
                         );
                     })}
-                </tbody>
-            </table>
-        </div>
+                </div>
+            </div>
+        </>
     );
 }
 
@@ -492,50 +602,67 @@ function AgencyTypeKeywordTable({ agencyTypes, keywords, data }) {
 
     if (keywords.length === 0) return null;
 
+    const description = 'For each agency type, the percentage of substantiated-violation reports that mention each keyword.';
+
+    const cardRows = agencyTypes.map(type => ({
+        key: type,
+        label: type,
+        total: typeTotals[type] || 0,
+        getCounts: kw => typeKeywordCounts[type]?.[kw] || 0,
+    }));
+
     return (
-        <div className="crosstab-table-wrapper">
-            <p className="crosstab-table-description">
-                For each agency type, the percentage of substantiated-violation reports that mention each keyword.
-                The <strong>N</strong> column shows the total number of substantiated-violation reports for that agency type.
-            </p>
-            <table className="crosstab-table">
-                <thead>
-                    <tr>
-                        <th className="crosstab-row-header">Agency Type</th>
-                        <th className="crosstab-n-col">N</th>
-                        {keywords.map(kw => (
-                            <th key={kw} className="crosstab-col-header">
-                                <span className="crosstab-col-header-text">{kw}</span>
-                            </th>
-                        ))}
-                    </tr>
-                </thead>
-                <tbody>
-                    {agencyTypes.map(type => {
-                        const total = typeTotals[type] || 0;
-                        return (
-                            <tr key={type}>
-                                <td className="crosstab-row-label">{type}</td>
-                                <td className="crosstab-n-cell">{total}</td>
-                                {keywords.map(kw => {
-                                    const count = typeKeywordCounts[type]?.[kw] || 0;
-                                    return (
-                                        <td
-                                            key={kw}
-                                            className="crosstab-cell"
-                                            style={heatStyle(count, total)}
-                                            title={`${count} of ${total} reports`}
-                                        >
-                                            {pct(count, total)}
-                                        </td>
-                                    );
-                                })}
-                            </tr>
-                        );
-                    })}
-                </tbody>
-            </table>
-        </div>
+        <>
+            {/* Desktop table */}
+            <div className="crosstab-table-wrapper crosstab-desktop-only">
+                <p className="crosstab-table-description">
+                    {description}{' '}
+                    The <strong>N</strong> column shows the total number of substantiated-violation reports for that agency type.
+                </p>
+                <table className="crosstab-table">
+                    <thead>
+                        <tr>
+                            <th className="crosstab-row-header">Agency Type</th>
+                            <th className="crosstab-n-col">N</th>
+                            {keywords.map(kw => (
+                                <th key={kw} className="crosstab-col-header">
+                                    <span className="crosstab-col-header-text">{kw}</span>
+                                </th>
+                            ))}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {agencyTypes.map(type => {
+                            const total = typeTotals[type] || 0;
+                            return (
+                                <tr key={type}>
+                                    <td className="crosstab-row-label">{type}</td>
+                                    <td className="crosstab-n-cell">{total}</td>
+                                    {keywords.map(kw => {
+                                        const count = typeKeywordCounts[type]?.[kw] || 0;
+                                        return (
+                                            <td
+                                                key={kw}
+                                                className="crosstab-cell"
+                                                style={heatStyle(count, total)}
+                                                title={`${count} of ${total} reports`}
+                                            >
+                                                {pct(count, total)}
+                                            </td>
+                                        );
+                                    })}
+                                </tr>
+                            );
+                        })}
+                    </tbody>
+                </table>
+            </div>
+
+            {/* Mobile cards */}
+            <div className="crosstab-mobile-only">
+                <CrosstabCards rows={cardRows} keywords={keywords} description={description} />
+            </div>
+        </>
     );
 }
 

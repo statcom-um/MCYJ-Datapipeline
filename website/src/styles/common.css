@@ -2724,7 +2724,97 @@ h1 {
     font-size: 1.1em;
 }
 
-/* Responsive */
+/* Responsive — show/hide desktop table vs mobile cards */
+.crosstab-mobile-only {
+    display: none;
+}
+
+.crosstab-desktop-only {
+    display: block;
+}
+
+/* ── Mobile card layout ─────────────────────────────────────────── */
+
+.crosstab-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.crosstab-card {
+    background: #fafbfc;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.crosstab-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 14px;
+    background: #f0f2f5;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.crosstab-card-label {
+    font-weight: 600;
+    font-size: 0.95em;
+    color: var(--text-dark);
+}
+
+.crosstab-card-n {
+    font-size: 0.85em;
+    font-weight: 600;
+    color: var(--text-muted);
+    font-variant-numeric: tabular-nums;
+}
+
+.crosstab-card-bars {
+    padding: 8px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.crosstab-card-bar-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 2fr 44px;
+    gap: 8px;
+    align-items: center;
+    font-size: 0.85em;
+}
+
+.crosstab-card-bar-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--text-dark);
+    font-weight: 500;
+}
+
+.crosstab-card-bar-track {
+    height: 14px;
+    background: #e5e7eb;
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.crosstab-card-bar-fill {
+    height: 100%;
+    background: rgba(52, 152, 219, 0.65);
+    border-radius: 3px;
+    min-width: 0;
+    transition: width 0.2s;
+}
+
+.crosstab-card-bar-pct {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    color: var(--text-muted);
+    font-size: 0.95em;
+}
+
 @media (max-width: 768px) {
     .crosstab-filters {
         flex-direction: column;
@@ -2745,8 +2835,12 @@ h1 {
         font-size: 0.85em;
     }
 
-    .crosstab-col-header-text {
-        max-height: 100px;
-        font-size: 0.8em;
+    /* Switch from table to cards on mobile */
+    .crosstab-desktop-only {
+        display: none;
+    }
+
+    .crosstab-mobile-only {
+        display: block;
     }
 }
