@@ -8,6 +8,7 @@ const NAV_LINKS = [
     { label: 'Agency View', href: `${BASE_URL}agencies.html` },
     { label: 'Documents', href: `${BASE_URL}documents.html` },
     { label: 'Map', href: `${BASE_URL}map.html` },
+    { label: 'Crosstab', href: `${BASE_URL}crosstab.html` },
     { label: 'AI Methodology', href: `${BASE_URL}ai-methodology.html` },
 ];
 

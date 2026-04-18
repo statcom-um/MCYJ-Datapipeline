@@ -2514,3 +2514,239 @@ h1 {
         border-radius: 0 0 10px 10px;
     }
 }
+
+/* ── Crosstab Page ───────────────────────────────────────────────── */
+
+.crosstab-filters {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    align-items: center;
+}
+
+.crosstab-filter-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.crosstab-filter-label {
+    font-weight: 600;
+    font-size: 0.95em;
+    color: var(--text-dark);
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.crosstab-severity-checks {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.crosstab-severity-check {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.9em;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.crosstab-severity-check input[type="checkbox"] {
+    margin: 0;
+}
+
+.crosstab-severity-dot {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+}
+
+.crosstab-license-check {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.9em;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.crosstab-license-check input[type="checkbox"] {
+    margin: 0;
+}
+
+.crosstab-summary {
+    margin-left: auto;
+    font-size: 0.9em;
+    color: var(--text-muted);
+}
+
+/* Tabs */
+.crosstab-tabs {
+    display: flex;
+    gap: 0;
+    margin-bottom: 0;
+    border-bottom: 2px solid #e5e7eb;
+}
+
+.crosstab-tab {
+    padding: 10px 20px;
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    font-size: 0.95em;
+    font-weight: 500;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: color 0.15s, border-color 0.15s;
+}
+
+.crosstab-tab:hover {
+    color: var(--accent);
+}
+
+.crosstab-tab.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+    font-weight: 600;
+}
+
+/* Content area */
+.crosstab-content {
+    background: white;
+    border-radius: 0 0 8px 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    padding: 20px;
+    margin-bottom: 30px;
+}
+
+.crosstab-table-description {
+    font-size: 0.9em;
+    color: var(--text-muted);
+    margin-bottom: 16px;
+    line-height: 1.5;
+}
+
+/* Scrollable table wrapper */
+.crosstab-table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Table */
+.crosstab-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85em;
+    white-space: nowrap;
+}
+
+.crosstab-table th,
+.crosstab-table td {
+    padding: 8px 10px;
+    border: 1px solid #e5e7eb;
+    text-align: center;
+}
+
+.crosstab-table thead th {
+    background: #f8f9fa;
+    font-weight: 600;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+
+.crosstab-row-header {
+    text-align: left !important;
+    min-width: 160px;
+}
+
+.crosstab-col-header {
+    min-width: 70px;
+}
+
+.crosstab-col-header-text {
+    display: inline-block;
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    max-height: 140px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 0.9em;
+    line-height: 1.2;
+}
+
+.crosstab-row-label {
+    text-align: left !important;
+    font-weight: 500;
+    background: #fafbfc;
+    position: sticky;
+    left: 0;
+    z-index: 1;
+}
+
+.crosstab-n-col {
+    min-width: 40px;
+    font-weight: 600;
+}
+
+.crosstab-n-cell {
+    font-weight: 600;
+    color: var(--text-dark);
+    background: #fafbfc;
+}
+
+.crosstab-cell {
+    font-variant-numeric: tabular-nums;
+    transition: background-color 0.15s;
+}
+
+.crosstab-diagonal {
+    background: #e8e8e8 !important;
+    color: #999;
+}
+
+.crosstab-empty {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-muted);
+    font-size: 1.1em;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .crosstab-filters {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .crosstab-summary {
+        margin-left: 0;
+    }
+
+    .crosstab-tabs {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .crosstab-tab {
+        padding: 8px 14px;
+        font-size: 0.85em;
+    }
+
+    .crosstab-col-header-text {
+        max-height: 100px;
+        font-size: 0.8em;
+    }
+}
