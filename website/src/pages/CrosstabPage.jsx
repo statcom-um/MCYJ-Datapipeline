@@ -502,6 +502,8 @@ function KeywordKeywordTable({ keywords, data }) {
         key: rowKw,
         label: rowKw,
         total: kwTotals[rowKw] || 0,
+        // Self-co-occurrence is excluded from mobile cards via mobileKeywordsFor(),
+        // so getCounts for the diagonal case is never actually called.
         getCounts: colKw => rowKw === colKw ? 0 : (kwPairCounts[rowKw]?.[colKw] || 0),
     }));
 
