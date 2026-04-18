@@ -398,7 +398,7 @@ function TappableLabel({ text, className }) {
             onClick={toggle}
             role="button"
             tabIndex={0}
-            onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') toggle(); }}
+            onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); } }}
         >
             {text}
         </span>
