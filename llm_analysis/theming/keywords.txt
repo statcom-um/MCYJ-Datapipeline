@@ -14,7 +14,7 @@ Important classification rules:
 - Do not mark a keyword "yes" just because the report mentions a related policy, rule, regulation, licensing standard, or corrective action.
 - A keyword applies only when the report text supports that specific topic.
 - The same citation may support multiple keywords only if it clearly contains evidence for each one.
-- When a violation fits a more specific youth-care category, use that category rather than "Administrative" unless there is also a distinct paperwork, documentation, reporting, or process failure.
+- A violation may carry multiple keywords. If the report describes a failure to actually provide required care (e.g., medication not given, youth not enrolled in school, medications left unsecured), label the relevant care keyword (Medical neglect, Educational neglect, Hazardous physical environment, etc.) even if the cited rule is a paperwork or policy rule.
 
 Keyword definitions:
 
@@ -33,18 +33,19 @@ Keyword definitions:
 - Staff-on-youth verbal abuse:
   Applies when the report involves staff yelling at, insulting, threatening, humiliating, degrading, cursing at, or verbally mistreating a youth.
 
-- Administrative:
-  Applies only to paperwork, documentation, recordkeeping, reporting, notification, licensing, training-log, policy/procedure, or other compliance failures that do not themselves directly describe harm, threatened harm, deficient supervision, deficient care, abuse, neglect, violence, restraint, seclusion, medical issues, education issues, runaway incidents, sexual misconduct, or hazardous physical conditions.
-
-  Mark "yes" only when the report contains a finding about an administrative or paperwork failure as its own violation, such as:
+- Paperwork:
+  Applies narrowly to failures involving records, forms, reports, notifications, or required written documents, such as:
   - missing, incomplete, inaccurate, late, or falsified records
-  - failure to document required checks, incidents, treatment plans, grievances, medication records, education records, staff credentials, background checks, or training records
-  - failure to notify, report, file, submit, review, sign, approve, or maintain required documents
-  - failure to follow licensing or procedural requirements where the issue is primarily documentation or process-based
+  - failure to document required checks, incidents, treatment plans, grievances, medication logs, education records, staff credentials, background checks, or training records
+  - failure to notify, report, file, submit, review, sign, approve, or maintain required forms or documents within required timeframes
+  - missing or outdated written policies that the facility is required to maintain
 
-  Mark "no" when the violation directly concerns youth care, safety, supervision, abuse, neglect, restraint, seclusion, medical care, education, runaway prevention, sexual misconduct, staffing levels, or physical hazards, even if the facility also failed to follow a rule or policy.
+  A violation of a written policy is NOT Paperwork unless the failure itself concerns records, forms, or documentation. Staff breaking a rule (e.g., letting a youth use a personal phone, sharing confidential information) is not Paperwork on its own; failing to file the required incident report about it IS Paperwork.
 
-  Mark "uncertain" only when the text describes a process or policy failure but it is unclear whether the failure was merely paperwork/compliance-related or directly affected youth care or safety.
+  Paperwork can co-occur with care keywords. If the underlying failure also means a youth did not receive required care (missed medication, no school enrollment, unsecured medications, missed supervision check that left youth unsafe), label the relevant care keyword in addition to Paperwork.
+
+- Confidentiality violation:
+  Applies when the report involves unauthorized disclosure, sharing, access, or handling of a youth's confidential information — including photos, identifying details, medical or case records, log entries, or communications — whether shared with unauthorized staff, outside parties, or through unauthorized channels such as personal devices or personal accounts.
 
 - Seclusion:
   Applies when the report involves isolating, confining, locking, or placing a youth alone in a room or area away from others, especially as discipline, control, or crisis management.
@@ -74,7 +75,8 @@ Keywords to evaluate:
   "Staff-on-youth violence",
   "Restraint",
   "Staff-on-youth verbal abuse",
-  "Administrative",
+  "Paperwork",
+  "Confidentiality violation",
   "Seclusion",
   "Medical neglect",
   "Educational neglect",

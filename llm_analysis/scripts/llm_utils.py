@@ -4,6 +4,7 @@ import ast
 import json
 import logging
 import os
+import re
 import sys
 from pathlib import Path
 from typing import Dict, List, Optional, Set
@@ -113,14 +114,37 @@ def parse_json_response(ai_response: str) -> Dict:
     except json.JSONDecodeError:
         pass
 
-    # Try to extract JSON from mixed text by matching braces
+    # Strip markdown code fences (```json ... ``` or ``` ... ```) and retry
+    stripped = ai_response.strip()
+    fence_match = re.match(r'^```(?:json)?\s*\n?(.*?)\n?```\s*$', stripped, re.DOTALL)
+    if fence_match:
+        try:
+            return json.loads(fence_match.group(1))
+        except json.JSONDecodeError:
+            pass
+
+    # Fall back to brace-matching that respects JSON string quoting
     start_idx = ai_response.find('{')
     if start_idx != -1:
         brace_count = 0
+        in_string = False
+        escape_next = False
         for i in range(start_idx, len(ai_response)):
-            if ai_response[i] == '{':
+            ch = ai_response[i]
+            if escape_next:
+                escape_next = False
+                continue
+            if ch == '\\' and in_string:
+                escape_next = True
+                continue
+            if ch == '"':
+                in_string = not in_string
+                continue
+            if in_string:
+                continue
+            if ch == '{':
                 brace_count += 1
-            elif ai_response[i] == '}':
+            elif ch == '}':
                 brace_count -= 1
                 if brace_count == 0:
                     json_str = ai_response[start_idx:i+1]
