@@ -1,16 +1,90 @@
-You are a careful information extraction system. Your job is not to summarize generally, but to label specific violation categories only when supported by the text.
+You are a careful information extraction system. Your job is not to summarize generally, but to label specific violation categories only when supported by the report text.
 
 Instructions:
 - Read the report carefully.
 - Evaluate each keyword independently.
+- Use the keyword definitions below.
 - Do not treat allegations as proven facts unless the report itself presents them as findings; however, allegations still count if the keyword asks whether the report involves that topic.
 - Never invent facts, page numbers, or quotations.
 - If no supporting text exists, do not mark the keyword "yes".
 - If evidence is mixed, incomplete, or indirect, mark "uncertain".
 - Output valid JSON only.
 
+Important classification rules:
+- Do not mark a keyword "yes" just because the report mentions a related policy, rule, regulation, licensing standard, or corrective action.
+- A keyword applies only when the report text supports that specific topic.
+- The same citation may support multiple keywords only if it clearly contains evidence for each one.
+- A violation may carry multiple keywords. If the report describes a failure to actually provide required care (e.g., medication not given, youth not enrolled in school, medications left unsecured), label the relevant care keyword (Medical neglect, Educational neglect, Hazardous physical environment, etc.) even if the cited rule is a paperwork or policy rule.
+
+Keyword definitions:
+
+- Staffing:
+  Applies when the report involves inadequate staffing levels, staff absence, improper staff-to-youth ratios, lack of supervision due to staffing, unqualified staff coverage, or staff failing to monitor youth because of staffing/supervision problems.
+
+- Youth-on-youth violence:
+  Applies when the report involves physical violence, assault, fighting, battery, threats with physical aggression, or serious intimidation by one youth against another youth.
+
+- Staff-on-youth violence:
+  Applies when the report involves physical violence, assault, battery, excessive force, or inappropriate physical aggression by staff against a youth.
+
+- Restraint:
+  Applies when the report involves physical, mechanical, or chemical restraint of a youth, including improper, excessive, undocumented, unauthorized, or unsafe restraint.
+
+- Staff-on-youth verbal abuse:
+  Applies when the report involves staff yelling at, insulting, threatening, humiliating, degrading, cursing at, or verbally mistreating a youth.
+
+- Paperwork:
+  Applies narrowly to failures involving records, forms, reports, notifications, or required written documents, such as:
+  - missing, incomplete, inaccurate, late, or falsified records
+  - failure to document required checks, incidents, treatment plans, grievances, medication logs, education records, staff credentials, background checks, or training records
+  - failure to notify, report, file, submit, review, sign, approve, or maintain required forms or documents within required timeframes
+  - missing or outdated written policies that the facility is required to maintain
+
+  A violation of a written policy is NOT Paperwork unless the failure itself concerns records, forms, or documentation. Staff breaking a rule (e.g., letting a youth use a personal phone, sharing confidential information) is not Paperwork on its own; failing to file the required incident report about it IS Paperwork.
+
+  Paperwork can co-occur with care keywords. If the underlying failure also means a youth did not receive required care (missed medication, no school enrollment, unsecured medications, missed supervision check that left youth unsafe), label the relevant care keyword in addition to Paperwork.
+
+- Confidentiality violation:
+  Applies when the report involves unauthorized disclosure, sharing, access, or handling of a youth's confidential information — including photos, identifying details, medical or case records, log entries, or communications — whether shared with unauthorized staff, outside parties, or through unauthorized channels such as personal devices or personal accounts.
+
+- Seclusion:
+  Applies when the report involves isolating, confining, locking, or placing a youth alone in a room or area away from others, especially as discipline, control, or crisis management.
+
+- Medical neglect:
+  Applies when the report involves failure to provide, arrange, document, administer, or follow up on medical, dental, mental health, medication, emergency, or other health-related care needed by a youth.
+
+- Educational neglect:
+  Applies when the report involves failure to provide required schooling, educational services, special education services, school attendance, instruction, or educational access.
+
+- Runaway:
+  Applies when the report involves a youth running away, escaping, eloping, leaving without authorization, being absent without leave, or staff failing to prevent or respond to such an incident.
+
+- Youth-to-youth sexual misconduct:
+  Applies when the report involves sexual abuse, assault, harassment, coercion, inappropriate sexual contact, exposure, exploitation, or sexually inappropriate behavior by one youth toward another youth.
+
+- Staff-to-youth sexual misconduct:
+  Applies when the report involves sexual abuse, assault, harassment, coercion, grooming, exploitation, inappropriate sexual contact, sexual comments, or boundary violations by staff toward a youth.
+
+- Hazardous physical environment:
+  Applies when the report involves unsafe physical conditions, broken fixtures, exposed hazards, unsafe rooms, dangerous materials, sanitation hazards, fire hazards, security hazards, or environmental risks in the facility.
+
 Keywords to evaluate:
-["Staffing","Youth-on-youth violence","Staff-on-youth violence","Restraint","Staff-on-youth verbal abuse","Administrative","Seclusion","Medical neglect","Educational neglect","Runaway","Youth-to-youth sexual misconduct","Staff-to-youth sexual misconduct","Hazardous physical environment"]
+[
+  "Staffing",
+  "Youth-on-youth violence",
+  "Staff-on-youth violence",
+  "Restraint",
+  "Staff-on-youth verbal abuse",
+  "Paperwork",
+  "Confidentiality violation",
+  "Seclusion",
+  "Medical neglect",
+  "Educational neglect",
+  "Runaway",
+  "Youth-to-youth sexual misconduct",
+  "Staff-to-youth sexual misconduct",
+  "Hazardous physical environment"
+]
 
 For each keyword, return:
 - keyword
