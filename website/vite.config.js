@@ -30,7 +30,8 @@ export default defineConfig({
         agency: resolve(__dirname, 'agency.html'),
         'ai-methodology': resolve(__dirname, 'ai-methodology.html'),
         documents: resolve(__dirname, 'documents.html'),
-        map: resolve(__dirname, 'map.html')
+        map: resolve(__dirname, 'map.html'),
+        crosstab: resolve(__dirname, 'crosstab.html')
       }
     }
   },

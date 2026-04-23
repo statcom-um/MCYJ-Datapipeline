@@ -5,3 +5,4 @@ export { DocumentsPage } from './DocumentsPage.jsx';
 export { MapPage } from './MapPage.jsx';
 export { AgencyPage } from './AgencyPage.jsx';
 export { AiMethodologyPage } from './AiMethodologyPage.jsx';
+export { CrosstabPage } from './CrosstabPage.jsx';
