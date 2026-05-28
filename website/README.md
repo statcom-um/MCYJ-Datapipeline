@@ -99,7 +99,6 @@ website/
 ├── dashboard.html           # Agency list dashboard
 ├── document.html            # Document detail page
 ├── facilities.html          # Facility detail page
-├── keywords.html            # Keywords analysis page
 ├── src/
 │   ├── index.jsx            # Main app entry point
 │   ├── document-entry.jsx   # Document page entry point
