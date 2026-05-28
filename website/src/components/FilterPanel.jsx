@@ -404,9 +404,6 @@ export function FilterPanel({
                                 </select>
                             </div>
                         </div>
-                        <a href={`${baseUrl}facilities.html`} className="filter-link">
-                            📊 View Facility Statistics
-                        </a>
                     </FilterSection>
 
                     {/* === SECTION: Keywords === */}

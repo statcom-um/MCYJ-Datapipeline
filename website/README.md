@@ -98,7 +98,6 @@ website/
 ├── index.html               # Home / About page
 ├── dashboard.html           # Agency list dashboard
 ├── document.html            # Document detail page
-├── facilities.html          # Facility detail page
 ├── src/
 │   ├── index.jsx            # Main app entry point
 │   ├── document-entry.jsx   # Document page entry point
