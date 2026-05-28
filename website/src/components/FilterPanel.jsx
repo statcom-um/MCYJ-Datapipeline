@@ -404,9 +404,6 @@ export function FilterPanel({
                                 </select>
                             </div>
                         </div>
-                        <a href={`${baseUrl}facilities.html`} className="filter-link">
-                            📊 View Facility Statistics
-                        </a>
                     </FilterSection>
 
                     {/* === SECTION: Keywords === */}
@@ -465,11 +462,7 @@ export function FilterPanel({
                         </div>
                         <div className="filter-hint">
                             <AiCaution label="AI-generated keywords" /> Keywords may be inconsistent.
-                            See the <a href={`${baseUrl}keywords.html`}>keywords page</a> for details.
                         </div>
-                        <a href={`${baseUrl}keywords.html`} className="filter-link">
-                            📊 View All Keywords
-                        </a>
                     </FilterSection>
                 </div>
 
