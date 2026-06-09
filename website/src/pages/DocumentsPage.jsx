@@ -283,9 +283,18 @@ export function DocumentsPage() {
                                         <tr key={`${doc.sha256}-${idx}`}>
                                             <td className="documents-td-date">{doc.date || '—'}</td>
                                             <td>
-                                                <a href={`${BASE_URL}agency.html?id=${encodeURIComponent(doc.agencyId)}`}>
-                                                    {doc.agencyName}
-                                                </a>
+                                                {doc.agencyName}
+                                                {doc.agencyId && (
+                                                    <a
+                                                        href={`${BASE_URL}agency.html?id=${encodeURIComponent(doc.agencyId)}`}
+                                                        title="Go to agency page"
+                                                        aria-label={`Go to agency page for ${doc.agencyName || 'this agency'}`}
+                                                        style={{ marginLeft: '6px', textDecoration: 'none', fontSize: '0.85em' }}
+                                                        onClick={e => e.stopPropagation()}
+                                                    >
+                                                        🏛
+                                                    </a>
+                                                )}
                                             </td>
                                             <td>
                                                 <a href={`${BASE_URL}document.html?sha=${doc.sha256}`}>
