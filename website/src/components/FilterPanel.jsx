@@ -1,6 +1,5 @@
 import React, { useState, useMemo } from 'react';
 import { KeywordBadge, KeywordBadgeList } from './KeywordBadge.jsx';
-import { AutocompleteInput } from './AutocompleteInput.jsx';
 import { AiCaution } from './AiCaution.jsx';
 import { getBaseUrl, ALL_SEVERITY_LEVELS } from '../utils/helpers.js';
 
@@ -62,10 +61,10 @@ const SEVERITY_LABELS = { low: 'Low', moderate: 'Moderate', severe: 'Severe', no
  * @param {Object} props
  * @param {Object} props.filters - Current filter state
  * @param {Function} props.onFilterChange - Callback when filters change
- * @param {Function} props.onKeywordSearch - Function to search keywords
  * @param {Function} props.onKeywordSelect - Callback when keyword is selected
  * @param {Function} props.onKeywordRemove - Callback when keyword is removed
  * @param {Function} props.onClearAllKeywords - Callback to clear all keywords
+ * @param {Array} props.uniqueKeywords - Available keyword options
  * @param {Array} props.uniqueLicenseStatuses - Available license status options
  * @param {Array} props.uniqueAgencyTypes - Available agency type options
  * @param {Array} props.uniqueCounties - Available county options
@@ -77,10 +76,10 @@ const SEVERITY_LABELS = { low: 'Low', moderate: 'Moderate', severe: 'Severe', no
 export function FilterPanel({
     filters,
     onFilterChange,
-    onKeywordSearch,
     onKeywordSelect,
     onKeywordRemove,
     onClearAllKeywords,
+    uniqueKeywords = [],
     uniqueLicenseStatuses = [],
     uniqueAgencyTypes = [],
     uniqueCounties = [],
@@ -417,18 +416,24 @@ export function FilterPanel({
                         <p className="filter-note" style={{ marginTop: 0, marginBottom: '10px' }}>
                             Add keywords to find documents about specific topics. Multiple keywords show documents matching any of them.
                         </p>
-                        <AutocompleteInput
-                            id="keywordFilterInput"
-                            placeholder="Search for a keyword…"
-                            onSearch={onKeywordSearch}
-                            onSelect={onKeywordSelect}
-                            renderSuggestion={(s) => (
-                                <>
-                                    <span>{s.keyword}</span>
-                                    <span style={{ color: '#666', fontSize: '0.85em' }}>({s.count})</span>
-                                </>
-                            )}
-                        />
+                        <select
+                            className="filter-select"
+                            value=""
+                            onChange={e => {
+                                if (e.target.value) {
+                                    onKeywordSelect(e.target.value);
+                                }
+                            }}
+                            style={{ width: '100%' }}
+                        >
+                            <option value="">Select a keyword…</option>
+                            {uniqueKeywords
+                                .filter(k => !filters.keywords.some(fk => fk.toLowerCase() === k.toLowerCase()))
+                                .map(k => (
+                                    <option key={k} value={k}>{k}</option>
+                                ))
+                            }
+                        </select>
                         <div style={{ marginTop: '10px', minHeight: '28px' }}>
                             {filters.keywords.length > 0 ? (
                                 <>

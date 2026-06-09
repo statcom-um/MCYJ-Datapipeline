@@ -20,6 +20,7 @@ export function DocumentsPage() {
     const [dateFrom, setDateFrom] = useState('');
     const [dateTo, setDateTo] = useState('');
     const [searchQuery, setSearchQuery] = useState('');
+    const [keywordFilter, setKeywordFilter] = useState('');
 
     // Sort
     const [sortField, setSortField] = useState('date_iso');
@@ -27,6 +28,7 @@ export function DocumentsPage() {
 
     // Unique values for filters
     const [uniqueCounties, setUniqueCounties] = useState([]);
+    const [uniqueKeywords, setUniqueKeywords] = useState([]);
 
     useEffect(() => {
         loadData();
@@ -40,6 +42,7 @@ export function DocumentsPage() {
             const agencies = await response.json();
             const docs = [];
             const counties = new Set();
+            const keywords = new Set();
 
             agencies.forEach(agency => {
                 if (agency.facility?.County) counties.add(agency.facility.County);
@@ -52,12 +55,16 @@ export function DocumentsPage() {
                             county: agency.facility?.County || '',
                             agencyType: agency.facility?.AgencyType || '',
                         });
+                        if (doc.sir_violation_level?.keywords) {
+                            doc.sir_violation_level.keywords.forEach(k => keywords.add(k));
+                        }
                     });
                 }
             });
 
             setAllDocuments(docs);
             setUniqueCounties(Array.from(counties).sort());
+            setUniqueKeywords(Array.from(keywords).sort());
             setLoading(false);
         } catch (err) {
             console.error('Error loading data:', err);
@@ -84,6 +91,12 @@ export function DocumentsPage() {
             docs = docs.filter(d => d.county === county);
         }
 
+        if (keywordFilter) {
+            docs = docs.filter(d =>
+                (d.sir_violation_level?.keywords || []).some(k => k === keywordFilter)
+            );
+        }
+
         if (dateFrom) {
             docs = docs.filter(d => d.date_iso && d.date_iso >= dateFrom);
         }
@@ -96,8 +109,7 @@ export function DocumentsPage() {
             const q = searchQuery.trim().toLowerCase();
             docs = docs.filter(d =>
                 (d.document_title || '').toLowerCase().includes(q) ||
-                (d.agencyName || '').toLowerCase().includes(q) ||
-                (d.sir_violation_level?.keywords || []).some(k => k.toLowerCase().includes(q))
+                (d.agencyName || '').toLowerCase().includes(q)
             );
         }
 
@@ -118,12 +130,12 @@ export function DocumentsPage() {
         });
 
         return docs;
-    }, [allDocuments, sirOnly, severity, county, dateFrom, dateTo, searchQuery, sortField, sortDir]);
+    }, [allDocuments, sirOnly, severity, county, keywordFilter, dateFrom, dateTo, searchQuery, sortField, sortDir]);
 
     // Reset page when filters change
     useEffect(() => {
         setCurrentPage(1);
-    }, [sirOnly, severity, county, dateFrom, dateTo, searchQuery, sortField, sortDir]);
+    }, [sirOnly, severity, county, keywordFilter, dateFrom, dateTo, searchQuery, sortField, sortDir]);
 
     const handleSort = (field) => {
         if (sortField === field) {
@@ -206,6 +218,16 @@ export function DocumentsPage() {
                                     <option key={c} value={c}>{c}</option>
                                 ))}
                             </select>
+                            <select
+                                className="filter-select documents-filter-select"
+                                value={keywordFilter}
+                                onChange={e => setKeywordFilter(e.target.value)}
+                            >
+                                <option value="">All keywords</option>
+                                {uniqueKeywords.map(k => (
+                                    <option key={k} value={k}>{k}</option>
+                                ))}
+                            </select>
                             <input
                                 type="date"
                                 className="documents-filter-date"
@@ -227,7 +249,7 @@ export function DocumentsPage() {
                                 className="documents-filter-search"
                                 value={searchQuery}
                                 onChange={e => setSearchQuery(e.target.value)}
-                                placeholder="Search title, agency, keywords..."
+                                placeholder="Search title, agency..."
                             />
                         </div>
                         <div className="documents-results-count">
@@ -256,25 +278,39 @@ export function DocumentsPage() {
                             <tbody>
                                 {pagedDocs.map((doc, idx) => {
                                     const level = doc.sir_violation_level?.level;
+                                    const isSir = doc.is_special_investigation;
                                     return (
                                         <tr key={`${doc.sha256}-${idx}`}>
                                             <td className="documents-td-date">{doc.date || '—'}</td>
                                             <td>
-                                                <a href={`${BASE_URL}agency.html?id=${encodeURIComponent(doc.agencyId)}`}>
-                                                    {doc.agencyName}
-                                                </a>
+                                                {doc.agencyName}
+                                                {doc.agencyId && (
+                                                    <a
+                                                        href={`${BASE_URL}agency.html?id=${encodeURIComponent(doc.agencyId)}`}
+                                                        title="Go to agency page"
+                                                        aria-label={`Go to agency page for ${doc.agencyName || 'this agency'}`}
+                                                        style={{ marginLeft: '6px', textDecoration: 'none', fontSize: '0.85em' }}
+                                                        onClick={e => e.stopPropagation()}
+                                                    >
+                                                        🏛
+                                                    </a>
+                                                )}
                                             </td>
                                             <td>
                                                 <a href={`${BASE_URL}document.html?sha=${doc.sha256}`}>
                                                     {doc.document_title || 'Untitled'}
                                                 </a>
                                             </td>
-                                            <td>{doc.is_special_investigation ? 'SIR' : 'Report'}</td>
+                                            <td>{isSir ? 'SIR' : 'Report'}</td>
                                             <td>{doc.county || '—'}</td>
                                             <td style={getSeverityStyle(level)}>
                                                 {level ? (
                                                     <><span>{level.charAt(0).toUpperCase() + level.slice(1)}</span> <AiCaution /></>
-                                                ) : '—'}
+                                                ) : isSir ? (
+                                                    <span style={{ color: '#27ae60' }}>✓ No violation</span>
+                                                ) : (
+                                                    <span style={{ color: '#95a5a6', fontStyle: 'italic' }}>Not evaluated</span>
+                                                )}
                                             </td>
                                         </tr>
                                     );

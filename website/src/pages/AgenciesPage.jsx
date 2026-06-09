@@ -43,9 +43,9 @@ export function AgenciesPage() {
     const [uniqueAgencyTypes, setUniqueAgencyTypes] = useState([]);
     const [uniqueCounties, setUniqueCounties] = useState([]);
     const [uniqueZipCodes, setUniqueZipCodes] = useState([]);
+    const [uniqueKeywords, setUniqueKeywords] = useState([]);
     
     // Tries for autocomplete
-    const keywordTrieRef = useRef(new Trie());
     const agencyTrieRef = useRef(new Trie());
     const agencyIdMapRef = useRef(new Map());
 
@@ -79,7 +79,7 @@ export function AgenciesPage() {
             setAllAgencies(data);
             
             // Build tries and filter options
-            buildKeywordTrie(data);
+            buildKeywordList(data);
             buildAgencyTrie(data);
             buildFacilityFilterOptions(data);
             
@@ -91,26 +91,20 @@ export function AgenciesPage() {
         }
     };
 
-    const buildKeywordTrie = (agencies) => {
-        const trie = new Trie();
+    const buildKeywordList = (agencies) => {
+        const keywordSet = new Set();
         agencies.forEach(agency => {
             if (agency.documents && Array.isArray(agency.documents)) {
                 agency.documents.forEach(doc => {
                     if (doc.sir_violation_level?.keywords) {
                         doc.sir_violation_level.keywords.forEach(keyword => {
-                            trie.insert(keyword, true, keyword);
-                            const words = keyword.trim().split(/\s+/);
-                            words.forEach(word => {
-                                if (word.length > 0) {
-                                    trie.insert(word, false, keyword);
-                                }
-                            });
+                            keywordSet.add(keyword);
                         });
                     }
                 });
             }
         });
-        keywordTrieRef.current = trie;
+        setUniqueKeywords(Array.from(keywordSet).sort());
     };
 
     const buildAgencyTrie = (agencies) => {
@@ -366,12 +360,7 @@ export function AgenciesPage() {
         window.history.pushState({}, '', url);
     };
 
-    const handleKeywordSearch = (query) => {
-        return keywordTrieRef.current.search(query);
-    };
-
-    const handleKeywordSelect = (suggestion) => {
-        const keyword = suggestion.keyword;
+    const handleKeywordSelect = (keyword) => {
         if (!filters.keywords.some(k => k.toLowerCase() === keyword.toLowerCase())) {
             const newKeywords = [...filters.keywords, keyword];
             setFilters(prev => ({ ...prev, keywords: newKeywords }));
@@ -544,10 +533,10 @@ export function AgenciesPage() {
                 <FilterPanel
                     filters={filters}
                     onFilterChange={handleFilterChange}
-                    onKeywordSearch={handleKeywordSearch}
                     onKeywordSelect={handleKeywordSelect}
                     onKeywordRemove={handleKeywordRemove}
                     onClearAllKeywords={handleClearAllKeywords}
+                    uniqueKeywords={uniqueKeywords}
                     uniqueLicenseStatuses={uniqueLicenseStatuses}
                     uniqueAgencyTypes={uniqueAgencyTypes}
                     uniqueCounties={uniqueCounties}
