@@ -416,7 +416,7 @@ export function MapPage() {
                                                                 </li>
                                                             ))}
                                                         </ul>
-                                                        <a className="map-popup-zip-link" href={`${BASE_URL}?zip=${encodeURIComponent(group.zip)}`}>
+                                                        <a className="map-popup-zip-link" href={`${BASE_URL}agencies.html?zip=${encodeURIComponent(group.zip)}`}>
                                                             View all agencies in zip {group.zip} →
                                                         </a>
                                                         <div className="map-popup-approx"><span aria-hidden="true">📌 </span>Marker is at the center of this 5-digit zip code area.</div>
