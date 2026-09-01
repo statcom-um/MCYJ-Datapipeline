@@ -1,5 +1,7 @@
 # MCYJ Data Pipeline
 
+View live at https://statcom-um.github.io/MCYJ-Datapipeline/
+
 A data pipeline that ingests Michigan child welfare licensing documents from the state API, uses LLMs to generate summaries and classify violations, and publishes an interactive dashboard.
 
 **New here?** Start with [ONBOARDING.md](ONBOARDING.md) for setup instructions, data flow, and context.
