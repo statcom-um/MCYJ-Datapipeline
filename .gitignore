@@ -49,3 +49,6 @@ Download/
 Downloads/
 uv.lock
 .pytest_cache/
+
+# Local secrets (OPENROUTER_KEY)
+openrouterkey
