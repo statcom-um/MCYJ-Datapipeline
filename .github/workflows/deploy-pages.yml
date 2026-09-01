@@ -4,6 +4,11 @@ on:
   push:
     branches:
       - main
+  # Pushes made by GITHUB_TOKEN (e.g. the LLM workflow committing its outputs)
+  # do not fire the `push` trigger above, so chain off the run instead.
+  workflow_run:
+    workflows: ["Run LLM"]
+    types: [completed]
   workflow_dispatch:
 
 permissions:
@@ -18,9 +23,18 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          # workflow_run events carry the SHA from when the event fired, which
+          # can predate the outputs the triggering run just pushed.
+          ref: ${{ github.event_name == 'workflow_run' && 'main' || github.ref }}
+
+      - name: Resolve built commit
+        id: commit
+        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
 
       - name: Install uv
         uses: astral-sh/setup-uv@v4
@@ -79,7 +93,7 @@ jobs:
           npm run build
         env:
           VITE_BASE_URL: /MCYJ-Datapipeline/
-          VITE_COMMIT_HASH: ${{ github.sha }}
+          VITE_COMMIT_HASH: ${{ steps.commit.outputs.sha }}
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
