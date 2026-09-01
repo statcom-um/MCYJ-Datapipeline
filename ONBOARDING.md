@@ -56,7 +56,7 @@ uv run python ingestion/run.py --limit 1
 
 ### Node.js (website)
 
-Requires Node.js 18+.
+Requires Node.js 24+.
 
 ```bash
 cd website
