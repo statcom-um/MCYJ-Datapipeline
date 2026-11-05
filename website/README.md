@@ -15,7 +15,7 @@ A lightweight web dashboard built with Vite + React to display Michigan child we
 
 ### Prerequisites
 
-- Node.js (v18 or later recommended)
+- Node.js 24+
 - Python 3.11+
 - pandas and pyarrow Python packages (installed via `uv sync` from the repo root)
 

@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "Michigan Child Welfare Licensing Dashboard",
   "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
   "scripts": {
     "dev": "vite",
     "build": "vite build",
